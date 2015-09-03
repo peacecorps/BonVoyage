@@ -4,19 +4,20 @@ BonVoyage is a web application built to provide a simplified and automated web-b
 
 This project is currently in development under Patrick Choquette and Project Delta.
 
+
 Peace Corps: [peacecorps.gov](https://www.peacecorps.gov/) 
 
 Project Delta: [projectdelta.io](https://projectdelta.io/)
 
-Peace Corps Team:
+### Peace Corps Team:
 - Patrick Choquette
 
-Development Team:
+### Development Team:
 - Albert Zhang
 - Ben Chang
 - Edwin Tan
 
-Project Delta Team:
+### Project Delta Team:
 - Colin King
 - Hiroshi Furuya
 - Sean Bae
