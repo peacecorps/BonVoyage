@@ -15,7 +15,13 @@ body {
 }
 .form-signin .checkbox {
   font-weight: normal;
+  text-align: left;
 }
+
+.form-signin .checkbox  #rememberMeText{
+  font-weight: bold;
+}
+
 .form-signin .form-control {
   position: relative;
   height: auto;
