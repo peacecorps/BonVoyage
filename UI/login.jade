@@ -1,0 +1,34 @@
+doctype html
+html(lang='en')
+  head
+    meta(charset='utf-8')
+    meta(http-equiv='X-UA-Compatible', content='IE=edge')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    // The above 3 meta tags MUST come first in the head
+    title Sign in
+    // Bootstrap
+    link(href='css/bootstrap.min.css', rel='stylesheet')
+    // signin page style
+    link(href='css/signin.css', rel='stylesheet')
+  body
+    right
+      button.btn.btn-small.btn-default(type='submit', onclick='action()') Register
+    .container
+      center
+        .jumbotron(style='background:F8FBFC !important')
+          h1 Peacecorps Leave Request Login
+        form.form-signin
+          label.sr-only(for='inputEmail') Email address
+          input#inputEmail.form-control(type='email', placeholder='Email address', required='', autofocus='')
+          label.sr-only(for='inputPassword') Password
+          input#inputPassword.form-control(type='password', placeholder='Password', required='')
+          .checkbox
+            label
+              input(type='checkbox', value='remember-me')
+              | Remember me
+          button.btn.btn-lg.btn-default.btn-block(type='submit', onclick='action()') Sign in
+          button.btn.btn-lg.btn-default.btn-block(type='submit', onclick='action()') Forgot Password
+    // jQuery (for Bootstrap's JavaScript plugins)
+    script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
+    // Include all complied plugins
+    script(src='js/bootstrap.min.js')
