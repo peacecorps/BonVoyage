@@ -17,5 +17,13 @@ router.get('/userlist', function(req, res) {
         });
     });
 });
+
+function renderLogin(req, res) {
+	res.render('login.jade', {title: 'Login'});
+}
+
+router.get('/login', renderLogin);
+
+
 module.exports = router;
 
