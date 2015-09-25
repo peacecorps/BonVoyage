@@ -1,9 +1,16 @@
 body {
+  background-color: #3fa9f5;
   /*
   padding-top: 40px;
   padding-bottom: 40px;
   background-color: #1296D8;
   */
+}
+
+.top-nav .login-title {
+  padding-left: 15px;
+  color: #b1eaf2;
+
 }
 
 /* Form Login */

@@ -1,10 +1,11 @@
 doctype html
 html(lang='en')
   head
+    // The 3 meta tags below MUST come first in the head
     meta(charset='utf-8')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
     meta(name='viewport', content='width=device-width, initial-scale=1')
-    // The above 3 meta tags MUST come first in the head
+
     title Login
     // Reset CSS style
     link(href='/css/reset.css', rel='stylesheet')
@@ -15,7 +16,7 @@ html(lang='en')
 
   body
     .top-nav
-        h1 BonVoyage
+      h3.login-title BonVoyage
 
       form.form-signin
         label.sr-only(for='inputEmail') Email address
@@ -28,6 +29,8 @@ html(lang='en')
             | Remember me
         button.btn.btn-lg.btn-default.btn-block(type='submit', onclick='action()') Sign in
         button.btn.btn-lg.btn-default.btn-block(type='submit', onclick='action()') Forgot Password
+
+
     // jQuery (for Bootstrap's JavaScript plugins)
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
     // Include all complied plugins
