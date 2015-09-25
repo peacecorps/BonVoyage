@@ -1,0 +1,5 @@
+{
+   "cmd": ["cmd", "/c", "jade", "$file", "--out", "${file_path/myfolder/./}"],
+   "working_dir": "${file_path/myfolder/./",
+   "selector": "source.jade"
+}
