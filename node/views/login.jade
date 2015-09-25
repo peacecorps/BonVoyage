@@ -17,7 +17,7 @@ html(lang='en')
   body
     .top-nav
       h3.login-title BonVoyage
-
+      button#register-btn.btn.btn.btn-default(type='button') Register
     .login-container
       form.form-signin
         h2.form-signin-heading
@@ -32,7 +32,8 @@ html(lang='en')
             |  Remember me
         button.submit-btn.btn.btn-lg.btn-primary.btn-block(type='submit')
           p.signin-text Sign in
-        p#forgot-text Forgot your password?
+        a(href = '')
+          p#forgot-text Forgot your password?
 
 
     // jQuery (for Bootstrap's JavaScript plugins)

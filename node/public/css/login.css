@@ -5,7 +5,16 @@ body {
 body .top-nav .login-title {
   padding-left: 15px;
   color: #b1eaf2;
+}
 
+.top-nav #register-btn {
+  position: absolute;
+  top: 18px;
+  right: 15px;
+  background-color: #b1e9f2;
+  color: #5296ad;
+  font-weight: bold;
+  border: 3px solid #000000;
 }
 
 /* Form Login */
@@ -28,11 +37,16 @@ body .top-nav .login-title {
 .form-signin #forgot-text {
   margin-top: 5px;
   text-align: center;
+  color: #000000;
 }
 
 .form-signin .form-signin-heading {
   text-align: center;
   color: #f0f0f0;
+}
+
+.form-signin .form-signin-heading #rememberMe {
+  color: #000000;
 }
 
 .form-signin .submit-btn {
