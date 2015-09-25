@@ -1,24 +1,48 @@
 body {
-  background-color: #3fa9f5;
-  /*
-  padding-top: 40px;
-  padding-bottom: 40px;
-  background-color: #1296D8;
-  */
+  background-color: #348DCC;
 }
 
-.top-nav .login-title {
+body .top-nav .login-title {
   padding-left: 15px;
   color: #b1eaf2;
 
 }
 
 /* Form Login */
+
+.login-container {
+  padding: 15px;
+  background-color: #348DCC;
+}
+
 .form-signin {
   max-width: 330px;
   padding: 15px;
   margin: 0 auto;
 }
+
+.form-signin #inputPassword {
+  margin-top: 2px;
+}
+
+.form-signin #forgot-text {
+  margin-top: 5px;
+  text-align: center;
+}
+
+.form-signin .form-signin-heading {
+  text-align: center;
+  color: #f0f0f0;
+}
+
+.form-signin .submit-btn {
+  background-color: #cc6934;
+}
+
+.form-signin .submit-btn .signin {
+  color: #030303;
+}
+
 .form-signin .form-signin-heading,
 .form-signin .checkbox {
   margin-bottom: 10px;
