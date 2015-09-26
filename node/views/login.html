@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags MUST come first in the head-->
+    <title>Sign in</title>
+    <!-- Bootstrap-->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <!-- signin page style-->
+    <link href="/css/signin.css" rel="stylesheet">
+  </head>
+  <body>
+    <right>
+      <button type="submit" onclick="action()" class="btn btn-small btn-default">Register:)</button>
+    </right>
+    <div class="container">
+      <center>
+        <div style="background:F8FBFC !important" class="jumbotron">
+          <h1>Peacecorps Leave Request Login test</h1>
+        </div>
+        <form class="form-signin">
+          <label for="inputEmail" class="sr-only">Email address</label>
+          <input id="inputEmail" type="email" placeholder="Email address" required="" autofocus="" class="form-control">
+          <label for="inputPassword" class="sr-only">Password</label>
+          <input id="inputPassword" type="password" placeholder="Password" required="" class="form-control">
+          <div class="checkbox">
+            <label>
+              <input type="checkbox" value="remember-me">Remember me
+            </label>
+          </div>
+          <button type="submit" onclick="action()" class="btn btn-lg btn-default btn-block">Sign in</button>
+          <button type="submit" onclick="action()" class="btn btn-lg btn-default btn-block">Forgot Password</button>
+        </form>
+      </center>
+    </div>
+    <!-- jQuery (for Bootstrap's JavaScript plugins)-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all complied plugins-->
+    <script src="/js/bootstrap.min.js"></script>
+  </body>
+</html>
