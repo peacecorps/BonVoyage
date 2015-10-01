@@ -4,7 +4,7 @@ body {
 
 body .top-nav .login-title {
   padding-left: 15px;
-  color: #b1eaf2;
+  color: #ffffff;
 }
 
 .top-nav #register-btn {
@@ -24,6 +24,10 @@ body .top-nav .login-title {
   background-color: #348DCC;
 }
 
+.login-container #remember{
+  color: #ffffff;
+}
+
 .form-signin {
   max-width: 330px;
   padding: 15px;
@@ -37,7 +41,7 @@ body .top-nav .login-title {
 .form-signin #forgot-text {
   margin-top: 5px;
   text-align: center;
-  color: #000000;
+  color: #ffffff;
 }
 
 .form-signin .form-signin-heading {
@@ -46,7 +50,7 @@ body .top-nav .login-title {
 }
 
 .form-signin .form-signin-heading #rememberMe {
-  color: #000000;
+  color: #ffffff;
 }
 
 .form-signin .submit-btn {
