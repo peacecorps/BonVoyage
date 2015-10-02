@@ -21,4 +21,3 @@ Project Delta: [projectdelta.io](https://projectdelta.io/)
 - Colin King
 - Hiroshi Furuya
 - Sean Bae
-:)
