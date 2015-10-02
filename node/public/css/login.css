@@ -1,0 +1,88 @@
+body {
+  background-color: #348DCC;
+}
+
+body .top-nav .login-title {
+  padding-left: 15px;
+  color: #b1eaf2;
+}
+
+.top-nav #register-btn {
+  position: absolute;
+  top: 18px;
+  right: 15px;
+  background-color: #b1e9f2;
+  color: #5296ad;
+  font-weight: bold;
+  border: 3px solid #000000;
+}
+
+/* Form Login */
+
+.login-container {
+  padding: 15px;
+  background-color: #348DCC;
+}
+
+.form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+
+.form-signin #inputPassword {
+  margin-top: 2px;
+}
+
+.form-signin #forgot-text {
+  margin-top: 5px;
+  text-align: center;
+  color: #000000;
+}
+
+.form-signin .form-signin-heading {
+  text-align: center;
+  color: #f0f0f0;
+}
+
+.form-signin .form-signin-heading #rememberMe {
+  color: #000000;
+}
+
+.form-signin .submit-btn {
+  background-color: #cc6934;
+}
+
+.form-signin .submit-btn .signin {
+  color: #030303;
+}
+
+.form-signin .form-signin-heading,
+.form-signin .checkbox {
+  margin-bottom: 10px;
+}
+.form-signin .checkbox {
+  font-weight: normal;
+}
+.form-signin .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+.form-signin input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
