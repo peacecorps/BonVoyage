@@ -1,20 +1,20 @@
+
 $(document).ready(function() {
 
-	console.log($("#inputEmail"));
-	$("#inputEmail").val("hello@umd.edu");
-	console.log($("#inputEmail").val());
+	//console.log($("#inputEmail"));
+	//$("#inputEmail").val("hello@umd.edu");
+	//console.log($("#inputEmail").val());
+	var v = "ben@gmail.com";
+	var p = "abc123";
 
-	$('#inputEmail').on("click", function(e) {
-		var v = "";
+	$("#submitInfo").on("click", function(e) {
+		console.log("clicked");
 		$.ajax({
-			data: {
-				"name": v,
-				...
-			},
 			type: "POST",
-			url: "localhost:3000/loginsubmit",
-			success: functino() {
-				
+			data: JSON.stringify(v),
+			url: "http://localhost:3000/loginsub",
+			success: function() {
+				alert("post");
 			}
 		});
 	});

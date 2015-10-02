@@ -23,12 +23,17 @@ function renderLogin(req, res) {
 }
 
 router.get('/login', renderLogin);
-router.post('/loginsubmit',function(req, res) {
-    var userName= req.body.username;
-    var password= req.body.password;
+
+router.post('/loginsub',function(req, res) {
+    //var userName= req.query.username;
+    //var password= req.query.password;
+    var userName = "ben21045@gmail.com";
+    var password = "abc123";
     if((userName.toLowerCase=="ben21045@gmail.com")&&(password=="abc123")){
-        res.redirect("userlist");
+        console.log("success");
+        res.redirect("helloworld");
     }
+    
 });
 
 router.post('/adduser', function(req, res) {
