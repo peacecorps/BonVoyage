@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- The 3 meta tags below MUST come first in the head-->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login</title>
+    <!-- Reset CSS style-->
+    <link href="/css/reset.css" rel="stylesheet">
+    <!-- Bootstrap-->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Login page style-->
+    <link href="/css/login.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="top-nav">
+      <h3 class="login-title">BonVoyage</h3>
+      <button id="register-btn" type="button" class="btn btn btn-default">Register</button>
+    </div>
+    <div class="login-container">
+      <form class="form-signin">
+        <h2 class="form-signin-heading">
+          <p>Login</p>
+        </h2>
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input id="inputEmail" type="email" placeholder="Email address" required="" autofocus="" class="form-control">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input id="inputPassword" type="password" placeholder="Password" required="" class="form-control">
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="remember-me"> Remember me
+          </label>
+        </div>
+        <button type="submit" class="submit-btn btn btn-lg btn-primary btn-block">
+          <p class="signin-text">Sign in</p>
+        </button><a href="">
+          <p id="forgot-text">Forgot your password?</p></a>
+      </form>
+    </div>
+    <!-- jQuery (for Bootstrap's JavaScript plugins)-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all complied plugins-->
+    <script src="/js/bootstrap.min.js"></script>
+    <!-- Import login JavaScript-->
+    <script src="/js/login.js"></script>
+  </body>
+</html>
