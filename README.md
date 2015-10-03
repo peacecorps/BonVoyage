@@ -108,4 +108,4 @@ vagrant ssh
 cd BonVoyage/node
 npm start
 ```
-12) Open a web browser and navigate to [localhost:3000](http://localhost:3000).
+12) Open a web browser and navigate to [localhost:8080](http://localhost:8080).
