@@ -54,6 +54,7 @@ sudo apt-get update
 ```
 5) This web application is built using Node.js, so we need to install a version of Node and NPM (Node package manager). We will use NVM (Node version manager). So first install NVM and then reload the shell's profile to load NVM into your current shell.
 ```bash
+touch ~/.profile
 wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.28.0/install.sh | bash
 source ~/.profile
 ```
