@@ -7,7 +7,7 @@ body .top-nav .login-title {
   color: #ffffff;
 }
 
-.top-nav #login-btn {
+.top-nav #register-btn {
   position: absolute;
   top: 18px;
   right: 15px;
@@ -17,14 +17,14 @@ body .top-nav .login-title {
   border: 3px solid #000000;
 }
 
-/* Form Login */
+/* Form Register*/
 
-.register-container {
+.login-container {
   padding: 15px;
   background-color: #348DCC;
 }
 
-.register-container #remember{
+.login-container #remember{
   color: #ffffff;
 }
 
@@ -55,6 +55,7 @@ body .top-nav .login-title {
 
 .form-signin .submit-btn {
   background-color: #cc6934;
+  margin-top: 15px;
 }
 
 .form-signin .submit-btn .signin {
@@ -86,7 +87,6 @@ body .top-nav .login-title {
   border-bottom-left-radius: 0;
 }
 .form-signin input[type="password"] {
-  margin-bottom: 10px;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 }
