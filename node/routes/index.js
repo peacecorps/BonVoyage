@@ -24,6 +24,10 @@ function renderLogin(req, res) {
 
 router.get('/login', renderLogin);
 
+function renderRegister(req, res) {
+    res.render('register.jade', {title: 'Register'});
+}
+router.get('/register', renderRegister);
 
 module.exports = router;
 
