@@ -9,13 +9,25 @@ $(document).ready(function() {
 
 	$("#submitInfo").on("click", function(e) {
 		console.log("clicked");
+		console.log("clicked yessssssssssssssss");
+		// ajax call is invalid?
 		$.ajax({
-			type: "POST",
-			data: JSON.stringify(v),
-			url: "http://localhost:3000/loginsub",
-			success: function() {
-				alert("post");
-			}
+		    method: "POST",
+		    data: {
+		        "username": v,
+		        "password": p
+		    },
+		    dataType: "json",
+		    url: "/loginsub",
+		    success: function(response_data, status, request) {
+		        if(response_data.success)
+		            window.location = '/helloworld';
+		        else
+		            console.log("Authentication Failed");
+		    },
+		    error: function(request, status, error) {
+		        console.log(error);
+		    }
 		});
 	});
 
