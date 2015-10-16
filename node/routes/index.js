@@ -30,12 +30,12 @@ router.post('/loginsub',function(req, res) {
     var password = "abc123";
     if((userName.toLowerCase()=="ben@gmail.com")&&(password=="abc123")){
         console.log("success");
-        //resp.success = true;
+        resp.success = true;
     } else {
-        //resp.success = false;
+        resp.success = false;
     }
     // Return the resp object
-    //res.send(resp);
+    res.send(resp);
 });
 
 router.post('/adduser', function(req, res) {
