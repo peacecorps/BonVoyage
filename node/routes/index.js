@@ -29,5 +29,11 @@ function renderRegister(req, res) {
 }
 router.get('/register', renderRegister);
 
+
+function renderSuperDash(req, res) {
+    res.render('supervisor_dash.jade', {title: 'Supervisor Dashboard'});
+}
+router.get('/supervisor_dash', renderSuperDash);
+
 module.exports = router;
 
