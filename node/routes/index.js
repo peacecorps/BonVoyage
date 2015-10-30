@@ -23,11 +23,24 @@ function renderLogin(req, res) {
 }
 
 router.get('/login', renderLogin);
+
+
 router.post('/loginsub',function(req, res) {
     console.log("reach the server");
+    var resp = {};
 
-    var userName = "ben@gmail.com";
-    var password = "abc123";
+    var userName = req.body.username;
+    var password = req.body.password;
+    //var userName = "ben@gmail.com";
+    //var password = "abc123";
+
+
+    console.log(userName);
+    console.log(password);
+
+    //1. read callback function (eloquent javascript) higher order function
+    //2. read monk
+
     if((userName.toLowerCase()=="ben@gmail.com")&&(password=="abc123")){
         console.log("success");
         resp.success = true;

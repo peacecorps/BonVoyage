@@ -4,12 +4,14 @@ $(document).ready(function() {
 	//console.log($("#inputEmail"));
 	//$("#inputEmail").val("hello@umd.edu");
 	//console.log($("#inputEmail").val());
-	var v = "ben@gmail.com";
-	var p = "abc123";
+
 
 	$("#submitInfo").on("click", function(e) {
 		console.log("clicked");
 		console.log("clicked yessssssssssssssss");
+
+		var v = $("#inputEmail").val();
+		var p = $("#inputPassword").val();
 		// ajax call is invalid?
 		$.ajax({
 		    method: "POST",
