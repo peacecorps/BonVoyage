@@ -17,7 +17,7 @@ body .top-nav .login-title {
   border: 3px solid #000000;
 }
 
-/* Form Login */
+/* Form Register*/
 
 .login-container {
   padding: 15px;
@@ -55,6 +55,7 @@ body .top-nav .login-title {
 
 .form-signin .submit-btn {
   background-color: #cc6934;
+  margin-top: 15px;
 }
 
 .form-signin .submit-btn .signin {

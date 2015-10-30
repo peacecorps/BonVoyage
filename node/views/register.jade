@@ -6,38 +6,39 @@ html(lang='en')
     meta(http-equiv='X-UA-Compatible', content='IE=edge')
     meta(name='viewport', content='width=device-width, initial-scale=1')
 
-    title Login
+    title Register
     // Reset CSS style
     link(href='/css/reset.css', rel='stylesheet')
     // Bootstrap
     link(href='/css/bootstrap.min.css', rel='stylesheet')
-    // Login page style
-    link(href='/css/login.css', rel='stylesheet')
+    // Register page style
+    link(href='/css/register.css', rel='stylesheet')
 
   body
     .top-nav
       h3.login-title BonVoyage
-      button#register-btn.btn.btn.btn-default(type='button') Register
+      button#register-btn.btn.btn.btn-default(type='button') Login
     .login-container
       form.form-signin
         h2.form-signin-heading
-          p Login
+          p Register
+
+
+        label.sr-only(for='inputName') Enter Full Name
+        input#inputName.form-control(type='text', placeholder='Enter Full Name', required='', autofocus='')
         label.sr-only(for='inputEmail') Email address
-        input#inputEmail.form-control(type='email', placeholder='Email address', required='', autofocus='')
+        input#inputEmail.form-control(type='email', placeholder='Enter Email Address', required='', autofocus='')
         label.sr-only(for='inputPassword') Password
-        input#inputPassword.form-control(type='password', placeholder='Password', required='')
-        .checkbox
-          label
-            input(type='checkbox', value='remember-me')
-            p#remember Remember me
+        input#inputPassword.form-control(type='password', placeholder='Enter Password', required='')
+        label.sr-only(for='inputPassword') Password
+        input#inputPassword.form-control(type='password', placeholder='Re-Enter Password', required='')
+
         button.submit-btn.btn.btn-lg.btn-primary.btn-block(type='submit')
-          p.signin-text Sign in
-        a(href = '')
-          p#forgot-text Forgot your password?
+          p.signin-text Sign Up
+
+
 
     // jQuery (for Bootstrap's JavaScript plugins)
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
     // Include all complied plugins
     script(src='/js/bootstrap.min.js')
-    // Import login JavaScript
-    script(src='/js/login.js')
