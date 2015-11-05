@@ -24,16 +24,16 @@ html(lang='en')
           p Register
 
 
-        label.sr-only(for='inputName') Enter Full Name
-        input#inputName.form-control(type='text', placeholder='Enter Full Name', required='', autofocus='')
-        label.sr-only(for='inputEmail') Email address
-        input#inputEmail.form-control(type='email', placeholder='Enter Email Address', required='', autofocus='')
-        label.sr-only(for='inputPassword') Password
-        input#inputPassword.form-control(type='password', placeholder='Enter Password', required='')
-        label.sr-only(for='inputPassword') Password
-        input#inputPassword.form-control(type='password', placeholder='Re-Enter Password', required='')
+        label.sr-only(for='signupName') Enter Full Name
+        input#signupName.form-control(type='text', placeholder='Enter Full Name', required='', autofocus='')
+        label.sr-only(for='signupEmail') Email address
+        input#signupEmail.form-control(type='email', placeholder='Enter Email Address', required='', autofocus='')
+        label.sr-only(for='signupPassword') Password
+        input#signupPassword.form-control(type='password', placeholder='Enter Password', required='')
+        label.sr-only(for='signupRePassword') Password
+        input#signupRePassword.form-control(type='password', placeholder='Re-Enter Password', required='')
 
-        button.submit-btn.btn.btn-lg.btn-primary.btn-block(type='submit')
+        button#signupInfo.submit-btn.btn.btn-lg.btn-primary.btn-block(type='submit')
           p.signin-text Sign Up
 
 
@@ -42,3 +42,5 @@ html(lang='en')
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
     // Include all complied plugins
     script(src='/js/bootstrap.min.js')
+    script(src='/js/register.js')
+

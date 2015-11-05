@@ -4,12 +4,11 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-
-var routes = require('./routes/index');
+var mongoose = require('mongoose');
+var router = express.Router();
+var home = require('./routes/index');
 var users = require('./routes/users');
 var mongo = require('mongodb');
-var monk = require('monk');
-var db = monk('localhost:27017/nodetest1');
 var app = express();
 
 // view engine setup
@@ -23,12 +22,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(function(req,res,next){
-    req.db = db;
-    next();
-});
-app.use('/', routes);
-app.use('/users', users);
+
+mongoose.connect('mongodb://localhost:27017/bonvoyage');
+mongoose.connection.on('error', function(err){
+  if (err)
+    console.log(err);
+})
+
+app.get('/', home.index);
+app.get('/helloworld', home.helloworld);
+app.get('/login', users.renderLogin);
+app.get('/register', users.renderRegister);
+app.post('/postRegister', users.postRegister);
+app.post('/postLogin', users.postLogin);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

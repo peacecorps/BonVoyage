@@ -1,0 +1,36 @@
+
+$(document).ready(function() {
+
+
+	$("#signupInfo").on("click", function(e) {
+		console.log("clicked!");
+
+		var fullName = $("#signupName").val();
+		var email = $("#signupEmail").val();
+		var pass1 = $("#signupPassword").val();
+		var pass2 = $("#signupRePassword").val();
+
+		$.ajax({
+		    method: "POST",
+		    data: {
+		        name: fullName,
+		        email: email,
+		        pass1: pass1,
+		        pass2: pass2
+		    },
+		    dataType: "json",
+		    url: "/postRegister",
+		    success: function(response_data, status, request) {
+		        if(response_data.success)
+		        	alert("hi Ben");
+		            //window.location = '/dashboard';
+		        else
+		            console.log("Authentication Failed");
+		    },
+		    error: function(request, status, error) {
+		        console.log(error);
+		    }
+		});
+	});
+
+});

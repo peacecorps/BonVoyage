@@ -16,11 +16,11 @@ $(document).ready(function() {
 		$.ajax({
 		    method: "POST",
 		    data: {
-		        "username": v,
-		        "password": p
+		        userEmail: v,
+		        password: p
 		    },
 		    dataType: "json",
-		    url: "/loginsub",
+		    url: "/postLogin",
 		    success: function(response_data, status, request) {
 		        if(response_data.success)
 		            window.location = '/helloworld';
