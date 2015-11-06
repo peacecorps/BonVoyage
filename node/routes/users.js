@@ -23,8 +23,8 @@ router.postLogin = function(req, res) {
     User.findOne({ email: email}, function(err, object) {
     	if (object) {
     		console.log("find email");
-    		console.log(object.hash);
-	    	if (object.hash == password) {
+    		//console.log(object.hash);
+	    	if (object.password == password) {
 	    		resp.success = true;
 	    	} else {
 	    		resp.success = false;
@@ -50,7 +50,7 @@ router.postRegister = function(req, res) {
 	var newUser = new User({
 		name: name,
 		email: email,
-		hash: pass1
+		password: pass1
 	});
 
 	newUser.save(function(err) {

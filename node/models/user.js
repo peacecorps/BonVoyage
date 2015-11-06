@@ -5,29 +5,24 @@ var bcrypt = require("bcrypt-nodejs");
 var user_schema = mongoose.Schema({
 	name: String,
 	email: String,
+	password: String,
 	hash: String
 });
 
 var presave = function(finish_saving_callback) {
-
-	
-	// assume the password with an unhashed string
-	// step one add the salt
-
+	var current_user = this;
+	console.log("presave");
 	bcrypt.genSalt(10, function(err, salt) {
-
-		brypt.hash(salt, this.hash, function(err, hash));
-
+		console.log(salt);
+		bcrypt.hash(current_user.password, salt, null, function(err, password_hash){
+			console.log(password_hash);
+			current_user.hash = password_hash;
+			finish_saving_callback();
+		})
 	});
-
-	//change password to hash	
-
-
-
-	// Do anything before saving the data
-	// ...
-	finish_saving_callback();
-});
+	
+	
+};
 
 user_schema.pre("save", presave);
 
