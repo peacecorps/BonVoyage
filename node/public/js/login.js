@@ -1,11 +1,6 @@
 
 $(document).ready(function() {
 
-	//console.log($("#inputEmail"));
-	//$("#inputEmail").val("hello@umd.edu");
-	//console.log($("#inputEmail").val());
-
-
 	$("#submitInfo").on("click", function(e) {
 		console.log("clicked");
 		console.log("clicked yessssssssssssssss");
@@ -32,5 +27,10 @@ $(document).ready(function() {
 		    }
 		});
 	});
+
+	$("#register-btn").on("click", function(e) {
+		window.location = '/register';
+	});
+
 
 });
