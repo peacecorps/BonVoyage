@@ -15,7 +15,10 @@ body {
 .new-request-button {
   display: block;
   width: 100%;
+}
 
+.button-bar {
+  padding: 30px;
 }
 
 /*
