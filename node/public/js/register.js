@@ -1,6 +1,10 @@
 
 $(document).ready(function() {
 
+	$("#register-btn").on("click", function(e) {
+		window.location = '/login';
+	});
+
 
 	$("#signupInfo").on("click", function(e) {
 		console.log("clicked!");
