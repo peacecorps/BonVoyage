@@ -11,6 +11,12 @@ router.renderRegister = function(req, res) {
     res.render('register.jade', {title: 'Register'});
 }
 
+router.renderForm = function(req, res) {
+    res.render('request_form.jade', {title: 'Leave Request Form'});
+}
+
+router.get('/request_form.jade', renderForm);
+
 router.postLogin = function(req, res) {
     console.log("reach the server");
     var resp = {};
@@ -28,7 +34,7 @@ router.postLogin = function(req, res) {
 	    		resp.success = true;
 	    	} else {
 	    		resp.success = false;
-	    	}    		
+	    	}
     	} else {
     		console.log("invalid email");
     		resp.success = false;
@@ -36,8 +42,8 @@ router.postLogin = function(req, res) {
     	// Return the resp object
  		res.send(resp);
     })
-    
-   
+
+
 }
 
 router.postRegister = function(req, res) {
