@@ -1,4 +1,4 @@
-var express = require('express');
+	var express = require('express');
 var router = express.Router();
 var User = require("../models/user");
 
@@ -12,30 +12,26 @@ router.renderRegister = function(req, res) {
 }
 
 router.postLogin = function(req, res) {
-    console.log("reach the server");
+   console.log("reach the server");
     var resp = {};
 
     var email = req.body.userEmail;
     var password = req.body.password;
 
-    console.log(password);
 
     User.findOne({ email: email}, function(err, object) {
-    	if (object) {
-    		console.log("find email");
-    		//console.log(object.hash);
-	    	if (object.password == password) {
-	    		resp.success = true;
-	    	} else {
-	    		resp.success = false;
-	    	}    		
-    	} else {
-    		console.log("invalid email");
-    		resp.success = false;
-    	}
+    	// User.comparePassword('PasswordMatch', function(err, isMatch) {
+     //    if (err){
+     //    	console.log(err);
+     //    resp.success=false;
+     //    }else{
+     //    console.log('PasswordMatch:', isMatch); // -&gt; Password123: true
+     //    resp.success=true;
+    //}
+	});
     	// Return the resp object
  		res.send(resp);
-    })
+    //})
     
    
 }

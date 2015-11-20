@@ -24,6 +24,11 @@ var presave = function(finish_saving_callback) {
 	
 };
 
+var comparePassword = function(password, cb){
+	var current_user = this;
+	bcrypt.compare(password, current_user.hash, cb);
+};
+
 user_schema.pre("save", presave);
 
 module.exports = mongoose.model("user", user_schema);
