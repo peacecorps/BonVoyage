@@ -1,4 +1,4 @@
-	var express = require('express');
+var express = require('express');
 var router = express.Router();
 var User = require("../models/user");
 
@@ -17,20 +17,20 @@ router.postLogin = function(req, res) {
 
     var email = req.body.userEmail;
     var password = req.body.password;
-
-
+    
     User.findOne({ email: email}, function(err, object) {
-    	User.comparePassword(password, function(err, isLoginSuccess) {
-    		// check if
-    		if (err)
-    			console.log(err);
+    	object.comparePassword(password, function(err, isLoginSuccess) {
 
+    		// check if
+    		if (err) {
+    			console.log("Compare password error-ed: ");
+    			console.log(err);
+    		}
     		resp.success = isLoginSuccess;
+    		// Return the resp object
+    		res.send(resp);
     	});
 	});
-    	// Return the resp object
- 		res.send(resp);
-    //})
 }
 
 router.postRegister = function(req, res) {

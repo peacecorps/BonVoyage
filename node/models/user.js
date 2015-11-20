@@ -24,7 +24,7 @@ var presave = function(finish_saving_callback) {
 	
 };
 
-var comparePassword = function(password, cb){
+user_schema.methods.comparePassword = function(password, cb){
 	var current_user = this;
 	bcrypt.compare(password, current_user.hash, cb);
 };

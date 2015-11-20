@@ -18,7 +18,7 @@ $(document).ready(function() {
 		    url: "/postLogin",
 		    success: function(response_data, status, request) {
 		        if(response_data.success)
-		            window.location = '/helloworld';
+		            window.location.href = '/helloworld';
 		        else
 		            console.log("Authentication Failed");
 		    },
