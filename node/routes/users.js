@@ -31,8 +31,6 @@ router.postLogin = function(req, res) {
     	// Return the resp object
  		res.send(resp);
     //})
-    
-   
 }
 
 router.postRegister = function(req, res) {
