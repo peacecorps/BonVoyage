@@ -20,14 +20,13 @@ router.postLogin = function(req, res) {
 
 
     User.findOne({ email: email}, function(err, object) {
-    	// User.comparePassword('PasswordMatch', function(err, isMatch) {
-     //    if (err){
-     //    	console.log(err);
-     //    resp.success=false;
-     //    }else{
-     //    console.log('PasswordMatch:', isMatch); // -&gt; Password123: true
-     //    resp.success=true;
-    //}
+    	User.comparePassword(password, function(err, isLoginSuccess) {
+    		// check if
+    		if (err)
+    			console.log(err);
+
+    		resp.success = isLoginSuccess;
+    	});
 	});
     	// Return the resp object
  		res.send(resp);
