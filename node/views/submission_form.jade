@@ -1,19 +1,51 @@
-//- doctype html
-//- html(lang='en')
-//-   head
-//-     title Submission Form
-
-//-     // Bootstrap core CSS
-//-     link(href='/css/bootstrap.min.css', rel='stylesheet')
-
-extends 'layout'
+extends layout
 
 block styles
-  link(href='/css/pickadate.css', rel='stylesheet')
+  link(href='/css/default.css', rel='stylesheet')
+  link(href='/css/default.date.css', rel='stylesheet')
+  link(href='/css/selectize.css', rel='stylesheet')
+  link(href='/css/selectize.bootstrap3.css', rel='stylesheet')
 
 block content
-  h1 hello world
+  h1 Submission Form
+
+  form(action='/my-handling-form-page', method='post')
+      div
+        label(for='name') Name:
+        input#name(type='text', name='user_name')
+      div
+        label(for='mail') E-mail:
+        input#mail(type='email', name='user_email')
+      div
+        label(for='msg') Message:
+        textarea#msg(name='user_message')
+      .button
+        button(type='submit') Send your message
+
+
+
+  div#date_leaving
+    input.datepicker(type='text', placeholder='Date Leaving')
+
+  div#date_returning
+    input.datepicker(type='text', placeholder='Date Returning')
+
+  div#countrySelected
+    select#select-country
+
+  div#reason
+    textarea
+
+  div#comments
+    textarea
+
 
 
 block scripts
+    script(src = 'js/picker.js')
+    script(src = 'js/picker.date.js')
+    script(src = 'js/selectize.min.js')
+    script(src = 'js/submission.js')
+
+
 
