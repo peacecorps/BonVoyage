@@ -41,16 +41,24 @@ mongoose.connection.on('error', function(err){
 
 
 app.get('/', home.index);
-app.get('/helloworld',home.helloworld);
+
 app.get('/login', users.renderLogin);
-app.get('/register', passport.authenticate);
-app.get('/vdash', isLoggedIn, users.renderVDash);
-//app.post('/postRegister', users.postRegister);
-app.post('/postLogin', passport.authenticate('local-signup', {
+app.post('/login', passport.authenticate('local-login', {
+        successRedirect : '/vdash', // redirect to the secure profile section
+        failureRedirect : '/login', // redirect back to the signup page if there is an error
+        failureFlash : true // allow flash messages
+    }));
+
+app.get('/register', users.renderRegister);
+app.post('/register', passport.authenticate('local-signup', {
         successRedirect : '/vdash', // redirect to the secure profile section
         failureRedirect : '/register', // redirect back to the signup page if there is an error
         failureFlash : true // allow flash messages
     }));
+
+app.get('/vdash', isLoggedIn, users.renderVDash);
+//app.post('/postRegister', users.postRegister);
+
 
 // middleware to make sure the user is logged in
 function isLoggedIn(req, res, next) {
