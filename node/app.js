@@ -10,6 +10,8 @@ var home = require('./routes/index');
 var users = require('./routes/users');
 var mongo = require('mongodb');
 var app = express();
+var passport = require('passport');
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -23,11 +25,17 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// required for passport
+// ??????????????
+app.use(session({ secret: 'bonjour100011100001111001' })); // session secret
+app.use(passport.initialize());
+app.use(passport.session()); // persistent login sessions
+
 mongoose.connect('mongodb://localhost:27017/bonvoyage');
 mongoose.connection.on('error', function(err){
   if (err)
     console.log(err);
-})
+}) 
 
 app.get('/', home.index);
 app.get('/helloworld', home.helloworld);
@@ -35,6 +43,9 @@ app.get('/login', users.renderLogin);
 app.get('/register', users.renderRegister);
 app.post('/postRegister', users.postRegister);
 app.post('/postLogin', users.postLogin);
+
+
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
