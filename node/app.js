@@ -12,6 +12,7 @@ var mongo = require('mongodb');
 var app = express();
 var passport = require('passport');
 var session = require('express-session');
+var configDB = require('./config/database.js');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -31,11 +32,13 @@ app.use(session({ secret: 'bonjour' })); // session secret
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 
-mongoose.connect('mongodb://localhost:27017/bonvoyage');
+
+mongoose.connect(configDB.url);
 mongoose.connection.on('error', function(err){
   if (err)
     console.log(err);
 }) 
+
 
 app.get('/', home.index);
 app.get('/helloworld',home.helloworld);
