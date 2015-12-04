@@ -32,6 +32,7 @@ mongoose.connection.on('error', function(err){
 app.get('/', home.index);
 app.get('/helloworld', home.helloworld);
 app.get('/login', users.renderLogin);
+app.get('/sub_form', users.renderSubform);
 app.get('/register', users.renderRegister);
 app.post('/postRegister', users.postRegister);
 app.post('/postLogin', users.postLogin);

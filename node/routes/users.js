@@ -15,7 +15,11 @@ router.renderForm = function(req, res) {
     res.render('request_form.jade', {title: 'Leave Request Form'});
 }
 
-router.get('/request_form.jade', router.renderForm);
+router.renderSubform = function(req, res) {
+    res.render('submission_form.jade', {title: 'Submission Form'});
+}
+
+router.get('request_form.jade', router.renderForm);
 
 router.postLogin = function(req, res) {
     console.log("reach the server");

@@ -11,10 +11,5 @@ router.helloworld = function(req, res) {
 };
 
 
-function renderSuperDash(req, res) {
-    res.render('supervisor_dash.jade', {title: 'Supervisor Dashboard'});
-}
-
-
 module.exports = router;
 
