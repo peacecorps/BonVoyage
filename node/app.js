@@ -11,7 +11,7 @@ var users = require('./routes/users');
 var mongo = require('mongodb');
 var app = express();
 var passport = require('passport');
-
+var session = require('express-session');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -27,7 +27,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // required for passport
 // ??????????????
-app.use(session({ secret: 'bonjour100011100001111001' })); // session secret
+app.use(session({ secret: 'bonjour' })); // session secret
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 
@@ -38,14 +38,20 @@ mongoose.connection.on('error', function(err){
 }) 
 
 app.get('/', home.index);
-app.get('/helloworld', home.helloworld);
-app.get('/login', users.renderLogin);
+app.get('/helloworld',home.helloworld);
+app.get('/login', isLoggedIn, users.renderLogin);
 app.get('/register', users.renderRegister);
+app.get('/vdash', users.renderVDash);
 app.post('/postRegister', users.postRegister);
 app.post('/postLogin', users.postLogin);
 
-
-
+// middleware to make sure the user is logged in
+function isLoggedIn(req, res, next) {
+  if(req.isAuthenticated())
+    return next();
+  else
+    res.redirect('/login');
+}
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

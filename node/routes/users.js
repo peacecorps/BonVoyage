@@ -11,6 +11,10 @@ router.renderRegister = function(req, res) {
     res.render('register.jade', {title: 'Register'});
 }
 
+router.renderVDash = function(req, res) {
+	res.render('volunteer_dash.jade', {title: "Dash"});
+}
+
 router.postLogin = function(req, res) {
    console.log("reach the server");
     var resp = {};
