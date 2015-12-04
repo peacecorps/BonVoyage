@@ -6,7 +6,8 @@ var user_schema = mongoose.Schema({
 	name: String,
 	email: String,
 	password: String,
-	hash: String
+	hash: String,
+	group: String
 });
 
 var presave = function(finish_saving_callback) {
