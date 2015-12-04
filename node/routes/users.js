@@ -42,7 +42,6 @@ router.postRegister = function(req, res) {
 	var name = req.body.name;
 	var email = req.body.email;
 	var pass1 = req.body.pass1;
-	var pass2 = req.body.pass2;
 	var group = 'volunteer'
 
 	var newUser = new User({
