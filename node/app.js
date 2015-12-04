@@ -39,9 +39,9 @@ mongoose.connection.on('error', function(err){
 
 app.get('/', home.index);
 app.get('/helloworld',home.helloworld);
-app.get('/login', isLoggedIn, users.renderLogin);
+app.get('/login', users.renderLogin);
 app.get('/register', users.renderRegister);
-app.get('/vdash', users.renderVDash);
+app.get('/vdash', isLoggedIn, users.renderVDash);
 app.post('/postRegister', users.postRegister);
 app.post('/postLogin', users.postLogin);
 

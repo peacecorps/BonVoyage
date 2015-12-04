@@ -43,11 +43,13 @@ router.postRegister = function(req, res) {
 	var email = req.body.email;
 	var pass1 = req.body.pass1;
 	var pass2 = req.body.pass2;
+	var group = 'volunteer'
 
 	var newUser = new User({
 		name: name,
 		email: email,
 		password: pass1
+		group: group
 	});
 
 	newUser.save(function(err) {
