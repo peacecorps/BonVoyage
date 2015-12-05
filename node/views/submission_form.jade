@@ -5,28 +5,35 @@ block styles
   link(href='/css/default.date.css', rel='stylesheet')
   link(href='/css/selectize.css', rel='stylesheet')
   link(href='/css/selectize.bootstrap3.css', rel='stylesheet')
+  link(rel='stylesheet', href='/css/submission.css')
 
 block content
-  h1 Submission Form
 
-  form(action = '/submit' method = 'post')
-    div#date_leaving
-      input.datepicker(type='text', placeholder='Date Leaving', name = 'leaving')
+      .row
+        .col-xs-12.col-md-offset-4.col-md-4#form
+            div#form_header
+              h2 Submission Form
 
-    div#date_returning
-      input.datepicker(type='text', placeholder='Date Returning', name = 'returning')
+            div#form_data
 
-    div#country_selected
-      select#select-country(name = 'country')
+              form(action = '/submit' method = 'post')
+                div#date_leaving
+                  input.datepicker(type='text', class = 'form-control', placeholder='Date leaving', name = 'leaving')
 
-    div#reason
-      textarea(placeholder = 'Reason for leave:', name = 'reason')
+                div#date_returning
+                  input.datepicker(type='text', class = 'form-control', placeholder='Date returning', name = 'returning')
 
-    div#comments
-      textarea(placeholder = 'Additional comments:', name = 'comments')
+                div#country_selected
+                  select#select-country(class = 'form-control', placeholder = 'Country', name = 'country')
 
-    div#btn_submit
-      button(type='submit') Submit
+                div#reason
+                  textarea(class = 'form-control focusedInput', rows = '6', placeholder = 'Reason for leave:', name = 'reason')
+
+                div#comments
+                  textarea(class = 'form-control focusedInput', rows = '4' placeholder = 'Additional comments:', name = 'comments')
+
+                div#btn_submit
+                  button(type='button', class = 'btn btn-lg') Submit
 
 
 
