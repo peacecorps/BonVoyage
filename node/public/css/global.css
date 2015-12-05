@@ -22,7 +22,6 @@ body .top-nav .login-title {
 
 .login-container {
   padding: 15px;
-  background-color: #348DCC;
 }
 
 .login-container #remember{
@@ -89,4 +88,12 @@ body .top-nav .login-title {
 .form-signin input[type="password"] {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+.form-signin input.form-control {
+  margin-top: 5px;
+}
+
+.form-signin .alert .glyphicon {
+  padding-right: 5px;
 }

@@ -6,14 +6,14 @@ block styles
 block content
     .top-nav
       h3.login-title BonVoyage
-      button#register-btn.btn.btn.btn-default(type='button') Login
+      a#register-btn.btn.btn.btn-default(type='button', href='/login') Login
     .login-container
       form.form-signin(action='/register', method='post')
         h2.form-signin-heading
           p Register
 
         if message != ""
-          .alert.alert-info(role='alert')
+          .alert.alert-danger(role='alert')
             span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
             span= message
 

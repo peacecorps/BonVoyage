@@ -44,10 +44,11 @@ require('./config/passport.js')(passport); // pass passport for configuration
 
 // Get requests
 app.get('/', home.index);
-app.get('/sub_form', users.renderSubform);
+app.get('/sub_form', isLoggedIn, needsGroup("volunteer"), users.renderSubform);
 app.get('/login', isNotLoggedIn, users.renderLogin);
 app.get('/register', users.renderRegister);
 app.get('/vdash', isLoggedIn, needsGroup("volunteer"), users.renderVDash);
+
 // =================================
 // PLACEHOLDER FOR LOGOUT ==========
 // =================================
