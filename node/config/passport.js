@@ -55,7 +55,7 @@ module.exports = function(passport) {
 
                 // if there is no user with that email
                 // create the user
-                var newUser = new User();
+                var newUser            = new User();
 
                 // set the user's local credentials
                 newUser.email    = email;
@@ -95,11 +95,19 @@ module.exports = function(passport) {
                     return done(null, false, req.flash('loginMessage', 'No user found.')); // req.flash is the way to set flashdata using connect-flash
 
                 // if the user is found but the password is wrong
-                if (!user.comparePassword(password, function()))
-                    return done(null, false, req.flash('loginMessage', 'Oops! Wrong password.')); // create the loginMessage and save it to session as flashdata
+                user.comparePassword(password, function(err, valid) {
 
-                // all is well, return successful user
-                return done(null, user);
+            // check if
+                if (err) {
+                    console.log("Compare password error-ed: ");
+                    console.log(err);
+                }
+                if(!valid)
+                    return done(null,false,req.flash('loginMessage', 'Oops! Wrong password.'));
+                return done(null,user);
+                });
+                
+                
             });
 
         }));
