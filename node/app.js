@@ -32,7 +32,7 @@ app.use(flash());
 app.use(session({ secret: 'bonjour' })); // session secret
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
-
+app.use(flash()); // use connect-flash for flash messages stored in session
 
 mongoose.connect(configDB.url);
 mongoose.connection.on('error', function(err){
@@ -60,7 +60,7 @@ app.post('/register', passport.authenticate('local-signup', {
 app.post('/login', passport.authenticate('local-login', {
         successRedirect : '/vdash', // redirect to the secure profile section
         failureRedirect : '/login', // redirect back to the login page if there is an error
-        failureFlash : false // allow flash messages
+        failureFlash : true // allow flash messages
 }));
 
 // middleware to ensure the user is authenticated. If not, redirect to login page.
