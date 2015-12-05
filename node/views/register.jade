@@ -35,8 +35,10 @@ html(lang='en')
 
         button#signupInfo.submit-btn.btn.btn-lg.btn-primary.btn-block(type='submit')
           p.signin-text Sign Up
-
-
+        if message != ""
+          .alert.alert-info(role='alert')
+            span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
+            span= message
 
     // jQuery (for Bootstrap's JavaScript plugins)
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
