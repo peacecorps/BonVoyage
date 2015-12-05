@@ -59,6 +59,8 @@ module.exports = function(passport) {
 
                     newUser.email    = email;
                     newUser.password = password;
+                    newUser.name = req.body.name;
+                    newUser.group = "volunteer";
 
                     // save the user
                     newUser.save(function(err) {

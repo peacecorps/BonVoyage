@@ -15,6 +15,8 @@ router.renderVDash = function(req, res) {
 	res.render('volunteer_dash.jade', {title: "Dash"});
 }
 
+
+/*
 router.postLogin = function(req, res) {
    console.log("reach the server");
     var resp = {};
@@ -59,5 +61,5 @@ router.postRegister = function(req, res) {
 	});
 
 }
-
+*/
 module.exports = router;
