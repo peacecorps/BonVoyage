@@ -15,7 +15,6 @@
   "bugs": {
     "url": "https://github.com/PeaceCorps/BonVoyage/issues"
   },
-  "homepage": "https://github.com/PeaceCorps/BonVoyage"
-  
-  
+  "homepage": "https://github.com/PeaceCorps/BonVoyage",
+  "dependencies": {}
 }

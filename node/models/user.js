@@ -6,7 +6,8 @@ var user_schema = mongoose.Schema({
 	name: String,
 	email: String,
 	password: String,
-	hash: String
+	hash: String,
+	group: String
 });
 
 var presave = function(finish_saving_callback) {
@@ -22,6 +23,11 @@ var presave = function(finish_saving_callback) {
 	});
 	
 	
+};
+
+user_schema.methods.comparePassword = function(password, cb){
+	var current_user = this;
+	bcrypt.compare(password, current_user.hash, cb);
 };
 
 user_schema.pre("save", presave);

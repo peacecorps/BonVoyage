@@ -10,6 +10,10 @@ var home = require('./routes/index');
 var users = require('./routes/users');
 var mongo = require('mongodb');
 var app = express();
+var passport = require('passport');
+var session = require('express-session');
+var configDB = require('./config/database.js');
+var flash    = require('connect-flash');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -22,20 +26,69 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(flash());
 
-mongoose.connect('mongodb://localhost:27017/bonvoyage');
+// required for passport
+app.use(session({ secret: 'bonjour' })); // session secret
+app.use(passport.initialize());
+app.use(passport.session()); // persistent login sessions
+app.use(flash()); // use connect-flash for flash messages stored in session
+
+mongoose.connect(configDB.url);
 mongoose.connection.on('error', function(err){
   if (err)
     console.log(err);
 })
 
+require('./config/passport.js')(passport); // pass passport for configuration
+
+// Get requests
 app.get('/', home.index);
-app.get('/helloworld', home.helloworld);
-app.get('/login', users.renderLogin);
 app.get('/sub_form', users.renderSubform);
+app.get('/login', isNotLoggedIn, users.renderLogin);
 app.get('/register', users.renderRegister);
-app.post('/postRegister', users.postRegister);
-app.post('/postLogin', users.postLogin);
+app.get('/vdash', isLoggedIn, needsGroup("volunteer"), users.renderVDash);
+// =================================
+// PLACEHOLDER FOR LOGOUT ==========
+// =================================
+
+// Post requests
+app.post('/register', passport.authenticate('local-signup', {
+        successRedirect : '/vdash', // redirect to the dashboard
+        failureRedirect : '/register', // redirect back to the register page if there is an error
+        failureFlash : true // allow flash messages
+}));
+app.post('/login', passport.authenticate('local-login', {
+        successRedirect : '/vdash', // redirect to the dashboard
+        failureRedirect : '/login', // redirect back to the login page if there is an error
+        failureFlash : true // allow flash messages
+}));
+
+// middleware to ensure the user is authenticated. If not, redirect to login page.
+function isLoggedIn(req, res, next) {
+  if(req.isAuthenticated())
+    return next();
+  else
+    res.redirect('/login');
+}
+
+// middleware to redirect the user to the dashboard if they already logged in
+function isNotLoggedIn(req, res, next) {
+  if(req.isAuthenticated())
+    res.redirect('/vdash');
+  else
+    return next();
+}
+
+// middleware to check if the user is in the group that has access
+function needsGroup(group) {
+    return function(req, res, next) {
+    if (req.user && req.user.group === group)
+      next();
+    else
+      res.send(401, 'Unauthorized');
+    };
+}
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

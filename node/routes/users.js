@@ -4,22 +4,16 @@ var User = require("../models/user");
 
 
 router.renderLogin = function(req, res) {
-	res.render('login.jade', {title: 'Login'});
+	res.render('login.jade', {title: 'Login', message: req.flash('loginMessage')});
 }
 
 router.renderRegister = function(req, res) {
-    res.render('register.jade', {title: 'Register'});
-}
-
-router.renderForm = function(req, res) {
-    res.render('request_form.jade', {title: 'Leave Request Form'});
+    res.render('register.jade', {title: 'Register', message: req.flash('signupMessage')});
 }
 
 router.renderSubform = function(req, res) {
     res.render('submission_form.jade', {title: 'Submission Form'});
 }
-
-router.get('request_form.jade', router.renderForm);
 
 router.postLogin = function(req, res) {
     console.log("reach the server");
@@ -69,7 +63,9 @@ router.postRegister = function(req, res) {
 		else
 			console.log("success");
 	});
-
+}
+router.renderVDash = function(req, res) {
+	res.render('volunteer_dash.jade', {title: "Dash"});
 }
 
 module.exports = router;
