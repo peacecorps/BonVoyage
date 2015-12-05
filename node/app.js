@@ -27,7 +27,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // required for passport
-// ??????????????
 app.use(session({ secret: 'bonjour' })); // session secret
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
@@ -39,18 +38,24 @@ mongoose.connection.on('error', function(err){
     console.log(err);
 }) 
 
-
+// Get requests
 app.get('/', home.index);
 app.get('/helloworld',home.helloworld);
 app.get('/login', users.renderLogin);
 app.get('/register', users.renderRegister);
 app.get('/vdash', isLoggedIn, users.renderVDash);
-//app.post('/postRegister', users.postRegister);
-app.post('/postLogin', passport.authenticate('local-signup', {
-        successRedirect : '/vdash', // redirect to the secure profile section
-        failureRedirect : '/register', // redirect back to the signup page if there is an error
+
+// Post requests
+app.post('/postRegister', passport.authenticate('local-signup', {
+        successRedirect : '/login', // redirect to the login page
+        failureRedirect : '/register', // redirect back to the register page if there is an error
         failureFlash : true // allow flash messages
-    }));
+}));
+app.post('/postLogin', passport.authenticate('local-login', {
+        successRedirect : '/vdash', // redirect to the secure profile section
+        failureRedirect : '/login', // redirect back to the login page if there is an error
+        failureFlash : true // allow flash messages
+}));
 
 // middleware to make sure the user is logged in
 function isLoggedIn(req, res, next) {
