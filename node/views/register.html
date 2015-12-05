@@ -19,19 +19,19 @@
       <button id="register-btn" type="button" class="btn btn btn-default">Login</button>
     </div>
     <div class="login-container">
-      <form class="form-signin">
+      <form action="/register" method="post" class="form-signin">
         <h2 class="form-signin-heading">
           <p>Register</p>
         </h2>
-        <label for="inputName" class="sr-only">Enter Full Name</label>
-        <input id="inputName" type="text" placeholder="Enter Full Name" required="" autofocus="" class="form-control">
-        <label for="inputEmail" class="sr-only">Email address</label>
-        <input id="inputEmail" type="email" placeholder="Enter Email Address" required="" autofocus="" class="form-control">
-        <label for="inputPassword" class="sr-only">Password</label>
-        <input id="inputPassword" type="password" placeholder="Enter Password" required="" class="form-control">
-        <label for="inputPassword" class="sr-only">Password</label>
-        <input id="inputPassword" type="password" placeholder="Re-Enter Password" required="" class="form-control">
-        <button type="submit" class="submit-btn btn btn-lg btn-primary btn-block">
+        <label for="signupName" class="sr-only">Enter Full Name</label>
+        <input id="signupName" type="text" placeholder="Enter Full Name" required="" autofocus="" name="name" class="form-control">
+        <label for="signupEmail" class="sr-only">Email address</label>
+        <input id="signupEmail" type="email" placeholder="Enter Email Address" required="" autofocus="" name="email" class="form-control">
+        <label for="signupPassword" class="sr-only">Password</label>
+        <input id="signupPassword" type="password" placeholder="Enter Password" required="" name="password" class="form-control">
+        <label for="signupRePassword" class="sr-only">Password</label>
+        <input id="signupRePassword" type="password" placeholder="Re-Enter Password" required="" name="password2" class="form-control">
+        <button id="signupInfo" type="submit" class="submit-btn btn btn-lg btn-primary btn-block">
           <p class="signin-text">Sign Up</p>
         </button>
       </form>
@@ -40,5 +40,6 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <!-- Include all complied plugins-->
     <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/register.js"></script>
   </body>
 </html>
