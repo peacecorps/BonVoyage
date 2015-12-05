@@ -34,6 +34,10 @@ html(lang='en')
           p.signin-text Sign in
         a(href = '')
           p#forgot-text Forgot your password?
+        if message != ""
+          .alert.alert-info(role='alert')
+            span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
+            span= message
 
     // jQuery (for Bootstrap's JavaScript plugins)
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
