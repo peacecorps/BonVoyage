@@ -40,18 +40,17 @@ mongoose.connection.on('error', function(err){
 
 // Get requests
 app.get('/', home.index);
-app.get('/helloworld',home.helloworld);
 app.get('/login', users.renderLogin);
 app.get('/register', users.renderRegister);
 app.get('/vdash', isLoggedIn, users.renderVDash);
 
 // Post requests
-app.post('/postRegister', passport.authenticate('local-signup', {
+app.post('/register', passport.authenticate('local-signup', {
         successRedirect : '/login', // redirect to the login page
         failureRedirect : '/register', // redirect back to the register page if there is an error
         failureFlash : true // allow flash messages
 }));
-app.post('/postLogin', passport.authenticate('local-login', {
+app.post('/login', passport.authenticate('local-login', {
         successRedirect : '/vdash', // redirect to the secure profile section
         failureRedirect : '/login', // redirect back to the login page if there is an error
         failureFlash : true // allow flash messages

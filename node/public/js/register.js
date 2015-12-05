@@ -23,7 +23,7 @@ $(document).ready(function() {
 		        pass2: pass2
 		    },
 		    dataType: "json",
-		    url: "/postRegister",
+		    url: "/register",
 		    success: function(response_data, status, request) {
 		        if(response_data.success)
 		        	alert("hi Ben");

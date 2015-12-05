@@ -15,7 +15,7 @@ $(document).ready(function() {
 		        password: p
 		    },
 		    dataType: "json",
-		    url: "/postLogin",
+		    url: "/login",
 		    success: function(response_data, status, request) {
 		        if(response_data.success)
 		            window.location.href = '/helloworld';
