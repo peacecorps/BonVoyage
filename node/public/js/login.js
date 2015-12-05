@@ -11,7 +11,7 @@ $(document).ready(function() {
 		$.ajax({
 		    method: "POST",
 		    data: {
-		        userEmail: v,
+		        email: v,
 		        password: p
 		    },
 		    dataType: "json",

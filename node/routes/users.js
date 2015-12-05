@@ -47,7 +47,7 @@ router.postRegister = function(req, res) {
 	var newUser = new User({
 		name: name,
 		email: email,
-		password: pass1
+		password: pass1,
 		group: group
 	});
 

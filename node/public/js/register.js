@@ -19,8 +19,7 @@ $(document).ready(function() {
 		    data: {
 		        name: fullName,
 		        email: email,
-		        pass1: pass1,
-		        pass2: pass2
+		        password: pass1
 		    },
 		    dataType: "json",
 		    url: "/register",

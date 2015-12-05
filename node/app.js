@@ -38,11 +38,16 @@ mongoose.connection.on('error', function(err){
     console.log(err);
 }) 
 
+require('./config/passport.js')(passport); // pass passport for configuration
+
 // Get requests
 app.get('/', home.index);
 app.get('/login', users.renderLogin);
 app.get('/register', users.renderRegister);
 app.get('/vdash', isLoggedIn, users.renderVDash);
+// =================================
+// PLACEHOLDER FOR LOGOUT ==========
+// =================================
 
 // Post requests
 app.post('/register', passport.authenticate('local-signup', {
@@ -53,10 +58,10 @@ app.post('/register', passport.authenticate('local-signup', {
 app.post('/login', passport.authenticate('local-login', {
         successRedirect : '/vdash', // redirect to the secure profile section
         failureRedirect : '/login', // redirect back to the login page if there is an error
-        failureFlash : true // allow flash messages
+        failureFlash : false // allow flash messages
 }));
 
-// middleware to make sure the user is logged in
+// middleware to ensure the user is authenticated. If not, redirect to login page.
 function isLoggedIn(req, res, next) {
   if(req.isAuthenticated())
     return next();
