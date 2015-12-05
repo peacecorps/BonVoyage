@@ -43,7 +43,7 @@ mongoose.connection.on('error', function(err){
 app.get('/', home.index);
 app.get('/helloworld',home.helloworld);
 app.get('/login', users.renderLogin);
-app.get('/register', passport.authenticate);
+app.get('/register', users.renderRegister);
 app.get('/vdash', isLoggedIn, users.renderVDash);
 //app.post('/postRegister', users.postRegister);
 app.post('/postLogin', passport.authenticate('local-signup', {
