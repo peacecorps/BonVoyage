@@ -46,7 +46,7 @@ require('./config/passport.js')(passport); // pass passport for configuration
 app.get('/', home.index);
 app.get('/login', isNotLoggedIn, users.renderLogin);
 app.get('/register', users.renderRegister);
-app.get('/vdash', isLoggedIn, users.renderVDash);
+app.get('/vdash', isLoggedIn, needsGroup("volunteer"), users.renderVDash);
 // =================================
 // PLACEHOLDER FOR LOGOUT ==========
 // =================================
@@ -71,12 +71,22 @@ function isLoggedIn(req, res, next) {
     res.redirect('/login');
 }
 
-// middle to redirect the user to the dashboard if they already logged in
+// middleware to redirect the user to the dashboard if they already logged in
 function isNotLoggedIn(req, res, next) {
   if(req.isAuthenticated())
     res.redirect('/vdash');
   else
     return next();
+}
+
+// middleware to check if the user is in the group that has access
+function needsGroup(group) {
+    return function(req, res, next) {
+    if (req.user && req.user.group === group)
+      next();
+    else
+      res.send(401, 'Unauthorized');
+    };
 }
 
 // catch 404 and forward to error handler
