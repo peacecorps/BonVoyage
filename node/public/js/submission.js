@@ -1,8 +1,11 @@
 $(document).ready(function() {
      $('.datepicker').pickadate();
+
      var $select = $('#select-country').selectize({
         valueField: 'country_code',
         labelField: 'country',
+        searchField: ['country', 'country_code'],
+        sortField: 'country',
         onInitialize: function() {
             //Load the JSON file of the countries
             $.ajax({
@@ -20,7 +23,7 @@ $(document).ready(function() {
                     var selectize = $select[0].selectize;
                     selectize.addOption(arrCountries);
                     selectize.addOption("hi");
-                    selectize.refreshOptions();
+                    selectize.refreshOptions(false);
 
                     console.log(selectize);
                     console.log(arrCountries);

@@ -9,35 +9,26 @@ block styles
 block content
   h1 Submission Form
 
-  form(action='/my-handling-form-page', method='post')
-      div
-        label(for='name') Name:
-        input#name(type='text', name='user_name')
-      div
-        label(for='mail') E-mail:
-        input#mail(type='email', name='user_email')
-      div
-        label(for='msg') Message:
-        textarea#msg(name='user_message')
-      .button
-        button(type='submit') Send your message
+  form(action = '/submit' method = 'post')
+    div#date_leaving
+      input.datepicker(type='text', placeholder='Date Leaving', name = 'leaving')
+
+    div#date_returning
+      input.datepicker(type='text', placeholder='Date Returning', name = 'returning')
+
+    div#country_selected
+      select#select-country(name = 'country')
+
+    div#reason
+      textarea(placeholder = 'Reason for leave:', name = 'reason')
+
+    div#comments
+      textarea(placeholder = 'Additional comments:', name = 'comments')
+
+    div#btn_submit
+      button(type='submit') Submit
 
 
-
-  div#date_leaving
-    input.datepicker(type='text', placeholder='Date Leaving')
-
-  div#date_returning
-    input.datepicker(type='text', placeholder='Date Returning')
-
-  div#countrySelected
-    select#select-country
-
-  div#reason
-    textarea
-
-  div#comments
-    textarea
 
 
 

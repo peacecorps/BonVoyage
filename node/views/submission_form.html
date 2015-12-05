@@ -3,19 +3,52 @@
   <head>
     <title></title>
     <link rel="stylesheet" href="/css/bootstrap.min.css">
-    <link href="/css/pickadate.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/global.css">
+    <link href="/css/default.css" rel="stylesheet">
+    <link href="/css/default.date.css" rel="stylesheet">
+    <link href="/css/selectize.css" rel="stylesheet">
+    <link href="/css/selectize.bootstrap3.css" rel="stylesheet">
   </head>
   <body>
     <h1>Submission Form</h1>
-
-    <div class = "date_leaving">
-      <input class="datepicker" type="text" placeholder="Try me">
-
+    <form action="/my-handling-form-page" method="post">
+      <div>
+        <label for="name">Name:</label>
+        <input id="name" type="text" name="user_name">
+      </div>
+      <div>
+        <label for="mail">E-mail:</label>
+        <input id="mail" type="email" name="user_email">
+      </div>
+      <div>
+        <label for="msg">Message:</label>
+        <textarea id="msg" name="user_message"></textarea>
+      </div>
+      <div class="button">
+        <button type="submit">Send your message</button>
+      </div>
+    </form>
+    <div id="date_leaving">
+      <input type="text" placeholder="Date Leaving" class="datepicker">
+    </div>
+    <div id="date_returning">
+      <input type="text" placeholder="Date Returning" class="datepicker">
+    </div>
+    <div id="countrySelected">
+      <select id="select-country"></select>
+    </div>
+    <div id="reason">
+      <textarea></textarea>
+    </div>
+    <div id="comments">
+      <textarea></textarea>
     </div>
   </body>
   <!-- jQuery (for Bootstrap's JavaScript plugins)-->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
   <script src="js/bootstrap.min.js"></script>
+  <script src="js/picker.js"></script>
   <script src="js/picker.date.js"></script>
+  <script src="js/selectize.min.js"></script>
   <script src="js/submission.js"></script>
 </html>
