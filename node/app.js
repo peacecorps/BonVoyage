@@ -44,7 +44,7 @@ require('./config/passport.js')(passport); // pass passport for configuration
 
 // Get requests
 app.get('/', home.index);
-app.get('/login', users.renderLogin);
+app.get('/login', isNotLoggedIn, users.renderLogin);
 app.get('/register', users.renderRegister);
 app.get('/vdash', isLoggedIn, users.renderVDash);
 // =================================
@@ -53,12 +53,12 @@ app.get('/vdash', isLoggedIn, users.renderVDash);
 
 // Post requests
 app.post('/register', passport.authenticate('local-signup', {
-        successRedirect : '/login', // redirect to the login page
+        successRedirect : '/vdash', // redirect to the dashboard
         failureRedirect : '/register', // redirect back to the register page if there is an error
         failureFlash : true // allow flash messages
 }));
 app.post('/login', passport.authenticate('local-login', {
-        successRedirect : '/vdash', // redirect to the secure profile section
+        successRedirect : '/vdash', // redirect to the dashboard
         failureRedirect : '/login', // redirect back to the login page if there is an error
         failureFlash : true // allow flash messages
 }));
@@ -69,6 +69,14 @@ function isLoggedIn(req, res, next) {
     return next();
   else
     res.redirect('/login');
+}
+
+// middle to redirect the user to the dashboard if they already logged in
+function isNotLoggedIn(req, res, next) {
+  if(req.isAuthenticated())
+    res.redirect('/vdash');
+  else
+    return next();
 }
 
 // catch 404 and forward to error handler
