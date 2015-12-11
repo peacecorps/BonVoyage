@@ -9,6 +9,7 @@ var request_schema = mongoose.Schema({
 	is_pending: Boolean,
 	is_approved: Boolean,
 	description: String,
+	country: String,
 	comments: [{
 		email: String,
 		content: String,

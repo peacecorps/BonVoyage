@@ -66,6 +66,8 @@ app.post('/login', passport.authenticate('local-login', {
         failureFlash : true // allow flash messages
 }));
 
+app.post('/requests', users.postRequests);
+
 // middleware to ensure the user is authenticated. If not, redirect to login page.
 function isLoggedIn(req, res, next) {
   if(req.isAuthenticated())
