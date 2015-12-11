@@ -1,21 +1,127 @@
-doctype html
-html(lang='en')
-  head
-    meta(charset='utf-8')
-    meta(http-equiv='X-UA-Compatible', content='IE=edge')
-    meta(name='viewport', content='width=device-width, initial-scale=1')
-    title User Dashboard
-    // Reset CSS style
-    link(href='/css/reset.css', rel='stylesheet')
-    // Bootstrap
-    link(href='/css/bootstrap.min.css', rel='stylesheet')
+extends layout
 
-  body
-    include navigation.jade
-    .container
-      // Home page content
+block styles
+  link(rel='stylesheet', href='/css/volunteer_dash.css')
+block content
+  .row
+    .col-xs-12.col-md-offset-1.col-md-10
+
       .jumbotron
-        h1 Dummy
+        h2.dash_text Volunteer Dashboard
+        button.new-request-button.btn.btn-success.btn-block(type='button') Add New Leave Request
 
-    script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
-    script(src='/js/bootstrap.min.js')
+        .button-bar.btn-group.btn-group-justified
+          a.btn.btn-primary(href='#') Pending
+          a.btn.btn-primary(href='#') History
+
+
+        .table-responsive
+            table.table.table-striped
+              thead
+                tr
+                  th #
+                  th Header
+                  th Header
+                  th Header
+                  th Header
+              tbody
+                tr
+                  td 1,001
+                  td Lorem
+                  td ipsum
+                  td dolor
+                  td sit
+                tr
+                  td 1,002
+                  td amet
+                  td consectetur
+                  td adipiscing
+                  td elit
+                tr
+                  td 1,003
+                  td Integer
+                  td nec
+                  td odio
+                  td Praesent
+                tr
+                  td 1,003
+                  td libero
+                  td Sed
+                  td cursus
+                  td ante
+                tr
+                  td 1,004
+                  td dapibus
+                  td diam
+                  td Sed
+                  td nisi
+                tr
+                  td 1,005
+                  td Nulla
+                  td quis
+                  td sem
+                  td at
+                tr
+                  td 1,006
+                  td nibh
+                  td elementum
+                  td imperdiet
+                  td Duis
+                tr
+                  td 1,007
+                  td sagittis
+                  td ipsum
+                  td Praesent
+                  td mauris
+                tr
+                  td 1,008
+                  td Fusce
+                  td nec
+                  td tellus
+                  td sed
+                tr
+                  td 1,009
+                  td augue
+                  td semper
+                  td porta
+                  td Mauris
+                tr
+                  td 1,010
+                  td massa
+                  td Vestibulum
+                  td lacinia
+                  td arcu
+                tr
+                  td 1,011
+                  td eget
+                  td nulla
+                  td Class
+                  td aptent
+                tr
+                  td 1,012
+                  td taciti
+                  td sociosqu
+                  td ad
+                  td litora
+                tr
+                  td 1,013
+                  td torquent
+                  td per
+                  td conubia
+                  td nostra
+                tr
+                  td 1,014
+                  td per
+                  td inceptos
+                  td himenaeos
+                  td Curabitur
+                tr
+                  td 1,015
+                  td sodales
+                  td ligula
+                  td in
+                  td libero
+
+block scripts
+
+

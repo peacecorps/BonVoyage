@@ -1,31 +1,27 @@
-// Include JQuery
-script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
+// Static navbar
+nav.navbar.navbar-default
+  .container-fluid
+    .navbar-header
+      // This button will open the tabs in mobile view
+      button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#navbar', aria-expanded='false', aria-controls='navbar')
+        span.sr-only Toggle navigation
+        span.icon-bar
+        span.icon-bar
+        span.icon-bar
+      // peace corps logo
+      a.navbar-brand(href='http://www.peacecorps.gov/')
+        img(alt='PC', src='/image/PeaceCorps-Logo30.jpg')
+    #navbar.navbar-collapse.collapse
+      ul.nav.navbar-nav
+        li
+          a(href='home') Home
+        li
+          a(href='collection') Settings
+        li
+          a(href='inventory') Contact Us
 
-.container
-  // Static navbar
-  nav.navbar.navbar-default
-    .container-fluid
-      .navbar-header
-        // This button will open the tabs in mobile view
-        button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#navbar', aria-expanded='false', aria-controls='navbar')
-          span.sr-only Toggle navigation
-          span.icon-bar
-          span.icon-bar
-          span.icon-bar
-        // peace corps logo
-        a.navbar-brand(href='http://www.peacecorps.gov/')
-          img(alt='PC', src='/image/PeaceCorps-Logo30.jpg')
-      #navbar.navbar-collapse.collapse
-        ul.nav.navbar-nav
-          li
-            a(href='home') Home
-          li
-            a(href='collection') Settings
-          li
-            a(href='inventory') Contact Us
-
-        ul.nav.navbar-nav.navbar-right
-          // This should log user out
-          li
-            a(href='login') Logout
+      ul.nav.navbar-nav.navbar-right
+        // This should log user out
+        li
+          a(href='login') Logout
 
