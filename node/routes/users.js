@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var User = require("../models/user");
+var Request = require("../models/request");
 
 
 router.renderLogin = function(req, res) {
@@ -67,14 +68,33 @@ router.postRegister = function(req, res) {
 router.renderVDash = function(req, res) {
 	res.render('volunteer_dash.jade', {title: "Dash"});
 }
-router.getRequests = function(req, res){
-	if (req.user && req.user.group === "bonvoyage")
-      res.send(req.request.)
-    else if (req.user && req.user.group === "supervisor")
-    else if (req.user && req.user.group === "volunteer")
-    else
-      res.send(401, 'Unauthorized');
 
-    };
+
+router.getRequests = function(req, res){
+	if (req.user && req.user.group === "bonvoyage") {
+		Request.find(function (err, requests) {
+		  if (err) return console.error(err);
+		  console.log(requests);
+		});
+
+	} else if (req.user && req.user.group === "supervisor") {
+
+		Request.find(function (err, requests) {
+		  if (err) return console.error(err);
+		  console.log(requests);
+		});
+
+	} else if (req.user && req.user.group === "volunteer") {
+		Request.findOne({email: req.user.email}, function (err, requests) {
+		  if (err) return console.error(err);
+		  console.log(requests);
+		});
+
+
+	} else
+      	res.send(401, 'Unauthorized');
+
+};
+
 module.exports = router;
 
