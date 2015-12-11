@@ -74,20 +74,20 @@ router.getRequests = function(req, res){
 	if (req.user && req.user.group === "bonvoyage") {
 		Request.find(function (err, requests) {
 		  if (err) return console.error(err);
-		  console.log(requests);
+		  res.json(requests);
 		});
 
 	} else if (req.user && req.user.group === "supervisor") {
 
 		Request.find(function (err, requests) {
 		  if (err) return console.error(err);
-		  console.log(requests);
+		  res.json(requests);
 		});
 
 	} else if (req.user && req.user.group === "volunteer") {
-		Request.findOne({email: req.user.email}, function (err, requests) {
+		Request.find({email: req.user.email}, function (err, requests) {
 		  if (err) return console.error(err);
-		  console.log(requests);
+		  res.json(requests);
 		});
 
 

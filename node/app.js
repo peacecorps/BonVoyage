@@ -48,7 +48,7 @@ app.get('/sub_form', isLoggedIn, needsGroup("volunteer"), users.renderSubform);
 app.get('/login', isNotLoggedIn, users.renderLogin);
 app.get('/register', users.renderRegister);
 app.get('/vdash', isLoggedIn, needsGroup("volunteer"), users.renderVDash);
-app.get('/request',isLoggedIn,users.getRequests);
+app.get('/requests',isLoggedIn,users.getRequests);
 
 // =================================
 // PLACEHOLDER FOR LOGOUT ==========
