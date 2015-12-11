@@ -2,6 +2,7 @@
 
 {
 	email: String,
+	submit_date: Date,
 	start_date: Date,
 	end_date: Date,
 	is_pending: Boolean
@@ -20,3 +21,4 @@ IF supervisor: gets all from their volunteers
 IF volunteer: gets yours
 Requires administer authentication
 Recommendation: Insert some dummy data that can be used for testing
+
