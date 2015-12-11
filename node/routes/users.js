@@ -67,5 +67,14 @@ router.postRegister = function(req, res) {
 router.renderVDash = function(req, res) {
 	res.render('volunteer_dash.jade', {title: "Dash"});
 }
+router.getRequests = function(req, res){
+	if (req.user && req.user.group === "bonvoyage")
+      res.send(req.request.)
+    else if (req.user && req.user.group === "supervisor")
+    else if (req.user && req.user.group === "volunteer")
+    else
+      res.send(401, 'Unauthorized');
 
+    };
 module.exports = router;
+
