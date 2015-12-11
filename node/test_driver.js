@@ -12,10 +12,10 @@ mongoose.connection.on('error', function(err){
 
 
 var newUser = new User({
-	name: "bonvoyage",
-	email: "be@game.com",
-	password: "pass1",
-	hash: "yeaa"
+	name: "Loh",
+	email: "loh@umd.edu",
+	password: "goterps",
+	group: "supervisor"
 });
 
 newUser.save(function(err) {
