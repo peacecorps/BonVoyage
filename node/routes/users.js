@@ -5,15 +5,32 @@ var Request = require("../models/request");
 
 
 router.renderLogin = function(req, res) {
-	res.render('login.jade', {title: 'Login', message: req.flash('loginMessage')});
+	res.render('login.jade', {
+		title: 'Login', 
+		message: req.flash('loginMessage'), 
+		links: [
+			{ text: "Register", href: "/register" }
+		]
+	});
 }
 
 router.renderRegister = function(req, res) {
-    res.render('register.jade', {title: 'Register', message: req.flash('signupMessage')});
+    res.render('register.jade', {
+    	title: 'Register', 
+    	message: req.flash('signupMessage'), 
+		links: [
+			{ text: "Login", href: "/login" }
+		]
+	});
 }
 
 router.renderSubform = function(req, res) {
-    res.render('submission_form.jade', {title: 'Submission Form'});
+    res.render('submission_form.jade', {
+    	title: 'Submission Form',
+    	links: [
+    		{ text: "Dashboard", href: "/dashboard" }
+    	]
+    });
 }
 
 router.postLogin = function(req, res) {
@@ -22,8 +39,6 @@ router.postLogin = function(req, res) {
 
     var email = req.body.userEmail;
     var password = req.body.password;
-
-    console.log(password);
 
     User.findOne({ email: email}, function(err, object) {
     	if (object) {
@@ -43,6 +58,10 @@ router.postLogin = function(req, res) {
     })
 
 
+}
+
+router.postLogout = function(req, res) {
+	console.log("Logging out");
 }
 
 router.postRegister = function(req, res) {
@@ -71,7 +90,6 @@ router.postRequests = function(req, res) {
 	var d2 = req.body.returning;
 	var country = req.body.country;
 	var description = req.body.reason;
-
 
 	var newRequest = new Request({
 

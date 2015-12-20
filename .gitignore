@@ -2,6 +2,12 @@
 node/logs
 node/*.log
 
+# Swp files
+node/**/*.swp
+
+# HTML builds
+node/views/*.html
+
 # Runtime data
 node/pids
 node/*.pid

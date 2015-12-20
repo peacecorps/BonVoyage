@@ -14,14 +14,14 @@ nav.navbar.navbar-default
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav
         li
-          a(href='home') Home
-        li
-          a(href='collection') Settings
-        li
-          a(href='inventory') Contact Us
+          a(href='#') BonVoyage
+        if links
+          for link in links
+            li
+              a(href=link.href)=link.text
 
       ul.nav.navbar-nav.navbar-right
         // This should log user out
         li
-          a(href='login') Logout
+          a(href='#')#logout Logout
 

@@ -14,6 +14,7 @@ var passport = require('passport');
 var session = require('express-session');
 var configDB = require('./config/database.js');
 var flash    = require('connect-flash');
+var logout = require('express-passport-logout');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -60,11 +61,19 @@ app.post('/register', passport.authenticate('local-signup', {
         failureRedirect : '/register', // redirect back to the register page if there is an error
         failureFlash : true // allow flash messages
 }));
+
 app.post('/login', passport.authenticate('local-login', {
         successRedirect : '/vdash', // redirect to the dashboard
         failureRedirect : '/login', // redirect back to the login page if there is an error
         failureFlash : true // allow flash messages
 }));
+
+app.post('/logout', function(req, res) {
+  console.log("logging out");
+  req.logout();
+  req.session.destroy();
+  res.redirect('/login');
+});
 
 app.post('/requests', users.postRequests);
 
