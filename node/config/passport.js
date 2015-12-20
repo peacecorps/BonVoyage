@@ -58,7 +58,7 @@ module.exports = function(passport) {
                     // set the user's local credentials
 
                     newUser.email    = email;
-                    newUser.password = password;
+                    newUser.hash = password; // This password will be hashed, and in the process overwrite the plain text password we just stored into .hash
                     newUser.name = req.body.name;
                     newUser.group = "volunteer";
 

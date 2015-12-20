@@ -4,8 +4,7 @@ var bcrypt = require("bcrypt-nodejs");
 
 var user_schema = mongoose.Schema({
 	name: String,
-	email: String,
-	password: String,
+	email: {type: String, index: {unique: true}}, // Prevent MongoDB from ever saving two duplicate emails
 	hash: String,
 	group: String
 });
@@ -15,7 +14,8 @@ var presave = function(finish_saving_callback) {
 	console.log("presave");
 	bcrypt.genSalt(10, function(err, salt) {
 		// console.log(salt);
-		bcrypt.hash(current_user.password, salt, null, function(err, password_hash){
+		var plain_text_password = current_user.hash; // new passwords are set to the hash and then overwritten below
+		bcrypt.hash(plain_text_password, salt, null, function(err, password_hash){
 			// console.log(password_hash);
 			current_user.hash = password_hash;
 			finish_saving_callback();
