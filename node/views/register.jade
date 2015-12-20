@@ -4,9 +4,6 @@ block styles
     // Register page style
     link(href='/css/register.css', rel='stylesheet')
 block content
-    .top-nav
-      h3.login-title BonVoyage
-
     .login-container
       form.form-signin(action='/register', method='post')
         h2.form-signin-heading
@@ -27,8 +24,7 @@ block content
         label.sr-only(for='signupRePassword') Password
         input#signupRePassword.form-control(type='password', placeholder='Re-Enter Password', required='', name='password2')
 
-        button#signupInfo.submit-btn.btn.btn-lg.btn-primary.btn-block(type='submit')
-          p.signin-text Sign Up
+        button#signupInfo.submit-btn.btn.btn-lg.btn-primary.btn-block(type='submit') Sign Up
 
 
 block scripts

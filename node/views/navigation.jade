@@ -10,18 +10,17 @@ nav.navbar.navbar-default
         span.icon-bar
       // peace corps logo
       a.navbar-brand(href='http://www.peacecorps.gov/')
-        img(alt='PC', src='/image/PeaceCorps-Logo30.jpg')
+        img(src='/image/peace-corps.svg')
+      a.navbar-brand(href='/dashboard') BonVoyage
     #navbar.navbar-collapse.collapse
       ul.nav.navbar-nav
-        li
-          a(href='#') BonVoyage
         if links
           for link in links
-            li
+            li(class=(link.active ? "active" : ""))
               a(href=link.href)=link.text
-
-      ul.nav.navbar-nav.navbar-right
-        // This should log user out
-        li
-          a(href='#')#logout Logout
+      if !hideLogout
+        ul.nav.navbar-nav.navbar-right
+          // This should log user out
+          li
+            a(href='#')#logout Logout
 

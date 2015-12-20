@@ -8,7 +8,8 @@ block content
 
       .jumbotron
         h2.dash_text Volunteer Dashboard
-        button.new-request-button.btn.btn-success.btn-block(type='button') Add New Leave Request
+        form(action="/dashboard/submit")
+          button.new-request-button.btn.btn-success.btn-block(type='submit') Add New Leave Request
 
         .button-bar.btn-group.btn-group-justified
           a.btn.btn-primary(href='#') Pending

@@ -9,8 +9,10 @@ router.renderLogin = function(req, res) {
 		title: 'Login', 
 		message: req.flash('loginMessage'), 
 		links: [
+			{ text: "Login", href: "/login", active: true },
 			{ text: "Register", href: "/register" }
-		]
+		],
+		hideLogout: true
 	});
 }
 
@@ -19,8 +21,10 @@ router.renderRegister = function(req, res) {
     	title: 'Register', 
     	message: req.flash('signupMessage'), 
 		links: [
-			{ text: "Login", href: "/login" }
-		]
+			{ text: "Login", href: "/login" },
+			{ text: "Register", href: "/register", active: true }
+		],
+		hideLogout: true
 	});
 }
 
@@ -28,7 +32,8 @@ router.renderSubform = function(req, res) {
     res.render('submission_form.jade', {
     	title: 'Submission Form',
     	links: [
-    		{ text: "Dashboard", href: "/dashboard" }
+			{ text: "Dashboard", href: "/dashboard" },
+			{ text: "Submit a Request", href: "/dashboard/submit", active: true }
     	]
     });
 }
@@ -63,8 +68,14 @@ router.postRequests = function(req, res) {
 	});
 }
 
-router.renderVDash = function(req, res) {
-	res.render('volunteer_dash.jade', {title: "Dash"});
+router.renderDashboard = function(req, res) {
+	res.render('volunteer_dash.jade', {
+		title: "Dash",
+		links: [
+			{ text: "Dashboard", href: "/dashboard", active: true },
+			{ text: "Submit a Request", href: "/dashboard/submit" }
+		]
+	});
 }
 
 

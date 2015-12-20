@@ -8,14 +8,8 @@ body .top-nav .login-title {
   color: #ffffff;
 }
 
-.top-nav #register-btn {
-  position: absolute;
-  top: 18px;
-  right: 15px;
-  background-color: #b1e9f2;
-  color: #5296ad;
-  font-weight: bold;
-  border: 3px solid #000000;
+.navbar-brand img {
+  height:100%;
 }
 
 /* Form Login */
@@ -34,10 +28,6 @@ body .top-nav .login-title {
   margin: 0 auto;
 }
 
-.form-signin #inputPassword {
-  margin-top: 2px;
-}
-
 .form-signin #forgot-text {
   margin-top: 5px;
   text-align: center;
@@ -54,6 +44,7 @@ body .top-nav .login-title {
 }
 
 .form-signin .submit-btn {
+  margin-top: 15px;
   background-color: #cc6934;
 }
 
@@ -80,15 +71,6 @@ body .top-nav .login-title {
 .form-signin .form-control:focus {
   z-index: 2;
 }
-.form-signin input[type="email"] {
-  margin-bottom: -1px;
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-.form-signin input[type="password"] {
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
 
 .form-signin input.form-control {
   margin-top: 5px;
@@ -96,4 +78,8 @@ body .top-nav .login-title {
 
 .form-signin .alert .glyphicon {
   padding-right: 5px;
+}
+
+.btn-lg {
+  border-radius: 4px; 
 }
