@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/global.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+    <!-- Login page style-->
+    <link href="/css/login.css" rel="stylesheet">
+  </head>
+  <body></body>
+  <div class="container-fluid">
+    <div class="top-nav">
+      <h3 class="login-title">BonVoyage</h3><a id="register-btn" href="/register" type="button" class="btn btn btn-default">Register</a>
+    </div>
+    <div class="login-container">
+      <form action="/login" method="post" class="form-signin">
+        <h2 class="form-signin-heading">
+          <p>Login</p>
+        </h2>
+        <div role="alert" class="alert alert-danger"><span aria-hidden="true" class="glyphicon glyphicon-exclamation-sign"></span><span></span></div>
+        <label for="inputEmail" class="sr-only">Email address</label>
+        <input id="inputEmail" type="text" placeholder="Email address" required="" autofocus="" name="email" class="form-control">
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input id="inputPassword" type="password" placeholder="Password" required="" name="password" class="form-control">
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" value="remember-me">
+            <p id="remember">Remember me</p>
+          </label>
+        </div>
+        <button id="submitInfo" type="submit" class="submit-btn btn btn-lg btn-primary btn-block">
+          <p class="signin-text">Sign in</p>
+        </button><a href="">
+          <p id="forgot-text">Forgot your password?</p></a>
+      </form>
+    </div>
+  </div>
+  <!-- jQuery (for Bootstrap's JavaScript plugins)-->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+</html>

@@ -16,7 +16,7 @@ block content
 
             div#form_data
 
-              form(action = '/submit' method = 'post')
+              form(action = '/requests' method = 'post')
                 div#date_leaving
                   input.datepicker(type='text', class = 'form-control', placeholder='Date leaving', name = 'leaving')
 
@@ -33,7 +33,7 @@ block content
                   textarea(class = 'form-control focusedInput', rows = '4' placeholder = 'Additional comments:', name = 'comments')
 
                 div#btn_submit
-                  button(type='button', class = 'btn btn-lg') Submit
+                  button(type='submit', class = 'btn btn-lg') Submit
 
 
 

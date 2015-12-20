@@ -1,0 +1,34 @@
+1. create a new collection to store
+
+{
+	email: String,
+	submit_date: Date,
+	start_date: Date,
+	end_date: Date,
+	is_pending: Boolean
+	is_approved: Boolean,
+	description: String,
+	comments: [Comment]
+}
+
+
+
+2. GET /requests
+
+Gets requests made on the system based on the authentication level
+IF admin: gets all
+IF supervisor: gets all from their volunteers
+IF volunteer: gets yours
+Requires administer authentication
+Recommendation: Insert some dummy data that can be used for testing
+
+
+
+3. POST /requests (for sub_form)
+
+- add country
+
+Creates a new request using data from the body of the POST request
+Must be an administrator OR have the same email as that of the request
+
+

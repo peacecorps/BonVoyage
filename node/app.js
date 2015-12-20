@@ -48,6 +48,7 @@ app.get('/sub_form', isLoggedIn, needsGroup("volunteer"), users.renderSubform);
 app.get('/login', isNotLoggedIn, users.renderLogin);
 app.get('/register', users.renderRegister);
 app.get('/vdash', isLoggedIn, needsGroup("volunteer"), users.renderVDash);
+app.get('/requests',isLoggedIn,users.getRequests);
 
 // =================================
 // PLACEHOLDER FOR LOGOUT ==========
@@ -64,6 +65,8 @@ app.post('/login', passport.authenticate('local-login', {
         failureRedirect : '/login', // redirect back to the login page if there is an error
         failureFlash : true // allow flash messages
 }));
+
+app.post('/requests', users.postRequests);
 
 // middleware to ensure the user is authenticated. If not, redirect to login page.
 function isLoggedIn(req, res, next) {
