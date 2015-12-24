@@ -82,6 +82,10 @@
     color: #392F20; }
     #htmlwrapper .navbar li.active a:hover {
       color: #000; }
+  #htmlwrapper .navbar .navbar-toggle span.icon-bar {
+    background-color: #e7e7e7; }
+  #htmlwrapper .navbar .navbar-toggle:focus span.icon-bar, #htmlwrapper .navbar .navbar-toggle:hover span.icon-bar {
+    background-color: #170d00; }
 
 #htmlwrapper .login-container {
   padding: 15px; }
@@ -107,8 +111,6 @@
   #htmlwrapper .form-signin .form-signin-heading,
   #htmlwrapper .form-signin .checkbox {
     margin-bottom: 10px; }
-  #htmlwrapper .form-signin .alert .glyphicon {
-    padding-right: 5px; }
   #htmlwrapper .form-signin .checkbox {
     font-weight: normal; }
   #htmlwrapper .form-signin .form-control {
@@ -126,3 +128,9 @@
 
 #htmlwrapper .picker__weekday {
   text-align: center; }
+
+#htmlwrapper .alert-danger {
+  border-color: #a94442; }
+
+#htmlwrapper .alert .glyphicon {
+  padding-right: 5px; }

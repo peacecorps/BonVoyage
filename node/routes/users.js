@@ -3,6 +3,10 @@ var router = express.Router();
 var User = require("../models/user");
 var Request = require("../models/request");
 var Access = require("../config/access");
+var validator = require('validator');
+var fs = require('fs');
+var moment = require('moment');
+var countries_dictionary = JSON.parse(fs.readFileSync("public/data/countryList.json", 'utf8'));
 
 router.renderLogin = function(req, res) {
 	res.render('login.jade', {
@@ -34,38 +38,45 @@ router.renderSubform = function(req, res) {
     	links: [
 			{ text: "Dashboard", href: "/dashboard" },
 			{ text: "Submit a Request", href: "/dashboard/submit", active: true }
-    	]
+    	],
+    	message: req.flash('submissionFlash')
     });
 }
 
-router.postLogout = function(req, res) {
-	console.log("Logging out");
-}
-
 router.postRequests = function(req, res) {
-	var d1 = req.body.leaving;
-	var d2 = req.body.returning;
-	var country = req.body.country;
+	format = "DDD MMMM, YYYY";
+	var d1 = moment(req.body.leaving, format);
+	var d2 = moment(req.body.returning, format);
+	var cc = req.body.country;
 	var description = req.body.reason;
 
-	var newRequest = new Request({
+	if (!(d1.isBefore(d2) || d1.isSame(d2))) {
+		req.flash('submissionFlash', 'The dates you have entered are not valid.');
+		res.redirect('/dashboard/submit');
+	} else if (Object.keys(countries_dictionary).indexOf(cc) == -1) {
+		req.flash('submissionFlash', 'The country that you have selected is not a valid country.');
+		res.redirect('/dashboard/submit');
+	} else {
+		var newRequest = new Request({
+			email: req.user.email,
+			start_date: d1,
+			end_date: d2,
+			country: countries_dictionary[cc],
+			is_pending: true,
+			is_approved: false,
+			description: description
+		});
 
-		email: req.user.email,
-		start_date: d1,
-		end_date: d2,
-		country: country,
-		is_pending: true,
-		is_approved: false,
-		description: description
-
-	});
-
-	newRequest.save(function(err) {
-		if (err)
-			console.log(err);
-		else
-			res.redirect('/dashboard');
-	});
+		newRequest.save(function(err) {
+			if (err) {
+				req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
+				res.redirect('/dashboard/submit');
+			} else {
+				req.flash('dashboardFlash', 'Request successfully saved.');
+				res.redirect('/dashboard');
+			}
+		});
+	}
 }
 
 router.renderDashboard = function(req, res) {
@@ -74,7 +85,8 @@ router.renderDashboard = function(req, res) {
 		links: [
 			{ text: "Dashboard", href: "/dashboard", active: true },
 			{ text: "Submit a Request", href: "/dashboard/submit" }
-		]
+		],
+		message: req.flash('dashboardFlash')
 	});
 }
 

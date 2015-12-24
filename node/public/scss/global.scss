@@ -108,6 +108,17 @@
 				}
 			}
 		}
+
+		.navbar-toggle {
+			span.icon-bar {
+				background-color: #e7e7e7;
+			}
+			&:focus, &:hover {
+				span.icon-bar {
+					background-color: $fg-color-dark-hover;
+				}
+			}
+		}
 	}
 
 	.login-container {
@@ -147,9 +158,6 @@
 		.checkbox {
 			margin-bottom: 10px;
 		}
-		.alert .glyphicon {
-			padding-right: 5px;
-		}
 		.checkbox {
 			font-weight: normal;
 		}
@@ -172,5 +180,13 @@
 
 	.picker__weekday {
 		text-align: center;
+	}
+
+	.alert-danger {
+		border-color: #a94442
+	}
+	
+	.alert .glyphicon {
+		padding-right: 5px;
 	}
 }

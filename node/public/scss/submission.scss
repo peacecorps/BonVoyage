@@ -1,7 +1,7 @@
 
 // @import 'mixins';
 
-input, select, button {
+input, select, button:not(.navbar-toggle) {
     width: 100%;
     margin: 10px auto;
 }

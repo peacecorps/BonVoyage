@@ -13,6 +13,11 @@ block content
 
       .jumbotron
         h2 Submission Form
+        
+        if message != ""
+          .alert.alert-danger(role='alert')
+            span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
+            span= message
 
         form(action='/requests' method='post')
           input.form-control.datepicker(type='text', placeholder='Date leaving', name='leaving')

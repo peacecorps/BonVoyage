@@ -36,6 +36,13 @@ app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 
+// Pass the access level to our Jade templates
+app.use(function(req,res,next) {
+  if (req.user)
+    res.locals.access = req.user.access;
+  next();
+});
+
 mongoose.connect(configDB.url);
 mongoose.connection.on('error', function(err){
   if (err)
@@ -52,10 +59,6 @@ app.get('/dashboard', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderDas
 app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderSubform);
 app.get('/requests',isLoggedIn,users.getRequests);
 app.get('/requests/past',isLoggedIn,users.getPastRequests);
-
-// =================================
-// PLACEHOLDER FOR LOGOUT ==========
-// =================================
 
 // Post requests
 app.post('/register', passport.authenticate('local-signup', {
@@ -75,7 +78,7 @@ app.post('/logout', function(req, res) {
   res.redirect('/login');
 });
 
-app.post('/requests', users.postRequests);
+app.post('/requests',isLoggedIn, users.postRequests);
 
 app.post('/promote', isLoggedIn, needsAccess(Access.SUPERVISOR), users.promote);
 
