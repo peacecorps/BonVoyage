@@ -1,1 +1,0 @@
-// Scrape the travel warnings and alerts from the US government page
