@@ -7,7 +7,7 @@ block content
     .col-xs-12.col-md-offset-1.col-md-10
 
       .jumbotron
-        h2.dash_text Volunteer Dashboard
+        h2.dash_text Dashboard
         form(action="/dashboard/submit")
           button.new-request-button.btn.btn-success.btn-block(type='submit') Add New Leave Request
 
@@ -20,7 +20,7 @@ block content
         div.tab-content
           for table_id in ['pending', 'past']
             .fade.in.tab-pane.table-responsive(id=table_id, class=(table_id == 'pending' ? "active": ""))
-                table.table.table-striped.table-hovered.table-bordered
+                table.request-table.table.table-striped.table-hovered.table-bordered
                   thead
                     tr
                       th #

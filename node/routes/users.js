@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 var User = require("../models/user");
 var Request = require("../models/request");
-
+var Access = require("../config/access");
 
 router.renderLogin = function(req, res) {
 	res.render('login.jade', {
@@ -80,26 +80,24 @@ router.renderDashboard = function(req, res) {
 
 
 router.getRequests = function(req, res){
-	if (req.user && req.user.group === "bonvoyage") {
+	if (req.user && req.user.access === Access.ADMIN) {
 		Request.find(function (err, requests) {
 		  if (err) return console.error(err);
 		  res.json(requests);
 		});
 
-	} else if (req.user && req.user.group === "supervisor") {
+	} else if (req.user && req.user.access === Access.SUPERVISOR) {
 
 		Request.find(function (err, requests) {
 		  if (err) return console.error(err);
 		  res.json(requests);
 		});
 
-	} else if (req.user && req.user.group === "volunteer") {
+	} else if (req.user && req.user.access === Access.VOLUNTEER) {
 		Request.find({email: req.user.email}, function (err, requests) {
 		  if (err) return console.error(err);
 		  res.json(requests);
 		});
-
-
 	} else
       	res.send(401, 'Unauthorized');
 };
@@ -107,6 +105,15 @@ router.getRequests = function(req, res){
 router.getPastRequests = function(req, res){
 	return []; // TODO: Albert + Ben
 };
+
+router.promote = function(req, res) {
+	email = req.body.email;
+	access = req.body.access;
+	User.update({ email: email }, { $set: { access: access } }, function(err, numAffected) {
+		if (err) console.log(err);
+		else console.log(numAffected);
+	});
+}
 
 module.exports = router;
 

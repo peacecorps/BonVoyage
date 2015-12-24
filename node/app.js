@@ -15,6 +15,7 @@ var session = require('express-session');
 var configDB = require('./config/database.js');
 var flash    = require('connect-flash');
 var logout = require('express-passport-logout');
+var Access = require("./config/access");
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -47,8 +48,8 @@ require('./config/passport.js')(passport); // pass passport for configuration
 app.get('/', home.index);
 app.get('/login', isNotLoggedIn, users.renderLogin);
 app.get('/register', users.renderRegister);
-app.get('/dashboard', isLoggedIn, needsGroup("volunteer"), users.renderDashboard);
-app.get('/dashboard/submit', isLoggedIn, needsGroup("volunteer"), users.renderSubform);
+app.get('/dashboard', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderDashboard);
+app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderSubform);
 app.get('/requests',isLoggedIn,users.getRequests);
 app.get('/requests/past',isLoggedIn,users.getPastRequests);
 
@@ -76,6 +77,8 @@ app.post('/logout', function(req, res) {
 
 app.post('/requests', users.postRequests);
 
+app.post('/promote', isLoggedIn, needsAccess(Access.SUPERVISOR), users.promote);
+
 // middleware to ensure the user is authenticated. If not, redirect to login page.
 function isLoggedIn(req, res, next) {
   if(req.isAuthenticated())
@@ -92,13 +95,13 @@ function isNotLoggedIn(req, res, next) {
     return next();
 }
 
-// middleware to check if the user is in the group that has access
-function needsGroup(group) {
+// middleware to check if the user is at least that access level
+function needsAccess(access) {
     return function(req, res, next) {
-    if (req.user && req.user.group === group)
-      next();
-    else
-      res.send(401, 'Unauthorized');
+      if (req.user && req.user.access >= access)
+        next();
+      else
+        res.status(401).send("Unauthorized");
     };
 }
 

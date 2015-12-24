@@ -60,7 +60,7 @@ module.exports = function(passport) {
                     newUser.email    = email;
                     newUser.hash = password; // This password will be hashed, and in the process overwrite the plain text password we just stored into .hash
                     newUser.name = req.body.name;
-                    newUser.group = "volunteer";
+                    newUser.access = 0;
 
                     // save the user
                     newUser.save(function(err) {

@@ -8,42 +8,24 @@ block styles
   link(rel='stylesheet', href='/css/submission.css')
 
 block content
+  .row
+    .col-xs-12.col-md-offset-1.col-md-10
 
-      .row
-        .col-xs-12.col-md-offset-4.col-md-4#form
-            div#form_header
-              h2 Submission Form
+      .jumbotron
+        h2 Submission Form
 
-            div#form_data
-
-              form(action = '/requests' method = 'post')
-                div#date_leaving
-                  input.datepicker(type='text', class = 'form-control', placeholder='Date leaving', name = 'leaving')
-
-                div#date_returning
-                  input.datepicker(type='text', class = 'form-control', placeholder='Date returning', name = 'returning')
-
-                div#country_selected
-                  select#select-country(class = 'form-control', placeholder = 'Country', name = 'country')
-
-                div#reason
-                  textarea(class = 'form-control focusedInput', rows = '6', placeholder = 'Reason for leave:', name = 'reason')
-
-                div#comments
-                  textarea(class = 'form-control focusedInput', rows = '4' placeholder = 'Additional comments:', name = 'comments')
-
-                div#btn_submit
-                  button(type='submit', class = 'btn btn-lg') Submit
-
-
-
-
+        form(action='/requests' method='post')
+          input.form-control.datepicker(type='text', placeholder='Date leaving', name='leaving')
+          input.form-control.datepicker(type='text', placeholder='Date returning', name='returning')
+          select.form-control#select-country(placeholder='Country', name='country')
+          textarea.form-control(rows='6', placeholder='Reason for leave:', name='reason')
+          button.btn(type='submit') Submit
 
 block scripts
-    script(src = '/js/picker.js')
-    script(src = '/js/picker.date.js')
-    script(src = '/js/selectize.min.js')
-    script(src = '/js/submission.js')
+  script(src='/js/picker.js')
+  script(src='/js/picker.date.js')
+  script(src='/js/selectize.min.js')
+  script(src='/js/submission.js')
 
 
 

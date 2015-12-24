@@ -24,9 +24,19 @@
 		background-color: $fg-color-light-hover;
 	}
 
-	.form-control:focus {
+	.form-control:focus, 
+	.picker__input--active, 
+	.selectize-input.focus {
 		border-color: $fg-color-light;
-		box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(60, 127, 140, 0.6);
+		// box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(60, 127, 140, 0.6);
+		-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(60, 127, 140,.6);
+		-moz-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(60, 127, 140,.6);
+		box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(60, 127, 140,.6);
+	}
+
+	.datepicker {
+		background-color: #fff;
+		cursor: pointer;
 	}
 
 	h2 {
@@ -57,7 +67,14 @@
 			}
 		}
 	}
-	table {
+
+	@media screen and (max-width: 768px) {
+		.jumbotron {
+			padding: 10px;
+		}
+	}
+
+	.request-table {
 		margin-top: 20px;
 		margin-bottom: 0;
 		thead {
@@ -151,5 +168,9 @@
 		input.form-control {
 			margin-top: 5px;
 		}
+	}
+
+	.picker__weekday {
+		text-align: center;
 	}
 }
