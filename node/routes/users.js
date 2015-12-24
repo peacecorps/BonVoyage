@@ -64,13 +64,13 @@ router.postRequests = function(req, res) {
 		if (err)
 			console.log(err);
 		else
-			console.log("success");
+			res.redirect('/dashboard');
 	});
 }
 
 router.renderDashboard = function(req, res) {
 	res.render('volunteer_dash.jade', {
-		title: "Dash",
+		title: "Dashboard",
 		links: [
 			{ text: "Dashboard", href: "/dashboard", active: true },
 			{ text: "Submit a Request", href: "/dashboard/submit" }

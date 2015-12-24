@@ -1,4 +1,5 @@
 $(document).ready(function() {
+    // Initialize the Pick a Date picker
      $('.datepicker').pickadate();
 
      var $select = $('#select-country').selectize({
@@ -13,7 +14,6 @@ $(document).ready(function() {
                 url: "/data/countryList.json",
                 datatype: "json",
                 success: function(json, status, request) {
-                    console.log(json);
 
                      var arrCountries = [];
                      for(var key in json) {
@@ -22,11 +22,7 @@ $(document).ready(function() {
 
                     var selectize = $select[0].selectize;
                     selectize.addOption(arrCountries);
-                    selectize.addOption("hi");
                     selectize.refreshOptions(false);
-
-                    console.log(selectize);
-                    console.log(arrCountries);
                 }
 
             });
