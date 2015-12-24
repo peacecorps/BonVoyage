@@ -50,6 +50,7 @@ app.get('/register', users.renderRegister);
 app.get('/dashboard', isLoggedIn, needsGroup("volunteer"), users.renderDashboard);
 app.get('/dashboard/submit', isLoggedIn, needsGroup("volunteer"), users.renderSubform);
 app.get('/requests',isLoggedIn,users.getRequests);
+app.get('/requests/past',isLoggedIn,users.getPastRequests);
 
 // =================================
 // PLACEHOLDER FOR LOGOUT ==========

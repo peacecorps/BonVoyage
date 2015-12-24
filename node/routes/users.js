@@ -69,7 +69,7 @@ router.postRequests = function(req, res) {
 }
 
 router.renderDashboard = function(req, res) {
-	res.render('volunteer_dash.jade', {
+	res.render('dashboard.jade', {
 		title: "Dashboard",
 		links: [
 			{ text: "Dashboard", href: "/dashboard", active: true },
@@ -102,7 +102,10 @@ router.getRequests = function(req, res){
 
 	} else
       	res.send(401, 'Unauthorized');
+};
 
+router.getPastRequests = function(req, res){
+	return []; // TODO: Albert + Ben
 };
 
 module.exports = router;

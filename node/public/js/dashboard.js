@@ -1,9 +1,9 @@
 
-function addRequest(request) {
+function addRequest(id, request) {
 	count = count + 1;
-	$('table').find('tbody').append(
+	$('div#' + id + " table").find('tbody').append(
 		$('<tr>').append(
-			$('<td>').text(count)
+			$('<th>').text(count)
 		).append(
 			$('<td>').text(request.email)
 		).append(
@@ -14,12 +14,12 @@ function addRequest(request) {
 			$('<td>').text(format_date(request.end_date))
 		).append(
 			$('<td>').text(format_approval(request))
-		)
+		).addClass((request.is_pending ? "warning" : (request.is_approved ? "success" : "danger")))
 	);
 }
 
 function clearRequests(id) {
-	$(id);
+	$('table#' + id).empty();
 }
 
 function format_approval(request) {
@@ -33,12 +33,17 @@ function format_date(date) {
 
 $(document).ready(function() {
 	count = 0
-	$.getJSON('/requests', function(request_list) {
-		console.log(request_list);
-        for (index in request_list) {
-        	console.log(request_list[index]);
-        	request = request_list[index]
-        	addRequest(request);
-        }
-    });
+	$.each([{ url: '/requests', id: 'pending' }, { url: '/requests/past', id: 'past' }], function(_, d) {
+		$.getJSON(d.url, function(request_list) {
+	        for (index in request_list) {
+	        	request = request_list[index]
+	        	addRequest(d.id, request);
+	        }
+	    });
+	});
+	$('.nav-pills a').click(function (e) {
+	  e.preventDefault()
+	  $(this).tab('show')
+	})
 });
+

@@ -1,0 +1,37 @@
+extends layout
+
+block styles
+  link(rel='stylesheet', href='/css/volunteer_dash.css')
+block content
+  .row
+    .col-xs-12.col-md-offset-1.col-md-10
+
+      .jumbotron
+        h2.dash_text Volunteer Dashboard
+        form(action="/dashboard/submit")
+          button.new-request-button.btn.btn-success.btn-block(type='submit') Add New Leave Request
+
+        ul.nav.nav-pills.nav-justified
+          li.active(role="presentation")
+            a(href='#pending') Pending
+          li(role="presentation")
+            a(href='#past') Past
+
+        div.tab-content
+          for table_id in ['pending', 'past']
+            .fade.in.tab-pane.table-responsive(id=table_id, class=(table_id == 'pending' ? "active": ""))
+                table.table.table-striped.table-hovered.table-bordered
+                  thead
+                    tr
+                      th #
+                      th Name
+                      th Country of Travel
+                      th Start Date
+                      th End Date
+                      th Approved
+                  tbody
+
+block scripts
+  script(src='/js/moment.js')
+  script(src='/js/dashboard.js')
+
