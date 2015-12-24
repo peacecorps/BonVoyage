@@ -14,13 +14,16 @@
 	}
 
 	.btn {
-		background-color: $fg-color-light;
-		border-color: $fg-color-light-hover;
-		color: $white-color-hover;
 		padding: 10px 15px;
 	}
 
-	.btn:hover {
+	.btn-default {
+		background-color: $fg-color-light;
+		border-color: $fg-color-light-hover;
+		color: $white-color-hover;
+	}
+
+	.btn-default:hover {
 		background-color: $fg-color-light-hover;
 	}
 

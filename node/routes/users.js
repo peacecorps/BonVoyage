@@ -45,38 +45,46 @@ router.renderSubform = function(req, res) {
 
 router.postRequests = function(req, res) {
 	format = "DDD MMMM, YYYY";
-	var d1 = moment(req.body.leaving, format);
-	var d2 = moment(req.body.returning, format);
-	var cc = req.body.country;
-	var description = req.body.reason;
 
-	if (!(d1.isBefore(d2) || d1.isSame(d2))) {
-		req.flash('submissionFlash', 'The dates you have entered are not valid.');
-		res.redirect('/dashboard/submit');
-	} else if (Object.keys(countries_dictionary).indexOf(cc) == -1) {
-		req.flash('submissionFlash', 'The country that you have selected is not a valid country.');
-		res.redirect('/dashboard/submit');
-	} else {
-		var newRequest = new Request({
-			email: req.user.email,
-			start_date: d1,
-			end_date: d2,
-			country: countries_dictionary[cc],
-			is_pending: true,
-			is_approved: false,
-			description: description
-		});
+	var legs = [];
+	for (var i = 0; i < req.body.legs.length; i++) {
+		leg = req.body.legs[i];
+		console.log(leg);
+		start = moment(leg.start_date, format);
+		end = moment(leg.end_date, format);
+		console.log(start);
+		if (!(start.isBefore(end) || start.isSame(end))) {
+			req.flash('submissionFlash', 'The start date you entered for leg #' + (i+1) + ' comes after the end date.');
+			res.redirect('/dashboard/submit');
+		} else if (Object.keys(countries_dictionary).indexOf(leg.country) == -1) {
+			req.flash('submissionFlash', 'The country that you have selected for leg #' + (i+1) + ' is not a valid country.');
+			res.redirect('/dashboard/submit');
+		}
 
-		newRequest.save(function(err) {
-			if (err) {
-				req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
-				res.redirect('/dashboard/submit');
-			} else {
-				req.flash('dashboardFlash', 'Request successfully saved.');
-				res.redirect('/dashboard');
-			}
+		legs.push({
+			start_date: start,
+			end_date: end,
+			country: countries_dictionary[leg.cc],
+			description: leg.description
 		});
 	}
+
+	var newRequest = new Request({
+		email: req.user.email,
+		is_pending: true,
+		is_approved: false,
+		legs: legs
+	});
+
+	newRequest.save(function(err) {
+		if (err) {
+			req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
+			res.redirect('/dashboard/submit');
+		} else {
+			req.flash('dashboardFlash', 'Request successfully saved.');
+			res.redirect('/dashboard');
+		}
+	});
 }
 
 router.renderDashboard = function(req, res) {
@@ -115,7 +123,8 @@ router.getRequests = function(req, res){
 };
 
 router.getPastRequests = function(req, res){
-	return []; // TODO: Albert + Ben
+	past_requests = [];
+	res.json(past_requests); // TODO: Albert + Ben
 };
 
 router.promote = function(req, res) {

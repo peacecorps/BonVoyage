@@ -6,12 +6,14 @@
     color: #e7e7e7; }
 
 #htmlwrapper .btn {
-  background-color: #3C7F8C;
-  border-color: #2b6e7b;
-  color: #f7f7f7;
   padding: 10px 15px; }
 
-#htmlwrapper .btn:hover {
+#htmlwrapper .btn-default {
+  background-color: #3C7F8C;
+  border-color: #2b6e7b;
+  color: #f7f7f7; }
+
+#htmlwrapper .btn-default:hover {
   background-color: #2b6e7b; }
 
 #htmlwrapper .form-control:focus,

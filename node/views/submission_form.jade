@@ -19,12 +19,10 @@ block content
             span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
             span= message
 
-        form(action='/requests' method='post')
-          input.form-control.datepicker(type='text', placeholder='Date leaving', name='leaving')
-          input.form-control.datepicker(type='text', placeholder='Date returning', name='returning')
-          select.form-control#select-country(placeholder='Country', name='country')
-          textarea.form-control(rows='6', placeholder='Reason for leave:', name='reason')
-          button.btn(type='submit') Submit
+        #request-submit
+          //- Travel legs are inserted in submission.js
+          button.btn.btn-default#request-add-leg-btn Add Trip Leg
+          button.btn.btn-success#request-submit-btn Submit
 
 block scripts
   script(src='/js/picker.js')

@@ -1,7 +1,26 @@
 
-// @import 'mixins';
+@import 'mixins';
+@import 'variables';
 
-input, select, button:not(.navbar-toggle) {
-    width: 100%;
-    margin: 10px auto;
+#htmlwrapper {
+	input, select, button:not(.navbar-toggle) {
+	    width: 100%;
+	    margin: 10px auto;
+	}
+
+	.leg {
+		border: 1px solid $fg-color-dark;
+	    padding: 10px;
+	    -moz-box-shadow: inset 0 0 2px $fg-color-dark;
+	    -webkit-box-shadow: inset 0 0 2px $fg-color-dark;
+	    box-shadow: inset 0 0 2px $fg-color-dark;
+	    border-radius: 5px;
+	    margin-bottom: 20px;
+	    h2 {
+	    	text-align: center;
+	    	width: 100%;
+	    	padding-top: 10px;
+	    	margin: 0;
+	    }
+	}
 }
