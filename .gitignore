@@ -32,5 +32,8 @@ node/build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git
 node/node_modules
 
+# Mac dot files
 .DS_Store
 
+# Vagrant dot files
+.vagrant/*
