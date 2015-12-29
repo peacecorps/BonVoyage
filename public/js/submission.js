@@ -114,6 +114,7 @@ $(document).ready(function() {
             data: {
                 legs: legs
             },
+            dataType: 'json',
             url: '/requests',
             success: function(response, textStatus, jqXHR) {
                 // if (err) console.log(err);

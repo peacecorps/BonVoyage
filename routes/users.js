@@ -52,14 +52,12 @@ router.postRequests = function(req, res) {
 		console.log(leg.end_date);
 		var start = moment(leg.start_date);
 		var end = moment(leg.end_date);
-		console.log(start);
-		console.log(end);
 		if (!(start.isBefore(end) || start.isSame(end))) {
 			req.flash('submissionFlash', 'The start date you entered for leg #' + (i+1) + ' comes after the end date.');
-			res.send({redirect: '/dashboard/submit'});
+			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 		} else if (Object.keys(countries_dictionary).indexOf(leg.country) == -1) {
 			req.flash('submissionFlash', 'The country that you have selected for leg #' + (i+1) + ' is not a valid country.');
-			res.send({redirect: '/dashboard/submit'});
+			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 		}
 
 		legs.push({
@@ -69,6 +67,8 @@ router.postRequests = function(req, res) {
 			description: leg.description
 		});
 	}
+
+	console.log(legs);
 
 	var newRequest = new Request({
 		email: req.user.email,
@@ -80,10 +80,10 @@ router.postRequests = function(req, res) {
 	newRequest.save(function(err) {
 		if (err) {
 			req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
-			res.send({redirect: '/dashboard/submit'});
+			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 		} else {
 			req.flash('dashboardFlash', 'Request successfully saved.');
-			res.send({redirect: '/dashboard'});
+			res.end(JSON.stringify({redirect: '/dashboard'}));
 		}
 	});
 }
