@@ -139,4 +139,5 @@ git config --global user.email "you@example.com"
 git config --global user.name "Your Name"
 // Cache your GitHub logins
 git config --global credential.helper cache
+git config --global push.default simple
 ```
