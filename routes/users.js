@@ -44,15 +44,14 @@ router.renderSubform = function(req, res) {
 }
 
 router.postRequests = function(req, res) {
-	format = "DDD MMMM, YYYY";
 
 	var legs = [];
 	for (var i = 0; i < req.body.legs.length; i++) {
 		leg = req.body.legs[i];
 		console.log(leg.start_date);
 		console.log(leg.end_date);
-		start = moment(leg.start_date, format);
-		end = moment(leg.end_date, format);
+		var start = moment(leg.start_date);
+		var end = moment(leg.end_date);
 		console.log(start);
 		console.log(end);
 		if (!(start.isBefore(end) || start.isSame(end))) {
