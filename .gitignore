@@ -33,7 +33,7 @@ build/Release
 node_modules
 
 # Mac dot files
-.DS_Store
+**/.DS_Store
 
 # Vagrant dot files
 .vagrant/*

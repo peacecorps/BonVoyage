@@ -35,13 +35,13 @@ Vagrant will be used to create a development environment where this web site can
 ### Setting up our development environment
 The rest of this tutorial will be completed on the command line. Open a new terminal window.
 
-1) Change to a new folder for this project.
+1) Clone the project from GitHub.
 ```bash
-cd ~/<project-directory>
+git clone https://github.com/peacecorps/BonVoyage.git
+cd BonVoyage
 ```
-2) Using Vagrant, create a new virtual machine (VM) with Ubuntu 14.04 and start it.
+2) Using Vagrant, create a new virtual machine (VM) with Ubuntu 14.04 and start it. The VM is already configured in the Vagrantfile, so all you have to do is tell Vagrant to start.
 ```bash
-vagrant init ubuntu/trusty64
 vagrant up
 ```
 3) SSH in to the new VM you just created.
@@ -56,7 +56,8 @@ sudo apt-get update
 ```bash
 touch ~/.profile
 wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.28.0/install.sh | bash
-source ~/.profile
+echo 'source ~/.profile;' >> ~/.bash_profile
+source ~/.bash_profile
 ```
 6) NVM is now installed (check by running 'nvm --version'). Now install the most stable version of Node using NVM and set it to be the default version of Node.
 ```bash
@@ -68,17 +69,15 @@ nvm alias default stable
 ```bash
 sudo apt-get -y install git
 ```
-8) Now pull the master branch from BonVoyage using GIT.
+8) Now move into the BonVoyage directory, which has already been set up to be shared with the Vagrant instance.
 ```bash
-git clone https://github.com/peacecorps/BonVoyage.git
 cd BonVoyage
 ```
-9) Change into the node folder and install all the necessary Node modules.
+9) Install all the necessary Node modules.
 ```bash
-cd node
 npm install
 ```
-10) Before we can run the server, you need to forward port 3000 (the port where the node server runs from) to your host. Exit the shell and edit the Vagrantfile in a text editor (which is created when you ran 'vagrant init'). 
+<!-- 10) Before we can run the server, you need to forward port 3000 (the port where the node server runs from) to your host. Exit the shell and edit the Vagrantfile in a text editor (which is created when you ran 'vagrant init'). 
 ```bash
 exit
 # Edit the Vagrantfile with vim, or a normal text editor
@@ -102,10 +101,42 @@ Save this file and reload your VM. SSH back into the VM after it reloads.
 ```bash
 vagrant reload
 vagrant ssh
-```
-11) You are all set. Navigate back to the node folder and start the application.
+``` -->
+10) Install MongoDB. You will need to get the download link for Ubuntu 14.04 from [here](https://www.mongodb.org/downloads#production). Replace the link below with the most recent stable version of MongoDB.
 ```bash
-cd BonVoyage/node
+wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.0.tgz
+tar -zxvf mongodb-linux-x86_64-ubuntu1404*.tgz
+mkdir ~/mongodb
+cp -R -n mongodb-linux-x86_64*/* mongodb
+rm -rf mongodb-linux-x86_64-ubuntu1404*
+echo 'export PATH="$HOME/mongodb/bin:$PATH";' >> ~/.bash_profile
+source ~/.bash_profile
+sudo mkdir -p /data/db
+sudo chown -R $USER /data/db
+// Start mongo's daemon in another terminal window
+mongod
+```
+10) You are all set. Navigate back to the node folder and start the application.
+```bash
+cd BonVoyage
 npm start
 ```
-12) Open a web browser and navigate to [localhost:8080](http://localhost:8080).
+11) Open a web browser and navigate to [localhost:8080](http://localhost:8080).
+
+# Other
+
+I would recommend that you install `nodemon` to reload the app whenever code is saved.
+```
+npm install -g nodemon
+cd BonVoyage
+nodemon
+```
+
+Set up GIT to work properly on Vagrant.
+
+```
+git config --global user.email "you@example.com"
+git config --global user.name "Your Name"
+// Cache your GitHub logins
+git config --global credential.helper cache
+```
