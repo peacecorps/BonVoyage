@@ -116,12 +116,12 @@ sudo chown -R $USER /data/db
 // Start mongo's daemon in another terminal window
 mongod
 ```
-10) You are all set. Navigate back to the node folder and start the application.
+11) You are all set. Navigate back to the node folder and start the application.
 ```bash
 cd BonVoyage
 npm start
 ```
-11) Open a web browser and navigate to [localhost:8080](http://localhost:8080).
+12) Open a web browser and navigate to [localhost:8080](http://localhost:8080).
 
 # Other
 
