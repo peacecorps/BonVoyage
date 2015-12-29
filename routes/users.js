@@ -48,44 +48,49 @@ router.postRequests = function(req, res) {
 	var legs = [];
 	for (var i = 0; i < req.body.legs.length; i++) {
 		leg = req.body.legs[i];
-		console.log(leg.start_date);
-		console.log(leg.end_date);
 		var start = moment(leg.start_date);
 		var end = moment(leg.end_date);
 		if (!(start.isBefore(end) || start.isSame(end))) {
 			req.flash('submissionFlash', 'The start date you entered for leg #' + (i+1) + ' comes after the end date.');
 			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
+			return;
 		} else if (Object.keys(countries_dictionary).indexOf(leg.country) == -1) {
 			req.flash('submissionFlash', 'The country that you have selected for leg #' + (i+1) + ' is not a valid country.');
 			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
+			return;
 		}
-
+		
 		legs.push({
 			start_date: start,
 			end_date: end,
-			country: countries_dictionary[leg.cc],
+			country: countries_dictionary[leg.country],
 			description: leg.description
 		});
 	}
 
 	console.log(legs);
 
-	var newRequest = new Request({
-		email: req.user.email,
-		is_pending: true,
-		is_approved: false,
-		legs: legs
-	});
+	if (legs.length > 0) {
+		var newRequest = new Request({
+			email: req.user.email,
+			is_pending: true,
+			is_approved: false,
+			legs: legs
+		});
 
-	newRequest.save(function(err) {
-		if (err) {
-			req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
-			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
-		} else {
-			req.flash('dashboardFlash', 'Request successfully saved.');
-			res.end(JSON.stringify({redirect: '/dashboard'}));
-		}
-	});
+		newRequest.save(function(err) {
+			if (err) {
+				req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
+				res.end(JSON.stringify({redirect: '/dashboard/submit'}));
+			} else {
+				req.flash('dashboardFlash', 'Request successfully saved.');
+				res.end(JSON.stringify({redirect: '/dashboard'}));
+			}
+		});
+	} else {
+		req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
+		res.end(JSON.stringify({redirect: '/dashboard/submit'}));
+	}
 }
 
 router.renderDashboard = function(req, res) {
