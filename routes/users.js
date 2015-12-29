@@ -49,16 +49,18 @@ router.postRequests = function(req, res) {
 	var legs = [];
 	for (var i = 0; i < req.body.legs.length; i++) {
 		leg = req.body.legs[i];
-		console.log(leg);
+		console.log(leg.start_date);
+		console.log(leg.end_date);
 		start = moment(leg.start_date, format);
 		end = moment(leg.end_date, format);
 		console.log(start);
+		console.log(end);
 		if (!(start.isBefore(end) || start.isSame(end))) {
 			req.flash('submissionFlash', 'The start date you entered for leg #' + (i+1) + ' comes after the end date.');
-			res.redirect('/dashboard/submit');
+			res.send({redirect: '/dashboard/submit'});
 		} else if (Object.keys(countries_dictionary).indexOf(leg.country) == -1) {
 			req.flash('submissionFlash', 'The country that you have selected for leg #' + (i+1) + ' is not a valid country.');
-			res.redirect('/dashboard/submit');
+			res.send({redirect: '/dashboard/submit'});
 		}
 
 		legs.push({
@@ -79,10 +81,10 @@ router.postRequests = function(req, res) {
 	newRequest.save(function(err) {
 		if (err) {
 			req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
-			res.redirect('/dashboard/submit');
+			res.send({redirect: '/dashboard/submit'});
 		} else {
 			req.flash('dashboardFlash', 'Request successfully saved.');
-			res.redirect('/dashboard');
+			res.send({redirect: '/dashboard'});
 		}
 	});
 }
