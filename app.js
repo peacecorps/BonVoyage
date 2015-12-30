@@ -6,8 +6,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var router = express.Router();
-var home = require('./routes/index');
-var users = require('./routes/users');
+var views = require('./routes/views');
+var api = require('./routes/api');
 var mongo = require('mongodb');
 var app = express();
 var passport = require('passport');
@@ -38,8 +38,7 @@ app.use(flash()); // use connect-flash for flash messages stored in session
 
 // Pass the access level to our Jade templates
 app.use(function(req,res,next) {
-  if (req.user)
-    res.locals.access = req.user.access;
+  res.locals.user = req.user;
   next();
 });
 
@@ -51,37 +50,37 @@ mongoose.connection.on('error', function(err){
 
 require('./config/passport.js')(passport); // pass passport for configuration
 
-// Get requests
-app.get('/', home.index);
-app.get('/login', isNotLoggedIn, users.renderLogin);
-app.get('/register', users.renderRegister);
-app.get('/dashboard', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderDashboard);
-app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderSubform);
-app.param('request_id', users.handleRequestId);
-app.get('/dashboard/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderApproval);
-app.get('/requests', isLoggedIn, users.getRequests);
-app.get('/requests/past', isLoggedIn, users.getPastRequests);
+// Route Parameters
+app.param('request_id', api.handleRequestId);
 
-// Post requests
-app.post('/register', passport.authenticate('local-signup', {
+// Render Views
+app.get('/', views.index);
+app.get('/login', isNotLoggedIn, views.renderLogin);
+app.get('/register', views.renderRegister);
+app.get('/dashboard', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderDashboard);
+app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderSubform);
+app.get('/dashboard/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderApproval);
+
+// API
+app.get('/api/requests', isLoggedIn, api.getRequests);
+app.get('/api/requests/past', isLoggedIn, api.getPastRequests);
+app.post('/api/register', passport.authenticate('local-signup', {
         successRedirect : '/dashboard', // redirect to the dashboard
         failureRedirect : '/register', // redirect back to the register page if there is an error
         failureFlash : true // allow flash messages
 }));
-app.post('/login', passport.authenticate('local-login', {
+app.post('/api/login', passport.authenticate('local-login', {
         successRedirect : '/dashboard', // redirect to the dashboard
         failureRedirect : '/login', // redirect back to the login page if there is an error
         failureFlash : true // allow flash messages
 }));
-app.post('/logout', function(req, res) {
-  req.logout();
-  res.redirect('/login');
-});
-app.post('/requests',isLoggedIn, users.postRequests);
-app.post('/promote', isLoggedIn, needsAccess(Access.SUPERVISOR), users.promote);
+app.post('/api/logout', api.logout);
+app.post('/api/requests',isLoggedIn, api.postRequests);
+app.post('/api/promote', isLoggedIn, needsAccess(Access.SUPERVISOR), api.promote);
 
 // middleware to ensure the user is authenticated. If not, redirect to login page.
 function isLoggedIn(req, res, next) {
+  console.log(req);
   if(req.isAuthenticated())
     return next();
   else

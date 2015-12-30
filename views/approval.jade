@@ -9,7 +9,10 @@ block content
 			.jumbotron
 				h2 Request Overview
 				#request
-					if request.user && request.user.length > 0
+					- console.log(request); 
+					- console.log(request.user);
+					- var did_match_user = (request.user && request.user.length > 0);
+					if did_match_user
 						p= request.user[0].name
 						p= request.user[0].email
 						p= request.user[0].phone
@@ -21,10 +24,23 @@ block content
 							span.date(data-unformatted="#{leg.end_date}")
 						if leg.description != ""
 							p= leg.description
-				a(href=(prev_request_id ? "/dashboard/requests/#{prev_request_id}" : "")) 
-					button(class="btn btn-default" + (prev_request_id ? "" : " disabled")) Prev
-				a(href=(next_request_id ? "/dashboard/requests/#{next_request_id}" : "")) 
-					button(class="btn btn-default" + (next_request_id ? "" : " disabled")) Next
+				// If supervisor or higher
+				if user.access > 0 
+					#request_approval
+						a(href="/api/requests/#{request._id}/approve") 
+							button(class="btn btn-success") Approve
+						a(href="/api/requests/#{request._id}/deny") 
+							button(class="btn btn-danger") Deny
+				// If the user is the owner of the request
+				if did_match_user && (user.email == request.user[0].email)
+					#request_delete
+						a(href="/api/requests/#{request._id}/delete") 
+							button(class="btn btn-danger") Delete Request
+				#request_pagination
+					a(href=(prev_request_id ? "/dashboard/requests/#{prev_request_id}" : "")) 
+						button(class="btn btn-default" + (prev_request_id ? "" : " disabled")) Prev
+					a(href=(next_request_id ? "/dashboard/requests/#{next_request_id}" : "")) 
+						button(class="btn btn-default" + (next_request_id ? "" : " disabled")) Next
 
 block scripts
 	script(src='/js/moment.js')
