@@ -12,6 +12,15 @@ function format_date(date) {
 	}
 }
 
+function format_time(time) {
+	if (time === undefined) {
+		return "None";
+	} else {
+		console.log(time);
+		return moment(time).format("LLL");
+	}
+}
+
 $(document).ready(function() {
 	$('#logout').click(function() {
 		$.ajax({

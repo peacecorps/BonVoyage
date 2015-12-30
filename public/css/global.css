@@ -16,6 +16,15 @@
 #htmlwrapper .btn-default:hover {
   background-color: #2b6e7b; }
 
+#htmlwrapper .shadow-box {
+  border: 1px solid #392F20;
+  padding: 10px;
+  -moz-box-shadow: inset 0 0 2px #392F20;
+  -webkit-box-shadow: inset 0 0 2px #392F20;
+  box-shadow: inset 0 0 2px #392F20;
+  border-radius: 5px;
+  margin-bottom: 20px; }
+
 #htmlwrapper .form-control:focus,
 #htmlwrapper .picker__input--active,
 #htmlwrapper .selectize-input.focus {

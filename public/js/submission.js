@@ -13,7 +13,7 @@ function insertAtIndex(i, id, data) {
 function addLeg() {
     count++;
     html = 
-    "<div class='leg'> \
+    "<div class='leg shadow-box'> \
         <h2> Trip Leg #" + count + " </h2> \
         <input class='form-control datepicker date-leaving' type='text' placeholder='Date leaving'> \
         <input class='form-control datepicker date-returning' type='text' placeholder='Date returning'> \
