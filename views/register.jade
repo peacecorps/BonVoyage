@@ -15,10 +15,12 @@ block content
             span= message
 
 
-        label.sr-only(for='signupName') Enter Full Name
-        input#signupName.form-control(type='text', placeholder='Enter Full Name', required='', autofocus='', name='name')
+        label.sr-only(for='signupName') Full Name
+        input#signupName.form-control(type='text', placeholder='Full Name', required='', autofocus='', name='name')
         label.sr-only(for='signupEmail') Email address
         input#signupEmail.form-control(type='email', placeholder='Enter Email Address', required='', autofocus='', name='email')
+        label.sr-only(for='signupPhone') Phone Number
+        input#signupPhone.form-control(type='text', placeholder='Phone Number', required='', autofocus='', name='phone')
         label.sr-only(for='signupPassword') Password
         input#signupPassword.form-control(type='password', placeholder='Enter Password', required='', name='password')
         label.sr-only(for='signupRePassword') Password

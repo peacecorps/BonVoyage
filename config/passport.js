@@ -3,6 +3,8 @@ var LocalStrategy = require('passport-local').Strategy;
 // load user model
 var User = require('../models/user');
 
+var Access = require("./access");
+
 module.exports = function(passport) {
 
     // =========================================================================
@@ -62,7 +64,8 @@ module.exports = function(passport) {
                     newUser.email    = email;
                     newUser.hash = password; // This password will be hashed, and in the process overwrite the plain text password we just stored into .hash
                     newUser.name = req.body.name;
-                    newUser.access = 0;
+                    newUser.phone = req.body.phone;
+                    newUser.access = Access.VOLUNTEER;
 
                     // save the user
                     newUser.save(function(err) {
