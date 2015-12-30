@@ -59,7 +59,7 @@ router.postRequests = function(req, res) {
 			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 			return;
 		}
-		
+
 		legs.push({
 			start_date: start,
 			end_date: end,
@@ -104,28 +104,64 @@ router.renderDashboard = function(req, res) {
 	});
 }
 
+function getStartDate(request) {
+	if (request.legs.length > 0) {
+		start_date = request.legs[0].start_date;
+		for (var i = 1; i < request.legs.length; i++) {
+			if (request.legs[i].start_date.isBefore(start_date))
+				start_date = request.legs[i].start_date;
+		}
+		return start_date;
+	} else {
+		return undefined;
+	}
+}
+
+function getEndDate(request) {
+	if (request.legs.length > 0) {
+		end_date = request.legs[0].end_date;
+		for (var i = 1; i < request.legs.length; i++) {
+			if (request.legs[i].end_date.isBefore(end_date))
+				end_date = request.legs[i].end_date;
+		}
+		return end_date;
+	} else {
+		return undefined;
+	}
+}
 
 router.getRequests = function(req, res){
-	if (req.user && req.user.access === Access.ADMIN) {
-		Request.find(function (err, requests) {
-		  if (err) return console.error(err);
-		  res.json(requests);
-		});
+	if (req.user) {
+		Request.aggregate([
+			{
+				// If access is supervisor or higher, match all requests: else only the user's requests
+				$match: (req.user.access >= Access.SUPERVISOR ? {} : { email: req.user.email })
+			},
+			{
+				// JOIN with the user data belonging to each request
+				$lookup: {
+					from: "users", 
+					localField: "email", 
+					foreignField: "email", 
+					as: "user"
+				}
+			}
+		], function (err, requests) {
+			if (err) return console.error(err);
 
-	} else if (req.user && req.user.access === Access.SUPERVISOR) {
+			// Add start and end date to all requests
+			for (var i = 0; i < requests.length; i++) {
+				requests[i].start_date = getStartDate(requests[i]);
+				requests[i].end_date = getEndDate(requests[i]);
+				console.log(requests[i].user);
+			}
 
-		Request.find(function (err, requests) {
-		  if (err) return console.error(err);
-		  res.json(requests);
+			console.log(requests);
+			res.json(requests);
 		});
-
-	} else if (req.user && req.user.access === Access.VOLUNTEER) {
-		Request.find({email: req.user.email}, function (err, requests) {
-		  if (err) return console.error(err);
-		  res.json(requests);
-		});
-	} else
+	} else {
       	res.send(401, 'Unauthorized');
+	}
 };
 
 router.getPastRequests = function(req, res){

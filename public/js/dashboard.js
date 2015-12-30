@@ -5,9 +5,7 @@ function addRequest(id, request) {
 		$('<tr>').append(
 			$('<th>').text(count)
 		).append(
-			$('<td>').text(request.email)
-		).append(
-			$('<td>').text(request.country)
+			$('<td>').text((request.user && request.user.length > 0 ? request.user[0].name : "None"))
 		).append(
 			$('<td>').text(format_date(request.start_date))
 		).append(
@@ -27,8 +25,12 @@ function format_approval(request) {
 }
 
 function format_date(date) {
-	d = moment(date);
-	return d.format("MMM DD, YYYY");
+	if (date === undefined) {
+		return "None";
+	} else {
+		d = moment(date);
+		return d.format("MMM DD, YYYY");
+	}
 }
 
 $(document).ready(function() {
