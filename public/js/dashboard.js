@@ -12,7 +12,11 @@ function addRequest(id, request) {
 			$('<td>').text(format_date(request.end_date))
 		).append(
 			$('<td>').text(format_approval(request))
-		).addClass((request.is_pending ? "warning" : (request.is_approved ? "success" : "danger")))
+		).addClass(
+			(request.is_pending ? "warning" : (request.is_approved ? "success" : "danger"))
+		).click(function() {
+			window.location.href = "/dashboard/requests/" + request._id;
+		})
 	);
 }
 
@@ -22,15 +26,6 @@ function clearRequests(id) {
 
 function format_approval(request) {
 	return (request.is_pending ? "Pending" : request.is_approved);
-}
-
-function format_date(date) {
-	if (date === undefined) {
-		return "None";
-	} else {
-		d = moment(date);
-		return d.format("MMM DD, YYYY");
-	}
 }
 
 $(document).ready(function() {

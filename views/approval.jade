@@ -1,0 +1,31 @@
+extends layout
+
+block styles
+	link(rel='stylesheet', href='/css/approval.css')
+block content
+	.row
+		.col-xs-12.col-md-offset-1.col-md-10
+
+			.jumbotron
+				h2 Request Overview
+				#request
+					if request.user && request.user.length > 0
+						p= request.user[0].name
+						p= request.user[0].email
+						p= request.user[0].phone
+					h4 Trip Itinerary
+					each leg in request.legs
+						p #{leg.country}: 
+							span.date(data-unformatted="#{leg.start_date}")
+							span  - 
+							span.date(data-unformatted="#{leg.end_date}")
+						if leg.description != ""
+							p= leg.description
+				a(href=(prev_request_id ? "/dashboard/requests/#{prev_request_id}" : "")) 
+					button(class="btn btn-default" + (prev_request_id ? "" : " disabled")) Prev
+				a(href=(next_request_id ? "/dashboard/requests/#{next_request_id}" : "")) 
+					button(class="btn btn-default" + (next_request_id ? "" : " disabled")) Next
+
+block scripts
+	script(src='/js/moment.js')
+	script(src='/js/approval.js')

@@ -43,6 +43,74 @@ router.renderSubform = function(req, res) {
     });
 }
 
+router.renderApproval = function(req, res) {
+	res.render('approval.jade', {
+		title: 'Request Approval',
+		links: [
+			{ text: "Dashboard", href: "/dashboard" },
+			{ text: "Submit a Request", href: "/dashboard/submit" }
+		],
+		message: req.flash('approvalFlash'),
+		request: req.request,
+		next_request_id: req.next_request_id,
+		prev_request_id: req.prev_request_id
+	});
+}
+
+router.handleRequestId = function(req, res, next, request_id) {
+	getRequests(req, res, function(err, requests) {
+		if (err) console.error(err);
+		// Lookup the id in this list of requests
+		for(var i = 0; i < requests.length; i++) {
+			if(requests[i]._id == request_id) {
+				req.request = requests[i];
+				req.next_request_id = (i < requests.length - 1 ? requests[i+1]._id : undefined);
+				req.prev_request_id = (i > 0 ? requests[i-1]._id : undefined);
+				console.log("Approval Data");
+				console.log(req.request);
+				console.log(req.next_request_id);
+				console.log(req.prev_request_id);
+				next();
+			}
+		}
+	});
+}
+
+function getRequests(req, res, cb) {
+	if (req.user) {
+		Request.aggregate([
+			{
+				// If access is supervisor or higher, match all requests: else only the user's requests
+				$match: (req.user.access >= Access.SUPERVISOR ? {} : { email: req.user.email })
+			},
+			{
+				// JOIN with the user data belonging to each request
+				$lookup: {
+					from: "users", 
+					localField: "email", 
+					foreignField: "email", 
+					as: "user"
+				}
+			}
+		], function (err, requests) {
+			if (err) 
+				return cb(err);
+			else {
+				// Add start and end date to all requests
+				for (var i = 0; i < requests.length; i++) {
+					requests[i].start_date = getStartDate(requests[i]);
+					requests[i].end_date = getEndDate(requests[i]);
+				}
+
+				console.log(requests);
+				cb(null, requests);
+			}
+		});
+	} else {
+      	cb(null, []);
+	}
+}
+
 router.postRequests = function(req, res) {
 
 	var legs = [];
@@ -108,8 +176,13 @@ function getStartDate(request) {
 	if (request.legs.length > 0) {
 		start_date = request.legs[0].start_date;
 		for (var i = 1; i < request.legs.length; i++) {
-			if (request.legs[i].start_date.isBefore(start_date))
-				start_date = request.legs[i].start_date;
+			if (request.legs[i].start_date instanceof Date) {
+				if(request.legs[i].start_date < start_date)
+					start_date = request.legs[i].start_date;	
+			} else {
+				if (request.legs[i].start_date.isBefore(start_date))
+					start_date = request.legs[i].start_date;
+			}
 		}
 		return start_date;
 	} else {
@@ -121,8 +194,13 @@ function getEndDate(request) {
 	if (request.legs.length > 0) {
 		end_date = request.legs[0].end_date;
 		for (var i = 1; i < request.legs.length; i++) {
-			if (request.legs[i].end_date.isBefore(end_date))
-				end_date = request.legs[i].end_date;
+			if (request.legs[i].end_date instanceof Date) {
+				if(request.legs[i].end_date > end_date)
+					end_date = request.legs[i].end_date;	
+			} else {
+				if (request.legs[i].end_date.isAfter(end_date))
+					end_date = request.legs[i].end_date;
+			}
 		}
 		return end_date;
 	} else {
@@ -130,38 +208,11 @@ function getEndDate(request) {
 	}
 }
 
-router.getRequests = function(req, res){
-	if (req.user) {
-		Request.aggregate([
-			{
-				// If access is supervisor or higher, match all requests: else only the user's requests
-				$match: (req.user.access >= Access.SUPERVISOR ? {} : { email: req.user.email })
-			},
-			{
-				// JOIN with the user data belonging to each request
-				$lookup: {
-					from: "users", 
-					localField: "email", 
-					foreignField: "email", 
-					as: "user"
-				}
-			}
-		], function (err, requests) {
-			if (err) return console.error(err);
-
-			// Add start and end date to all requests
-			for (var i = 0; i < requests.length; i++) {
-				requests[i].start_date = getStartDate(requests[i]);
-				requests[i].end_date = getEndDate(requests[i]);
-				console.log(requests[i].user);
-			}
-
-			console.log(requests);
-			res.json(requests);
-		});
-	} else {
-      	res.send(401, 'Unauthorized');
-	}
+router.getRequests = function(req, res) {
+	getRequests(req, res, function(err, requests) {
+		if(err) console.error(err);
+		res.send(requests);
+	});
 };
 
 router.getPastRequests = function(req, res){

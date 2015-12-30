@@ -57,8 +57,10 @@ app.get('/login', isNotLoggedIn, users.renderLogin);
 app.get('/register', users.renderRegister);
 app.get('/dashboard', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderDashboard);
 app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderSubform);
-app.get('/requests',isLoggedIn,users.getRequests);
-app.get('/requests/past',isLoggedIn,users.getPastRequests);
+app.param('request_id', users.handleRequestId);
+app.get('/dashboard/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNTEER), users.renderApproval);
+app.get('/requests', isLoggedIn, users.getRequests);
+app.get('/requests/past', isLoggedIn, users.getPastRequests);
 
 // Post requests
 app.post('/register', passport.authenticate('local-signup', {
@@ -66,20 +68,16 @@ app.post('/register', passport.authenticate('local-signup', {
         failureRedirect : '/register', // redirect back to the register page if there is an error
         failureFlash : true // allow flash messages
 }));
-
 app.post('/login', passport.authenticate('local-login', {
         successRedirect : '/dashboard', // redirect to the dashboard
         failureRedirect : '/login', // redirect back to the login page if there is an error
         failureFlash : true // allow flash messages
 }));
-
 app.post('/logout', function(req, res) {
   req.logout();
   res.redirect('/login');
 });
-
 app.post('/requests',isLoggedIn, users.postRequests);
-
 app.post('/promote', isLoggedIn, needsAccess(Access.SUPERVISOR), users.promote);
 
 // middleware to ensure the user is authenticated. If not, redirect to login page.
