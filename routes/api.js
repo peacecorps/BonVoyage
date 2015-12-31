@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var User = require("../models/user");
+var sUser = require("../models/user");
 var Request = require("../models/request");
 var Access = require("../config/access");
 var fs = require('fs');
@@ -46,7 +46,7 @@ function getEndDate(request) {
 	}
 }
 
-function getRequests(req, res, cb) {
+function getRequests(req, res, flag, pending, cb) {
 	if (req.user) {
 		Request.aggregate([
 			{
@@ -61,6 +61,9 @@ function getRequests(req, res, cb) {
 					foreignField: "email", 
 					as: "user"
 				}
+			},
+			{
+				$match: (flag ? {} : { is_pending: pending })
 			}
 		], function (err, requests) {
 			if (err) 
@@ -72,7 +75,7 @@ function getRequests(req, res, cb) {
 					requests[i].end_date = getEndDate(requests[i]);
 				}
 
-				console.log(requests);
+				// console.log(requests);
 				cb(null, requests);
 			}
 		});
@@ -86,7 +89,7 @@ function getRequests(req, res, cb) {
  */
 router.handleRequestId = function(req, res, next, request_id) {
 	
-	getRequests(req, res, function(err, requests) {
+	getRequests(req, res, true, false, function(err, requests) {
 		if (err) next(err);
 		else {
 			// Lookup the id in this list of requests
@@ -113,15 +116,24 @@ router.handleRequestId = function(req, res, next, request_id) {
  */
 
 router.getRequests = function(req, res) {
-	getRequests(req, res, function(err, requests) {
+	getRequests(req, res, true, false, function(err, requests) {
+		if(err) console.error(err);
+		res.send(requests);
+	});
+};
+
+router.getPendingRequests = function(req, res) {
+	getRequests(req, res, false, true, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
 };
 
 router.getPastRequests = function(req, res){
-	past_requests = [];
-	res.json(past_requests); // TODO: Albert + Ben
+	getRequests(req, res, false, false, function(err, requests) {
+		if(err) console.error(err);
+		res.send(requests);
+	});
 };
 
 /*
@@ -129,7 +141,6 @@ router.getPastRequests = function(req, res){
  */
 
 router.postRequests = function(req, res) {
-
 	var legs = [];
 	for (var i = 0; i < req.body.legs.length; i++) {
 		leg = req.body.legs[i];
@@ -153,8 +164,6 @@ router.postRequests = function(req, res) {
 		});
 	}
 
-	console.log(legs);
-
 	if (legs.length > 0) {
 		var newRequest = new Request({
 			email: req.user.email,
@@ -176,6 +185,45 @@ router.postRequests = function(req, res) {
 		req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
 		res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 	}
+}
+
+router.postApprove = function(req, res) {
+	var id = req.params.request_id;
+	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":true}}, function(err, doc) {
+		if (err) return res.send(500, {error: err});
+		res.end(JSON.stringify({redirect: '/dashboard'}));
+	});
+}
+
+router.postDeny = function(req, res) {
+	var id = req.params.request_id;
+	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":false}}, function(err, doc) {
+		if (err) return res.send(500, {error: err});
+		res.end(JSON.stringify({redirect: '/dashboard'}));
+	});
+}
+
+router.postDelete = function(req, res) {
+	var id = req.params.request_id;
+	Request.findOneAndRemove({'_id':id, email: req.user.email}, function(err, doc) {
+		if (err) return res.send(500, {error: err});
+		res.end(JSON.stringify({redirect: '/dashboard'}));
+	});
+}
+
+router.postComments = function(req, res) {
+	var id = req.params.request_id;
+	Request.findByIdAndUpdate(id, {$push: {
+		comments: {
+			$each:[{
+				email:req.user.email,
+				content:req.param('content')
+			}]
+		}
+	}}, function(err, doc) {
+		if (err) return res.send(500, {error: err});
+		res.end(JSON.stringify({redirect: '/dashboard/requests/' + id}));
+	});
 }
 
 router.logout = function(req, res) {
