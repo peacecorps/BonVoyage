@@ -1,14 +1,14 @@
 
 
 function strip_time(date) {
-	return moment.utc(date).startOf('day').format('LL');
+	return moment(date, 'MMMM DD, YYYY').startOf('day');
 }
 
 function format_date(date) {
 	if (date === undefined) {
 		return "None";
 	} else {
-		return moment(strip_time(date), 'LL').format("MMM DD, YYYY");
+		return strip_time(date).format("MMM DD, YYYY");
 	}
 }
 
