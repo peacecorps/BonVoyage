@@ -61,17 +61,14 @@ block content
 				if user.access > 0 
 					#request_approval.row
 						.col-xs-6
-							// a(href="/api/requests/#{request._id}/approve") 
 							button(class="btn btn-success", id="request-approve-btn") Approve
 						.col-xs-6
-							// a(href="/api/requests/#{request._id}/deny") 
 							button(class="btn btn-danger", id="request-deny-btn") Deny
 				// If the user is the owner of the request
 				if did_match_user && (user.email == request.user[0].email)
 					#request_delete.row
 						.col-xs-12
-							a(href="/api/requests/#{request._id}/delete") 
-								button(class="btn btn-danger") Delete Request
+							button(class="btn btn-danger", id="request-delete-btn") Delete Request
 				#request_pagination.row
 					.col-xs-6
 						a(href=(prev_request_id ? "/dashboard/requests/#{prev_request_id}" : "")) 

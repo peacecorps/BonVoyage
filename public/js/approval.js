@@ -20,34 +20,44 @@ $(function() {
 		$(time).text(format_time(time_unf));
 	});
 
-
+	
     $('#request-approve-btn').click(function() {
+    	var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/approve'
         $.ajax({
             method: "POST",
             contentType: "application/x-www-form-urlencoded",
-            url: '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/approve',
+            url: url,
             success: function(response, textStatus, jqXHR) {
-                // if (err) console.log(err);
-                // console.log(response);
-                if (response.redirect) {
-                    // response.redirect contains the string URL to redirect to
-                    window.location.href = response.redirect;
+                if (response) {
+                	window.location.href = JSON.parse(response).redirect;
                 }
             }
         });
     });
 
     $('#request-deny-btn').click(function() {
+    	var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/deny'
         $.ajax({
             method: "POST",
             contentType: "application/x-www-form-urlencoded",
-            url: '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/deny',
+            url: url,
             success: function(response, textStatus, jqXHR) {
-                // if (err) console.log(err);
-                // console.log(response);
-                if (response.redirect) {
-                    // response.redirect contains the string URL to redirect to
-                    window.location.href = response.redirect;
+                if (response) {
+                    window.location.href = JSON.parse(response).redirect;
+                }
+            }
+        });
+    });
+
+    $('#request-delete-btn').click(function() {
+    	var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/delete'
+        $.ajax({
+            method: "POST",
+            contentType: "application/x-www-form-urlencoded",
+            url: url,
+            success: function(response, textStatus, jqXHR) {
+                if (response) {
+                    window.location.href = JSON.parse(response).redirect;
                 }
             }
         });
