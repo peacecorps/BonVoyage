@@ -239,10 +239,18 @@ router.postDeny = function(req, res) {
 
 router.postDelete = function(req, res) {
 	var id = req.params.request_id;
-	Request.findByIdAndRemove(id, function(err, doc) {
+	// Request.findByIdAndRemove(id, function(err, doc) {
+	// 	if (err) return res.send(500, {error: err});
+	// 	res.end(JSON.stringify({redirect: '/dashboard'}));
+	// });
+
+	Request.findOneAndRemove({'_id':id, email: req.user.email}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
+
+
+
 }
 
 router.postComments = function(req, res) {
