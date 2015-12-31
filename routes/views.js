@@ -9,11 +9,9 @@ router.index = function(req, res, next) {
 };
 
 router.renderLogin = function(req, res) {
-	var f = req.flash('loginFlash');
-	console.log(f);
 	res.render('login.jade', {
 		title: 'Login', 
-		messages: f, 
+		messages: req.flash('loginFlash'), 
 		links: [
 			{ text: "Login", href: "/login", active: true },
 			{ text: "Register", href: "/register" }
@@ -46,13 +44,15 @@ router.renderSubform = function(req, res) {
 }
 
 router.renderApproval = function(req, res) {
+	var f = req.flash('approvalFlash');
+	console.log(f);
 	res.render('approval.jade', {
 		title: 'Request Approval',
 		links: [
 			{ text: "Dashboard", href: "/dashboard" },
 			{ text: "Submit a Request", href: "/dashboard/submit" }
 		],
-		messages: req.flash('approvalFlash'),
+		messages: f,
 		request: req.request,
 		next_request_id: req.next_request_id,
 		prev_request_id: req.prev_request_id

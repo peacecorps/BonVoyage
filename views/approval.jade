@@ -57,9 +57,9 @@ block content
 										span
 											b Comment: 
 										span= comment.content
-						form(id="form-comments")
-							textarea.form-control#new-comment(rows=3, onkeyup="commentStoppedTyping()", name="content")
-							button.btn.btn-default.disabled#submit-comment Submit Comment
+						
+						textarea.form-control#new-comment(rows=3, onkeyup="commentStoppedTyping()", name="content")
+						button.btn.btn-default.disabled#submit-comment Submit Comment
 
 				// If supervisor or higher
 				if user.access > 0 

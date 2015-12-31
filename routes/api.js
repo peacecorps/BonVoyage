@@ -221,7 +221,7 @@ router.postComments = function(req, res) {
 		}
 	}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
-		req.flash('approvalFlash', 'Your comment has been added.');
+		req.flash('approvalFlash', { text: 'Your comment has been added.', class: 'success' });
 		res.end(JSON.stringify({redirect: '/dashboard/requests/' + id}));
 	});
 }
