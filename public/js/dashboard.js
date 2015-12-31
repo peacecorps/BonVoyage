@@ -1,5 +1,9 @@
 
 function addRequest(id, request) {
+	if (flag && id === "past") {
+		count = 0
+		flag = false
+	}
 	count = count + 1;
 	$('div#' + id + " table").find('tbody').append(
 		$('<tr>').append(
@@ -30,6 +34,7 @@ function format_approval(request) {
 
 $(function() {
 	count = 0
+	flag = true
 	$.each([{ url: '/api/requests/pending', id: 'pending' }, { url: '/api/requests/past', id: 'past' }], function(_, d) {
 		$.getJSON(d.url, function(request_list) {
 	        for (index in request_list) {
