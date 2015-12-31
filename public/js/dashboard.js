@@ -28,7 +28,7 @@ function format_approval(request) {
 	return (request.is_pending ? "Pending" : request.is_approved);
 }
 
-$(document).ready(function() {
+$(function() {
 	count = 0
 	$.each([{ url: '/api/requests', id: 'pending' }, { url: '/api/requests/past', id: 'past' }], function(_, d) {
 		$.getJSON(d.url, function(request_list) {

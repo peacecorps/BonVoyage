@@ -21,7 +21,7 @@ function format_time(time) {
 	}
 }
 
-$(document).ready(function() {
+$(function() {
 	$('#logout').click(function() {
 		$.ajax({
 			method: "POST",

@@ -79,6 +79,46 @@ function getRequests(req, res, cb) {
 	} else {
       	cb(null, []);
 	}
+} 
+
+function getPastRequests(req, res, cb) {
+	if (req.user) {
+		Request.aggregate([
+			{
+				// If access is supervisor or higher, match all requests: else only the user's requests
+				$match: (req.user.access >= Access.SUPERVISOR ? {} : { email: req.user.email })
+			},
+			{
+				// JOIN with the user data belonging to each request
+				$lookup: {
+					from: "users", 
+					localField: "email", 
+					foreignField: "email", 
+					as: "user"
+				}
+			},
+			{
+				$match: {
+					is_pending: false
+				}
+			}
+		], function (err, requests) {
+			if (err) 
+				return cb(err);
+			else {
+				// Add start and end date to all requests
+				for (var i = 0; i < requests.length; i++) {
+					requests[i].start_date = getStartDate(requests[i]);
+					requests[i].end_date = getEndDate(requests[i]);
+				}
+
+				console.log(requests);
+				cb(null, requests);
+			}
+		});
+	} else {
+      	cb(null, []);
+	}
 }
 
 /*
@@ -120,8 +160,10 @@ router.getRequests = function(req, res) {
 };
 
 router.getPastRequests = function(req, res){
-	past_requests = [];
-	res.json(past_requests); // TODO: Albert + Ben
+	getPastRequests(req, res, function(err, requests) {
+		if(err) console.error(err);
+		res.send(requests);
+	});
 };
 
 /*
@@ -177,6 +219,27 @@ router.postRequests = function(req, res) {
 		res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 	}
 }
+
+// router.putApprove = function(req, res) {
+// 	var id = req.param.request_id;
+// 	res.send(200);
+// }
+
+// router.putDeny = function(req, res) {
+// 	var id = req.param.request_id;
+// 	res.send(200);
+// }
+
+// router.deleteDelete = function(req, res) {
+// 	var id = req.param.request_id;
+// 	res.send(200);
+// }
+
+// router.putComments = function(req, res) {
+// 	var id = req.param.request_id;
+// 	res.send(200);
+// }
+
 
 router.logout = function(req, res) {
 	req.logout();

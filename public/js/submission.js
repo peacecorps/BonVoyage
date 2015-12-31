@@ -77,8 +77,7 @@ function getLeg(n) {
     return data;
 }
 
-$(document).ready(function() {
-
+$(function() {
     //Load the JSON file of the countries
     $.ajax({
         method: "GET",

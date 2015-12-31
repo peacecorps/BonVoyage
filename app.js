@@ -63,6 +63,11 @@ app.get('/dashboard/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNT
 
 // API
 app.get('/api/requests', isLoggedIn, api.getRequests);
+app.put('/api/requests/:request_id/approve', isLoggedIn, needsAccess(Access.SUPERVISOR), api.putApprove);
+app.put('/api/requests/:request_id/deny', isLoggedIn, needsAccess(Access.SUPERVISOR), api.putDeny);
+app.delete('/api/requests/:request_id/delete', isLoggedIn, api.deleteDelete);
+app.put('/api/requests/:request_id/comments', isLoggedIn, api.putComments);
+
 app.get('/api/requests/past', isLoggedIn, api.getPastRequests);
 app.post('/api/register', passport.authenticate('local-signup', {
         successRedirect : '/dashboard', // redirect to the dashboard

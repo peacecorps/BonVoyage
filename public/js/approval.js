@@ -8,7 +8,7 @@ function commentStoppedTyping() {
 	}
 }
 
-$(document).ready(function() {
+$(function() {
 	// Format the dates for the trip itinerary
 	$('.date').each(function(_, date) {
 		var date_unf = $(date).data('unformatted');
