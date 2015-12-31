@@ -46,42 +46,7 @@ function getEndDate(request) {
 	}
 }
 
-function getRequests(req, res, cb) {
-	if (req.user) {
-		Request.aggregate([
-			{
-				// If access is supervisor or higher, match all requests: else only the user's requests
-				$match: (req.user.access >= Access.SUPERVISOR ? {} : { email: req.user.email })
-			},
-			{
-				// JOIN with the user data belonging to each request
-				$lookup: {
-					from: "users", 
-					localField: "email", 
-					foreignField: "email", 
-					as: "user"
-				}
-			}
-		], function (err, requests) {
-			if (err) 
-				return cb(err);
-			else {
-				// Add start and end date to all requests
-				for (var i = 0; i < requests.length; i++) {
-					requests[i].start_date = getStartDate(requests[i]);
-					requests[i].end_date = getEndDate(requests[i]);
-				}
-
-				console.log(requests);
-				cb(null, requests);
-			}
-		});
-	} else {
-      	cb(null, []);
-	}
-} 
-
-function getPendingRequests(req, res, pending, cb) {
+function getRequests(req, res, flag, pending, cb) {
 	if (req.user) {
 		Request.aggregate([
 			{
@@ -98,9 +63,7 @@ function getPendingRequests(req, res, pending, cb) {
 				}
 			},
 			{
-				$match: {
-					is_pending: pending
-				}
+				$match: (flag ? {} : { is_pending: pending })
 			}
 		], function (err, requests) {
 			if (err) 
@@ -127,7 +90,7 @@ function getPendingRequests(req, res, pending, cb) {
  */
 router.handleRequestId = function(req, res, next, request_id) {
 	
-	getRequests(req, res, function(err, requests) {
+	getRequests(req, res, true, false, function(err, requests) {
 		if (err) next(err);
 		else {
 			// Lookup the id in this list of requests
@@ -154,21 +117,21 @@ router.handleRequestId = function(req, res, next, request_id) {
  */
 
 router.getRequests = function(req, res) {
-	getRequests(req, res, function(err, requests) {
+	getRequests(req, res, true, false, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
 };
 
 router.getPendingRequests = function(req, res) {
-	getPendingRequests(req, res, true, function(err, requests) {
+	getRequests(req, res, false, true, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
 };
 
 router.getPastRequests = function(req, res){
-	getPendingRequests(req, res, false, function(err, requests) {
+	getRequests(req, res, false, false, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
@@ -201,8 +164,6 @@ router.postRequests = function(req, res) {
 			description: leg.description
 		});
 	}
-
-	// console.log(legs);
 
 	if (legs.length > 0) {
 		var newRequest = new Request({
@@ -245,11 +206,6 @@ router.postDeny = function(req, res) {
 
 router.postDelete = function(req, res) {
 	var id = req.params.request_id;
-	// Request.findByIdAndRemove(id, function(err, doc) {
-	// 	if (err) return res.send(500, {error: err});
-	// 	res.end(JSON.stringify({redirect: '/dashboard'}));
-	// });
-
 	Request.findOneAndRemove({'_id':id, email: req.user.email}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
@@ -258,8 +214,6 @@ router.postDelete = function(req, res) {
 
 router.postComments = function(req, res) {
 	var id = req.params.request_id;
-	// console.log(req.query);
-	console.log("IS THIS A TEST");
 	Request.findByIdAndUpdate(id, {$push: {
 		comments: {
 			$each:[{
