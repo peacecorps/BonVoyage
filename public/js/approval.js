@@ -12,12 +12,12 @@ $(function() {
 	// Format the dates for the trip itinerary
 	$('.date').each(function(_, date) {
 		var date_unf = $(date).data('unformatted');
-		$(date).text(format_date(date_unf));
+		$(date).text(format_date(date_unf, UTC_FORMAT));
 	});
 	// Format the timestamps for the comments
 	$('.timestamp').each(function(_, time) {
 		var time_unf = $(time).data('unformatted');
-		$(time).text(format_time(time_unf));
+		$(time).text(format_time(time_unf, UTC_FORMAT_TIME));
 	});
 
 	$('#submit-comment').click(function() {

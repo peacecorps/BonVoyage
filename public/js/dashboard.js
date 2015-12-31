@@ -5,15 +5,16 @@ function addRequest(id, request) {
 		flag = false
 	}
 	count = count + 1;
+	console.log(request.end_date);
 	$('div#' + id + " table").find('tbody').append(
 		$('<tr>').append(
 			$('<th>').text(count)
 		).append(
 			$('<td>').text((request.user && request.user.length > 0 ? request.user[0].name : "None"))
 		).append(
-			$('<td>').text(format_date(request.start_date))
+			$('<td>').text(format_date(request.start_date, ISO_FORMAT))
 		).append(
-			$('<td>').text(format_date(request.end_date))
+			$('<td>').text(format_date(request.end_date, ISO_FORMAT))
 		).append(
 			$('<td>').text(format_approval(request))
 		).addClass(
