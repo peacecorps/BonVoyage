@@ -3,6 +3,8 @@ var router = express.Router();
 var User = require("../models/user");
 var Request = require("../models/request");
 var Access = require("../config/access");
+var fs = require('fs');
+var warnings = undefined;
 
 router.index = function(req, res, next) {
   res.redirect('/login');
@@ -44,15 +46,19 @@ router.renderSubform = function(req, res) {
 }
 
 router.renderApproval = function(req, res) {
-	var f = req.flash('approvalFlash');
-	console.log(f);
+	if (!warnings)
+		warnings = JSON.parse(fs.readFileSync("public/data/warnings.json", 'utf8'));
+	// Merge warnings to requests
+	for(var i = 0; i < req.request.legs.length; i++) {
+		req.request.legs[i].warnings = warnings[req.request.legs[i].country_code];
+	}
 	res.render('approval.jade', {
 		title: 'Request Approval',
 		links: [
 			{ text: "Dashboard", href: "/dashboard" },
 			{ text: "Submit a Request", href: "/dashboard/submit" }
 		],
-		messages: f,
+		messages: req.flash('approvalFlash'),
 		request: req.request,
 		next_request_id: req.next_request_id,
 		prev_request_id: req.prev_request_id

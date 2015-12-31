@@ -57,6 +57,9 @@
   color: #392F20;
   opacity: 0.60; }
 
+#htmlwrapper .warning {
+  margin: 10px 0; }
+
 #htmlwrapper .nav-pills li:not(.active) a {
   color: #392F20; }
   #htmlwrapper .nav-pills li:not(.active) a:hover {

@@ -11,6 +11,7 @@ var request_schema = mongoose.Schema({
 		start_date: Date,
 		end_date: Date,
 		country: String,
+		country_code: String,
 		description: String
 	}],
 

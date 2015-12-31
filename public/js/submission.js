@@ -17,7 +17,8 @@ function addLeg() {
         <h2> Trip Leg #" + count + " </h2> \
         <input class='form-control datepicker date-leaving' type='text' placeholder='Date leaving'> \
         <input class='form-control datepicker date-returning' type='text' placeholder='Date returning'> \
-        <select class='form-control select-country' placeholder='Country'> \
+        <select class='form-control select-country' placeholder='Country'></select> \
+        <div class='warnings'></div> \
         <textarea class='form-control description' rows='6' placeholder='Reason for leave'></textarea> \
         <button class='btn btn-danger remove-leg'> Remove Trip Leg </button> \
     </div>";
@@ -42,6 +43,22 @@ function handleTripLegChanges() {
     }
 }
 
+function clearWarnings($warnings) {
+    $($warnings).empty();
+}
+
+function addWarning(warning, $warnings) {
+    console.log(warning);
+    console.log($warnings);
+    $($warnings).append(
+        $(
+            "<div class='warning alert alert-danger' role='alert'> \
+                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>" + toTitleCase(warning.type) + ":</b> " + warning.text_overview + "</span> \
+            </div>"
+        )
+    );
+}
+
 function initialize(n) {
     // Initialize the Pick a Date picker
     $('.leg:nth-child(' + n + ') .datepicker').pickadate();
@@ -64,6 +81,25 @@ function initialize(n) {
         count--;
         handleTripLegChanges();
     });
+
+    // Show a warning if one exists when the select is clicked
+    selectize.on('item_add', function(country_code, $item) {
+        console.log(country_code);
+        // Get a selector for the warnings div, specific to the leg where the country was selected
+        $warnings = $($item).closest($('.leg')).find('.warnings');
+        getWarnings(function(warnings) {
+            // Clear all warnings
+            clearWarnings($warnings);
+            // Get the warnings for the selected country
+            country_warnings = warnings[country_code];
+            if (country_warnings) {
+                for(var i = 0; i < country_warnings.length; i++) {
+                    // Add a warning for each country
+                    addWarning(country_warnings[i], $warnings);
+                }
+            }
+        });
+    });
 }
 
 function getLeg(n) {
@@ -78,7 +114,8 @@ function getLeg(n) {
 }
 
 $(function() {
-    //Load the JSON file of the countries
+    $select = $('.selectized').selectize();
+    // Load the JSON file of the countries
     $.ajax({
         method: "GET",
         url: "/data/countryList.json",
@@ -88,7 +125,6 @@ $(function() {
                 arrCountries.push({ "country": json[key], "country_code": key });
             }
 
-            $select = $('.selectized').selectize();
             $select.each(function(_, $s) {
                 $s.selectize.addOption(arrCountries);
                 $s.selectize.refreshOptions(false);
@@ -97,6 +133,10 @@ $(function() {
         }
     });
 
+    // Load the warnings
+    getWarnings();
+
+    // Start the request with a single trip leg
     addLeg();
 
     $('#request-add-leg-btn').click(addLeg);

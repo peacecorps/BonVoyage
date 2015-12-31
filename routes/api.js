@@ -156,6 +156,7 @@ router.postRequests = function(req, res) {
 			start_date: start,
 			end_date: end,
 			country: countries_dictionary[leg.country],
+			country_code: leg.country,
 			description: leg.description
 		});
 	}

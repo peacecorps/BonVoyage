@@ -40,6 +40,12 @@ block content
 								span
 									em Description: 
 								span= (leg.description ? leg.description : "No description on file.")
+							each warning in leg.warnings
+								.warning.alert.alert-danger(role='alert')
+									span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
+									span
+										b #{warning.type}: 
+									span= warning.text_overview
 					h2 Comments #{(request.comments.length > 0 ? "(" + request.comments.length + ")" : "")}
 					.shadow-box
 						table#comments

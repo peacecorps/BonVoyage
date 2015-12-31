@@ -44,7 +44,7 @@ function parseText(text, index) {
 	text_l = text.toLowerCase();
 	switch (index) {
 		case COLUMNS.TYPE: 
-			return text_l; // 'alert' or 'warning'
+			return text; // 'Alert' or 'Warning'
 		case COLUMNS.DATE: 
 			// The date that the alert/warning was released, converted to a JS Date
 			return strip_time(text_l).toDate();
@@ -66,8 +66,23 @@ function storeWarnings(warnings) {
 	var fs = require('fs');
 	var json = JSON.stringify(warnings, null, 2);
 	fs.writeFile(OUTPUT_FILE, json, function(err) {
-	  if(err) return console.log(err);
+		if(err) return console.log(err);
 	});
+}
+
+function getWarningText(warning, callback) {
+	if (warning.link) {
+		request(warning.link, function(error, response, body) {
+			if(!error && response.statusCode == 200) {
+				$ = cheerio.load(body);
+				warning.text = $('.content_par').text().trim()
+				warning.text_overview = $('.callout_text').text().trim();
+			}
+			callback();
+		});
+	} else {
+		callback();
+	}
 }
 
 request('http://travel.state.gov/content/passports/en/alertswarnings.html', 
@@ -77,6 +92,7 @@ request('http://travel.state.gov/content/passports/en/alertswarnings.html',
 
 		if (!error && response.statusCode == 200) {
 			$ = cheerio.load(body);
+			var rows_to_parse = $("tr").length;
 
 			$("tr").each(function(row, elem) {
 				raw_data = [];
@@ -95,17 +111,21 @@ request('http://travel.state.gov/content/passports/en/alertswarnings.html',
 				var warning = {
 					type: raw_data[COLUMNS.TYPE],
 					start_date: raw_data[COLUMNS.DATE],
-					link: link
+					link: link,
+					text: undefined
 				};
-				// Insert this warning at each of the match countries
-				for (var i = 0; i < country_codes.length; i++) {
-					if (warnings[country_codes[i]] == undefined) 
-						warnings[country_codes[i]] = [];
-					warnings[country_codes[i]].push(warning)
-				}
+				getWarningText(warning, function() {
+					rows_to_parse--;
+					// Insert this warning at each of the match countries
+					for (var i = 0; i < country_codes.length; i++) {
+						if (warnings[country_codes[i]] == undefined) 
+							warnings[country_codes[i]] = [];
+						warnings[country_codes[i]].push(warning)
+					}
+					if (rows_to_parse == 0) {
+						storeWarnings(warnings);
+					}
+				});
 		});
-
-		storeWarnings(warnings);
 	}
 });
-
