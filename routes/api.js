@@ -61,6 +61,11 @@ function getRequests(req, res, cb) {
 					foreignField: "email", 
 					as: "user"
 				}
+			},
+			{
+				$match: {
+					is_pending: true
+				}
 			}
 		], function (err, requests) {
 			if (err) 
@@ -119,6 +124,42 @@ function getPastRequests(req, res, cb) {
 	} else {
       	cb(null, []);
 	}
+}
+
+function postProcess(req, res, cb) {
+	Request.aggregate([
+			{
+				// If access is supervisor or higher, match all requests: else only the user's requests
+				$match: (req.user.access >= Access.SUPERVISOR ? {} : { email: req.user.email })
+			},
+			{
+				// JOIN with the user data belonging to each request
+				$lookup: {
+					from: "users", 
+					localField: "email", 
+					foreignField: "email", 
+					as: "user"
+				}
+			},
+			{
+				$match: {
+					is_pending: false
+				}
+			}
+		], function (err, requests) {
+			if (err) 
+				return cb(err);
+			else {
+				// Add start and end date to all requests
+				for (var i = 0; i < requests.length; i++) {
+					requests[i].start_date = getStartDate(requests[i]);
+					requests[i].end_date = getEndDate(requests[i]);
+				}
+
+				console.log(requests);
+				cb(null, requests);
+			}
+		});
 }
 
 /*
@@ -220,26 +261,43 @@ router.postRequests = function(req, res) {
 	}
 }
 
-// router.putApprove = function(req, res) {
-// 	var id = req.param.request_id;
-// 	res.send(200);
-// }
+router.postApprove = function(req, res) {
+	var id = req.params.request_id;
+	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":true}}, function(err, doc) {
+		if (err) return res.send(500, {error: err});
+		res.end(JSON.stringify({redirect: '/dashboard'}));
+	});
+}
 
-// router.putDeny = function(req, res) {
-// 	var id = req.param.request_id;
-// 	res.send(200);
-// }
+router.postDeny = function(req, res) {
+	var id = req.params.request_id;
+	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":false}}, function(err, doc) {
+		if (err) return res.send(500, {error: err});
+		res.end(JSON.stringify({redirect: '/dashboard'}));
+	});
+}
 
-// router.deleteDelete = function(req, res) {
-// 	var id = req.param.request_id;
-// 	res.send(200);
-// }
+router.postDelete = function(req, res) {
+	var id = req.params.request_id;
+	
+	Request.findByIdAndRemove(id, function(err, doc) {
+		if (err) return res.send(500, {error: err});
+		res.end(JSON.stringify({redirect: '/dashboard'}));
+	});
+}
 
-// router.putComments = function(req, res) {
-// 	var id = req.param.request_id;
-// 	res.send(200);
-// }
+router.postComments = function(req, res) {
+	var id = req.params.request_id;
 
+	Request.findByIdAndUpdate(id, {$set: {
+		comments:[{
+			content:req.content
+		}]
+	}}, function(err, doc) {
+		if (err) return res.send(500, {error: err});
+		return res.send('successfully added comment');
+	});
+}
 
 router.logout = function(req, res) {
 	req.logout();

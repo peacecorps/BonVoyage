@@ -19,4 +19,39 @@ $(function() {
 		var time_unf = $(time).data('unformatted');
 		$(time).text(format_time(time_unf));
 	});
+
+
+    $('#request-approve-btn').click(function() {
+        $.ajax({
+            method: "POST",
+            contentType: "application/x-www-form-urlencoded",
+            url: '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/approve',
+            success: function(response, textStatus, jqXHR) {
+                // if (err) console.log(err);
+                // console.log(response);
+                if (response.redirect) {
+                    // response.redirect contains the string URL to redirect to
+                    window.location.href = response.redirect;
+                }
+            }
+        });
+    });
+
+    $('#request-deny-btn').click(function() {
+        $.ajax({
+            method: "POST",
+            contentType: "application/x-www-form-urlencoded",
+            url: '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/deny',
+            success: function(response, textStatus, jqXHR) {
+                // if (err) console.log(err);
+                // console.log(response);
+                if (response.redirect) {
+                    // response.redirect contains the string URL to redirect to
+                    window.location.href = response.redirect;
+                }
+            }
+        });
+    });
+
 });
+
