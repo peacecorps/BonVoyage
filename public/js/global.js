@@ -1,14 +1,15 @@
 
+var UTC_FORMAT = 'ddd MMM DD YYYY HH:mm:ss zZZ';
 
-function strip_time(date) {
-	return moment(date, 'MMMM DD, YYYY').startOf('day');
+function strip_time(date, format) {
+	return moment(date, format).startOf('day');
 }
 
 function format_date(date) {
 	if (date === undefined) {
 		return "None";
 	} else {
-		return strip_time(date).format("MMM DD, YYYY");
+		return strip_time(date, UTC_FORMAT).format("MMM DD, YYYY");
 	}
 }
 
@@ -16,8 +17,7 @@ function format_time(time) {
 	if (time === undefined) {
 		return "None";
 	} else {
-		console.log(time);
-		return moment(time).format("LLL");
+		return moment(time, UTC_FORMAT).format("LLL");
 	}
 }
 

@@ -71,8 +71,10 @@
   #htmlwrapper .jumbotron {
     padding: 10px; } }
 
+#htmlwrapper .tab-pane {
+  margin-top: 20px; }
+
 #htmlwrapper .request-table {
-  margin-top: 20px;
   margin-bottom: 0; }
   #htmlwrapper .request-table thead {
     background-color: #e7e7e7; }
