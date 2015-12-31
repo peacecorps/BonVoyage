@@ -62,14 +62,15 @@ app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), views.re
 app.get('/dashboard/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderApproval);
 
 // API
-app.get('/api/requests', isLoggedIn, api.getRequests);
+app.get('/api/requests', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getRequests);
+app.get('/api/requests/past', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getPastRequests);
+app.get('/api/requests/pending', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getPendingRequests);
+
 app.post('/api/requests/:request_id/approve', isLoggedIn, needsAccess(Access.SUPERVISOR), api.postApprove);
 app.post('/api/requests/:request_id/deny', isLoggedIn, needsAccess(Access.SUPERVISOR), api.postDeny);
-app.post('/api/requests/:request_id/delete', isLoggedIn, api.postDelete);
-app.post('/api/requests/:request_id/comments', isLoggedIn, api.postComments);
+app.post('/api/requests/:request_id/delete', isLoggedIn, needsAccess(Access.VOLUNTEER), api.postDelete);
+app.post('/api/requests/:request_id/comments', isLoggedIn, needsAccess(Access.VOLUNTEER), api.postComments);
 
-app.get('/api/requests/past', isLoggedIn, api.getPastRequests);
-app.get('/api/requests/pending', isLoggedIn, api.getPendingRequests);
 app.post('/api/register', passport.authenticate('local-signup', {
         successRedirect : '/dashboard', // redirect to the dashboard
         failureRedirect : '/register', // redirect back to the register page if there is an error
@@ -81,7 +82,7 @@ app.post('/api/login', passport.authenticate('local-login', {
         failureFlash : true // allow flash messages
 }));
 app.post('/api/logout', api.logout);
-app.post('/api/requests',isLoggedIn, api.postRequests);
+app.post('/api/requests',isLoggedIn, needsAccess(Access.VOLUNTEER), api.postRequests);
 app.post('/api/promote', isLoggedIn, needsAccess(Access.SUPERVISOR), api.promote);
 
 // middleware to ensure the user is authenticated. If not, redirect to login page.

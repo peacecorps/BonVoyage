@@ -84,7 +84,6 @@ function getRequests(req, res, flag, pending, cb) {
 	}
 }
 
-
 /*
  * Handle Parameters
  */
