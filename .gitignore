@@ -40,3 +40,6 @@ node_modules
 
 # SSL Keys
 **/*.key
+
+# Node Debug Logs
+npm-debug.log
