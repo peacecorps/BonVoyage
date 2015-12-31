@@ -30,7 +30,7 @@ function format_approval(request) {
 
 $(function() {
 	count = 0
-	$.each([{ url: '/api/requests', id: 'pending' }, { url: '/api/requests/past', id: 'past' }], function(_, d) {
+	$.each([{ url: '/api/requests/pending', id: 'pending' }, { url: '/api/requests/past', id: 'past' }], function(_, d) {
 		$.getJSON(d.url, function(request_list) {
 	        for (index in request_list) {
 	        	request = request_list[index]

@@ -69,6 +69,7 @@ app.post('/api/requests/:request_id/delete', isLoggedIn, api.postDelete);
 app.post('/api/requests/:request_id/comments', isLoggedIn, api.postComments);
 
 app.get('/api/requests/past', isLoggedIn, api.getPastRequests);
+app.get('/api/requests/pending', isLoggedIn, api.getPendingRequests);
 app.post('/api/register', passport.authenticate('local-signup', {
         successRedirect : '/dashboard', // redirect to the dashboard
         failureRedirect : '/register', // redirect back to the register page if there is an error

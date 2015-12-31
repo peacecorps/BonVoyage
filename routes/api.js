@@ -81,7 +81,7 @@ function getRequests(req, res, cb) {
 	}
 } 
 
-function getPastRequests(req, res, cb) {
+function getPendingRequests(req, res, pending, cb) {
 	if (req.user) {
 		Request.aggregate([
 			{
@@ -99,7 +99,7 @@ function getPastRequests(req, res, cb) {
 			},
 			{
 				$match: {
-					is_pending: false
+					is_pending: pending
 				}
 			}
 		], function (err, requests) {
@@ -120,6 +120,7 @@ function getPastRequests(req, res, cb) {
       	cb(null, []);
 	}
 }
+
 
 /*
  * Handle Parameters
@@ -159,8 +160,15 @@ router.getRequests = function(req, res) {
 	});
 };
 
+router.getPendingRequests = function(req, res) {
+	getPendingRequests(req, res, true, function(err, requests) {
+		if(err) console.error(err);
+		res.send(requests);
+	});
+};
+
 router.getPastRequests = function(req, res){
-	getPastRequests(req, res, function(err, requests) {
+	getPendingRequests(req, res, false, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
