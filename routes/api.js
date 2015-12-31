@@ -112,7 +112,7 @@ function getPendingRequests(req, res, pending, cb) {
 					requests[i].end_date = getEndDate(requests[i]);
 				}
 
-				console.log(requests);
+				// console.log(requests);
 				cb(null, requests);
 			}
 		});
@@ -179,7 +179,6 @@ router.getPastRequests = function(req, res){
  */
 
 router.postRequests = function(req, res) {
-
 	var legs = [];
 	for (var i = 0; i < req.body.legs.length; i++) {
 		leg = req.body.legs[i];
@@ -203,7 +202,7 @@ router.postRequests = function(req, res) {
 		});
 	}
 
-	console.log(legs);
+	// console.log(legs);
 
 	if (legs.length > 0) {
 		var newRequest = new Request({
@@ -230,7 +229,6 @@ router.postRequests = function(req, res) {
 
 router.postApprove = function(req, res) {
 	var id = req.params.request_id;
-	console.log()
 	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":true}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
@@ -256,22 +254,22 @@ router.postDelete = function(req, res) {
 		if (err) return res.send(500, {error: err});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
-
-
-
 }
 
 router.postComments = function(req, res) {
 	var id = req.params.request_id;
-
-	Request.findByIdAndUpdate(id, {$set: {
-		comments:[{
-			email:req.user.email,
-			content:req.content
-		}]
+	// console.log(req.query);
+	console.log("IS THIS A TEST");
+	Request.findByIdAndUpdate(id, {$push: {
+		comments: {
+			$each:[{
+				email:req.user.email,
+				content:req.param('content')
+			}]
+		}
 	}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
-		return res.send('successfully added comment');
+		res.end(JSON.stringify({redirect: '/dashboard/requests/' + id}));
 	});
 }
 
