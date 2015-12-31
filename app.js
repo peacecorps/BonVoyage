@@ -87,7 +87,6 @@ app.post('/api/promote', isLoggedIn, needsAccess(Access.SUPERVISOR), api.promote
 
 // middleware to ensure the user is authenticated. If not, redirect to login page.
 function isLoggedIn(req, res, next) {
-  console.log(req);
   if(req.isAuthenticated())
     return next();
   else

@@ -8,6 +8,9 @@ block content
 
 			.jumbotron
 				h2 Request Overview
+
+				include flash
+				
 				#request
 					- var did_match_user = (request.user && request.user.length > 0);
 					if did_match_user
@@ -41,18 +44,19 @@ block content
 					.shadow-box
 						table#comments
 							each comment in request.comments
-								p
-									span 
-										b Email: 
-									span= comment.email
-								p
-									span 
-										b Time: 
-									span.timestamp(data-unformatted="#{comment.timestamp}")
-								p
-									span
-										b Comment: 
-									span= comment.content
+								.comment
+									p
+										span 
+											b Email: 
+										span= comment.email
+									p
+										span 
+											b Time: 
+										span.timestamp(data-unformatted="#{comment.timestamp}")
+									p
+										span
+											b Comment: 
+										span= comment.content
 						form(id="form-comments")
 							textarea.form-control#new-comment(rows=3, onkeyup="commentStoppedTyping()", name="content")
 							button.btn.btn-default.disabled#submit-comment Submit Comment

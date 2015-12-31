@@ -9,9 +9,11 @@ router.index = function(req, res, next) {
 };
 
 router.renderLogin = function(req, res) {
+	var f = req.flash('loginFlash');
+	console.log(f);
 	res.render('login.jade', {
 		title: 'Login', 
-		message: req.flash('loginMessage'), 
+		messages: f, 
 		links: [
 			{ text: "Login", href: "/login", active: true },
 			{ text: "Register", href: "/register" }
@@ -23,7 +25,7 @@ router.renderLogin = function(req, res) {
 router.renderRegister = function(req, res) {
     res.render('register.jade', {
     	title: 'Register', 
-    	message: req.flash('signupMessage'), 
+    	messages: req.flash('registerFlash'), 
 		links: [
 			{ text: "Login", href: "/login" },
 			{ text: "Register", href: "/register", active: true }
@@ -39,20 +41,18 @@ router.renderSubform = function(req, res) {
 			{ text: "Dashboard", href: "/dashboard" },
 			{ text: "Submit a Request", href: "/dashboard/submit", active: true }
     	],
-    	message: req.flash('submissionFlash')
+    	messages: req.flash('submissionFlash')
     });
 }
 
 router.renderApproval = function(req, res) {
-	console.log("here");
-	console.log(req.request);
 	res.render('approval.jade', {
 		title: 'Request Approval',
 		links: [
 			{ text: "Dashboard", href: "/dashboard" },
 			{ text: "Submit a Request", href: "/dashboard/submit" }
 		],
-		message: req.flash('approvalFlash'),
+		messages: req.flash('approvalFlash'),
 		request: req.request,
 		next_request_id: req.next_request_id,
 		prev_request_id: req.prev_request_id
@@ -66,7 +66,7 @@ router.renderDashboard = function(req, res) {
 			{ text: "Dashboard", href: "/dashboard", active: true },
 			{ text: "Submit a Request", href: "/dashboard/submit" }
 		],
-		message: req.flash('dashboardFlash')
+		messages: req.flash('dashboardFlash')
 	});
 }
 

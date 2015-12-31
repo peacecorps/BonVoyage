@@ -7,3 +7,6 @@
 
 #htmlwrapper .shadow-box p {
   margin-bottom: 0; }
+
+#htmlwrapper .shadow-box .comment {
+  margin-bottom: 10px; }

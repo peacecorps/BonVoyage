@@ -29,7 +29,7 @@ function clearRequests(id) {
 }
 
 function format_approval(request) {
-	return (request.is_pending ? "Pending" : request.is_approved);
+	return (request.is_pending ? "Pending" : (request.is_approved ? "Approved" : "Denied"));
 }
 
 $(function() {

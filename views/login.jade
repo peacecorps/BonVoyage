@@ -10,10 +10,7 @@ block content
       h2.form-signin-heading
         p Login
 
-      if message != ""
-        .alert.alert-danger(role='alert')
-          span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
-          span= message
+      include flash
 
       label.sr-only(for='inputEmail') Email address
       input#inputEmail.form-control(type='email', placeholder='Email address', required='', autofocus='', name = 'email')

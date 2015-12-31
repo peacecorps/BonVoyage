@@ -14,10 +14,7 @@ block content
       .jumbotron
         h2 Submission Form
         
-        if message != ""
-          .alert.alert-danger(role='alert')
-            span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
-            span= message
+        include flash
 
         #request-submit
           //- Travel legs are inserted in submission.js

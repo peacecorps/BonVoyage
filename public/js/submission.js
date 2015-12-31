@@ -30,7 +30,7 @@ function handleTripLegChanges() {
     // Update trip leg numbers to reflect deleted legs
     c = 1
     $('.leg').each(function(_, leg) {
-        $(leg).removeClass().addClass('leg leg' + c);
+        $(leg).removeClass().addClass('leg shadow-box leg' + c);
         $(leg).find('h2').text("Trip Leg #" + c);
         c++;
     });

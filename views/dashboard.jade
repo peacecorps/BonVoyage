@@ -8,11 +8,8 @@ block content
 
       .jumbotron
         h2.dash_text Dashboard
-        
-        if message != ""
-          .alert.alert-success(role='alert')
-            span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
-            span= message
+
+        include flash
 
         form(action="/dashboard/submit")
           button.new-request-button.btn.btn-default.btn-block(type='submit') Add New Leave Request

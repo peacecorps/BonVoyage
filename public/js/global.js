@@ -26,8 +26,10 @@ $(function() {
 		$.ajax({
 			method: "POST",
 			url: "/api/logout",
-			success: function() {
-				window.location.href = '/login';
+			dataType: "json",
+			success: function(resp) {
+				if (resp.redirect)
+					window.location.href = resp.redirect;
 			}
 		});
 	});

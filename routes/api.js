@@ -98,10 +98,6 @@ router.handleRequestId = function(req, res, next, request_id) {
 					req.request = requests[i];
 					req.next_request_id = (i < requests.length - 1 ? requests[i+1]._id : undefined);
 					req.prev_request_id = (i > 0 ? requests[i-1]._id : undefined);
-					console.log("Approval Data");
-					console.log(req.request);
-					console.log(req.next_request_id);
-					console.log(req.prev_request_id);
 					next();
 				}
 			}
@@ -147,11 +143,11 @@ router.postRequests = function(req, res) {
 		var start = moment(leg.start_date);
 		var end = moment(leg.end_date);
 		if (!(start.isBefore(end) || start.isSame(end))) {
-			req.flash('submissionFlash', 'The start date you entered for leg #' + (i+1) + ' comes after the end date.');
+			req.flash('submissionFlash', { text: 'The start date you entered for leg #' + (i+1) + ' comes after the end date.', class: 'danger' });
 			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 			return;
 		} else if (Object.keys(countries_dictionary).indexOf(leg.country) == -1) {
-			req.flash('submissionFlash', 'The country that you have selected for leg #' + (i+1) + ' is not a valid country.');
+			req.flash('submissionFlash', { text: 'The country that you have selected for leg #' + (i+1) + ' is not a valid country.', class: 'danger' });
 			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 			return;
 		}
@@ -174,15 +170,15 @@ router.postRequests = function(req, res) {
 
 		newRequest.save(function(err) {
 			if (err) {
-				req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
+				req.flash('submissionFlash', { text: 'An error has occurred while trying to save this request. Please try again.', class: 'danger' });
 				res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 			} else {
-				req.flash('dashboardFlash', 'Request successfully saved.');
+				req.flash('dashboardFlash', { text: 'Request successfully saved.', class: 'success' });
 				res.end(JSON.stringify({redirect: '/dashboard'}));
 			}
 		});
 	} else {
-		req.flash('submissionFlash', 'An error has occurred while trying to save this request. Please try again.');
+		req.flash('submissionFlash', { text: 'An error has occurred while trying to save this request. Please try again.', class: 'danger' });
 		res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 	}
 }
@@ -191,7 +187,8 @@ router.postApprove = function(req, res) {
 	var id = req.params.request_id;
 	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":true}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
-		res.end(JSON.stringify({redirect: '/dashboard'}));
+		req.flash('dashboardFlash', { text: 'The request has been successfully approved.', class: 'success'});
+		res.end(JSON.stringify({redirect: '/dashboard#past'}));
 	});
 }
 
@@ -199,7 +196,8 @@ router.postDeny = function(req, res) {
 	var id = req.params.request_id;
 	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":false}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
-		res.end(JSON.stringify({redirect: '/dashboard'}));
+		req.flash('dashboardFlash', { text: 'The request has been successfully denied.', class: 'success'});
+		res.end(JSON.stringify({redirect: '/dashboard#past'}));
 	});
 }
 
@@ -207,6 +205,7 @@ router.postDelete = function(req, res) {
 	var id = req.params.request_id;
 	Request.findOneAndRemove({'_id':id, email: req.user.email}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
+		req.flash('dashboardFlash', { text: 'The request has been successfully deleted.', class: 'success'});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
 }
@@ -222,13 +221,15 @@ router.postComments = function(req, res) {
 		}
 	}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
+		req.flash('approvalFlash', 'Your comment has been added.');
 		res.end(JSON.stringify({redirect: '/dashboard/requests/' + id}));
 	});
 }
 
 router.logout = function(req, res) {
 	req.logout();
-	res.redirect('/login');
+	req.flash('loginFlash', { text: 'You have been logged out.', class: 'success'});
+	res.end(JSON.stringify({redirect: '/login'}));
 }
 
 /*
