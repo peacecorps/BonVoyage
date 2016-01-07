@@ -1,0 +1,7 @@
+
+if messages && messages.length > 0
+	each message in messages
+		if message.text != ""
+			.alert(role='alert', class=(message.class ? 'alert-' + message.class : 'alert-info'))
+				span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
+				span= message.text

@@ -1,0 +1,152 @@
+#htmlwrapper body {
+  background-color: #e1dec7;
+  font-family: 'Roboto', Tahoma, Serif, Arial; }
+  #htmlwrapper body .top-nav .login-title {
+    padding-left: 15px;
+    color: #e7e7e7; }
+
+#htmlwrapper .btn {
+  padding: 10px 15px; }
+
+#htmlwrapper .btn-default {
+  background-color: #3C7F8C;
+  border-color: #2b6e7b;
+  color: #f7f7f7; }
+
+#htmlwrapper .btn-default:hover {
+  background-color: #2b6e7b; }
+
+#htmlwrapper .shadow-box {
+  border: 1px solid #392F20;
+  padding: 10px;
+  -moz-box-shadow: inset 0 0 2px #392F20;
+  -webkit-box-shadow: inset 0 0 2px #392F20;
+  box-shadow: inset 0 0 2px #392F20;
+  border-radius: 5px;
+  margin-bottom: 20px; }
+
+#htmlwrapper .form-control:focus,
+#htmlwrapper .picker__input--active,
+#htmlwrapper .selectize-input.focus {
+  border-color: #3C7F8C;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(60, 127, 140, 0.6);
+  -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(60, 127, 140, 0.6);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(60, 127, 140, 0.6); }
+
+#htmlwrapper .datepicker {
+  background-color: #fff;
+  cursor: pointer; }
+
+#htmlwrapper h2 {
+  text-align: center;
+  color: #392F20; }
+
+#htmlwrapper ::-webkit-input-placeholder {
+  color: #392F20;
+  opacity: 0.60; }
+
+#htmlwrapper :-moz-placeholder {
+  color: #392F20;
+  opacity: 0.60; }
+
+#htmlwrapper ::-moz-placeholder {
+  color: #392F20;
+  opacity: 0.60; }
+
+#htmlwrapper :-ms-input-placeholder {
+  color: #392F20;
+  opacity: 0.60; }
+
+#htmlwrapper .warning {
+  margin: 10px 0; }
+
+#htmlwrapper .nav-pills li:not(.active) a {
+  color: #392F20; }
+  #htmlwrapper .nav-pills li:not(.active) a:hover {
+    color: #170d00; }
+
+#htmlwrapper .nav-pills li.active a {
+  background-color: #3C7F8C; }
+  #htmlwrapper .nav-pills li.active a:hover {
+    background-color: #2b6e7b; }
+
+@media screen and (max-width: 768px) {
+  #htmlwrapper .jumbotron {
+    padding: 10px; } }
+
+#htmlwrapper .tab-pane {
+  margin-top: 20px; }
+
+#htmlwrapper .request-table {
+  margin-bottom: 0; }
+  #htmlwrapper .request-table thead {
+    background-color: #e7e7e7; }
+
+#htmlwrapper .navbar {
+  background-color: #3C7F8C;
+  border-width: 0;
+  padding: 0px 5px; }
+  #htmlwrapper .navbar #pclogo {
+    padding: 10px; }
+    #htmlwrapper .navbar #pclogo img {
+      height: 30px; }
+  #htmlwrapper .navbar a {
+    color: #e7e7e7; }
+    #htmlwrapper .navbar a:hover {
+      color: #f7f7f7; }
+  #htmlwrapper .navbar li.active a {
+    color: #392F20; }
+    #htmlwrapper .navbar li.active a:hover {
+      color: #000; }
+  #htmlwrapper .navbar .navbar-toggle span.icon-bar {
+    background-color: #e7e7e7; }
+  #htmlwrapper .navbar .navbar-toggle:focus span.icon-bar, #htmlwrapper .navbar .navbar-toggle:hover span.icon-bar {
+    background-color: #170d00; }
+
+#htmlwrapper .login-container {
+  padding: 15px; }
+  #htmlwrapper .login-container #remember {
+    color: #ffffff; }
+
+#htmlwrapper .form-signin {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto; }
+  #htmlwrapper .form-signin #forgot-text {
+    margin-top: 5px;
+    text-align: center;
+    color: #ffffff; }
+  #htmlwrapper .form-signin .form-signin-heading #rememberMe {
+    color: #ffffff; }
+  #htmlwrapper .form-signin .btn {
+    border-radius: 4px; }
+  #htmlwrapper .form-signin .submit-btn {
+    margin-top: 15px; }
+    #htmlwrapper .form-signin .submit-btn .signin {
+      color: #030303; }
+  #htmlwrapper .form-signin .form-signin-heading,
+  #htmlwrapper .form-signin .checkbox {
+    margin-bottom: 10px; }
+  #htmlwrapper .form-signin .checkbox {
+    font-weight: normal; }
+  #htmlwrapper .form-signin .form-control {
+    position: relative;
+    height: auto;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    padding: 10px;
+    font-size: 16px; }
+  #htmlwrapper .form-signin .form-control:focus {
+    z-index: 2; }
+  #htmlwrapper .form-signin input.form-control {
+    margin-top: 5px; }
+
+#htmlwrapper .picker__weekday {
+  text-align: center; }
+
+#htmlwrapper .alert-danger {
+  border-color: #a94442; }
+
+#htmlwrapper .alert .glyphicon {
+  padding-right: 5px; }

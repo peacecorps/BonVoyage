@@ -1,0 +1,19 @@
+
+
+#htmlwrapper {
+	#request h2, h3, h4, h5, h6 {
+		text-align: left;
+	}
+	input, select, button:not(.navbar-toggle) {
+	    width: 100%;
+	    margin: 10px auto;
+	}
+	.shadow-box {
+		p {
+			margin-bottom: 0;
+		}
+		.comment {
+			margin-bottom: 10px;
+		}
+	}
+}

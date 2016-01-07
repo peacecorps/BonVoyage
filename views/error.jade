@@ -1,0 +1,7 @@
+extends layout
+
+block content
+  h1= message
+  h2 An error has occurred.
+  h2 Code: #{(error.status ? error.status : "None")}
+  pre #{error.stack}

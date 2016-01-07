@@ -1,0 +1,12 @@
+#htmlwrapper input, #htmlwrapper select, #htmlwrapper button:not(.navbar-toggle) {
+  width: 100%;
+  margin: 10px auto; }
+
+#htmlwrapper .leg h2 {
+  text-align: center;
+  width: 100%;
+  padding-top: 10px;
+  margin: 0; }
+
+#htmlwrapper .warning:first-child {
+  margin-top: 3px; }
