@@ -107,7 +107,7 @@ vagrant ssh
 wget https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.2.0.tgz
 tar -zxvf mongodb-linux-x86_64-ubuntu1404*.tgz
 mkdir ~/mongodb
-cp -R -n mongodb-linux-x86_64*/* mongodb
+cp -R -n mongodb-linux-x86_64*/* ~/mongodb
 rm -rf mongodb-linux-x86_64-ubuntu1404*
 echo 'export PATH="$HOME/mongodb/bin:$PATH";' >> ~/.bash_profile
 source ~/.bash_profile
