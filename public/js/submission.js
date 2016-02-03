@@ -125,7 +125,25 @@ function getLeg(n) {
 }
 
 $(function() {
-    $select = $('.selectized').selectize();
+    $select = $('.select-country').selectize();
+    $select_requestee = $('.selectRequestee').selectize({
+        valueField: 'email',
+        labelField: 'name',
+        searchField: ['name'],
+        sortField: 'name'
+    });
+
+    $.ajax({
+        method: "GET",
+        url: "/api/users?maxAccess=VOLUNTEER",
+        dataType: "json",
+        success: function(json, status, request) {
+            console.log(json);
+            $select_requestee[0].selectize.addOption(json);
+            $select_requestee[0].selectize.refreshOptions(false);
+        }
+    });
+
     // Load the JSON file of the countries
     $.ajax({
         method: "GET",
@@ -157,11 +175,15 @@ $(function() {
         for (var i = 1; i <= count; i++) {
             legs.push(getLeg(i));
         }
-        console.log(legs);
+        var email = undefined;
+        if ($('.selectRequestee').length > 0) {
+            email = $select_requestee[0].selectize.getValue();
+        }
         $.ajax({
             method: "POST",
             contentType: "application/x-www-form-urlencoded",
             data: {
+                email: email,
                 legs: legs
             },
             dataType: 'json',

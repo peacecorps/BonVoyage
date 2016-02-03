@@ -7,7 +7,7 @@ var fs = require('fs');
 var warnings = undefined;
 
 router.index = function(req, res, next) {
-  res.redirect('/login');
+	res.redirect('/login');
 };
 
 router.renderLogin = function(req, res) {
@@ -41,7 +41,8 @@ router.renderSubform = function(req, res) {
 			{ text: "Dashboard", href: "/dashboard" },
 			{ text: "Submit a Request", href: "/dashboard/submit", active: true }
     	],
-    	messages: req.flash('submissionFlash')
+    	messages: req.flash('submissionFlash'),
+    	shouldSelectRequestee: req.user.access >= Access.SUPERVISOR
     });
 }
 
