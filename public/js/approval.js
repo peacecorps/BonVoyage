@@ -20,6 +20,8 @@ $(function() {
 		$(time).text(format_time(time_unf, UTC_FORMAT_TIME));
 	});
 
+    
+
 	$('#submit-comment').click(function() {
 		var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/comments'
 		var data = $('#new-comment').val()

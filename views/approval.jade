@@ -36,9 +36,21 @@ block content
 								span  - 
 								span.date(data-unformatted="#{leg.end_date}")
 								span : #{leg.country}
+							p
+								span
+									b Hotel/Hostel info: 
+								span= (leg.hotel ? leg.hotel : "No description on file.")
+							p
+								span
+									b Travel contact: 
+								span= (leg.contact ? leg.contact : "No description on file.")
+							p
+								span
+									b Companions: 
+								span= (leg.companions ? leg.companions : "No description on file.")
 							p 
 								span
-									em Description: 
+									b Description: 
 								span= (leg.description ? leg.description : "No description on file.")
 							each warning in leg.warnings
 								.warning.alert.alert-danger(role='alert')

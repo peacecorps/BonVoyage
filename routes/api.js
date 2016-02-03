@@ -163,6 +163,9 @@ router.postRequests = function(req, res) {
 			end_date: end,
 			country: countries_dictionary[leg.country],
 			country_code: leg.country,
+			hotel: leg.hotel,
+			contact: leg.contact,
+			companions: leg.companions,
 			description: leg.description
 		});
 	}
