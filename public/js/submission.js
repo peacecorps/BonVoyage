@@ -15,11 +15,21 @@ function addLeg() {
     html = 
     "<div class='leg shadow-box'> \
         <h2> Trip Leg #" + count + " </h2> \
-        <input class='form-control datepicker date-leaving' type='text' placeholder='Date leaving'> \
-        <input class='form-control datepicker date-returning' type='text' placeholder='Date returning'> \
-        <select class='form-control select-country' placeholder='Country'></select> \
+        <label class='info'>Date leaving</label> \
+        <input class='form-control datepicker date-leaving' type='text' placeholder='1 January, 2000'> \
+        <label class='info'>Date returning</label> \
+        <input class='form-control datepicker date-returning' type='text' placeholder='31 December, 2000'> \
+        <label class='info'>Country</label> \
+        <select class='form-control select-country' placeholder='United States'></select> \
         <div class='warnings'></div> \
-        <textarea class='form-control description' rows='6' placeholder='Reason for leave'></textarea> \
+        <label class='info'>Travel contact</label> \
+        <input class='form-control contact' type='text' placeholder='+1 123-456-7890  and/or  johndoe@peacecorps.org'></input> \
+        <label class='info'>Hotel/Hostel Information</label> \
+        <input class='form-control hotel' type='text' placeholder='San Francisco Hotel: +1 123-456-7890'></input> \
+        <label class='info'>Travel companions</label> \
+        <input class='form-control companions' type='text' placeholder='John Doe: +1 123-456-7890'></input> \
+        <label class='info'>Reason for leave</label> \
+        <input class='form-control description' rows='6' type='text' placeholder='Emergency sick leave'></input> \
         <button class='btn btn-danger remove-leg'> Remove Trip Leg </button> \
     </div>";
     insertAtIndex(count, '#request-submit', html);
@@ -108,6 +118,9 @@ function getLeg(n) {
         start_date: $(leg).find('.date-leaving').val(), 
         end_date: $(leg).find('.date-returning').val(),
         country: $(leg).find('.selectized').selectize()[0].selectize.getValue(),
+        hotel: $(leg).find('.hotel').val(),
+        contact: $(leg).find('.contact').val(),
+        companions: $(leg).find('.companions').val(),
         description: $(leg).find('.description').val()
     };
     return data;

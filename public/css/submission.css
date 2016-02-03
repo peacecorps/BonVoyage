@@ -2,6 +2,9 @@
   width: 100%;
   margin: 10px auto; }
 
+#htmlwrapper .leg .form-control {
+  margin-top: -3px; }
+
 #htmlwrapper .leg h2 {
   text-align: center;
   width: 100%;

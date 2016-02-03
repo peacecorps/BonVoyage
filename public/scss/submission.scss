@@ -9,6 +9,10 @@
 	}
 
 	.leg {
+		.form-control {
+			margin-top: -3px;
+		}
+
 	    h2 {
 	    	text-align: center;
 	    	width: 100%;
@@ -20,4 +24,5 @@
 	.warning:first-child {
 		margin-top:3px;
 	}
+
 }
