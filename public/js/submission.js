@@ -48,12 +48,10 @@ function clearWarnings($warnings) {
 }
 
 function addWarning(warning, $warnings) {
-    console.log(warning);
-    console.log($warnings);
     $($warnings).append(
         $(
             "<div class='warning alert alert-danger' role='alert'> \
-                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>" + toTitleCase(warning.type) + ":</b> " + warning.text_overview + "</span> \
+                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>" + toTitleCase(warning.type) + ":</b> " + warning.text_overview + " <b><a href='" + warning.link + "'>More Information</a></b></span> \
             </div>"
         )
     );

@@ -69,7 +69,6 @@ function getRequests(req, res, pending, cb) {
 			if (err) 
 				return cb(err);
 			else {
-				console.log(JSON.stringify(requests, undefined, 4));
 				// Add start and end date to all requests
 				for (var i = 0; i < requests.length; i++) {
 					requests[i].start_date = getStartDate(requests[i]);
