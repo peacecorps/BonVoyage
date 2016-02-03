@@ -57,7 +57,10 @@ block content
 									span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
 									span
 										b #{warning.type}: 
-									span= warning.text_overview
+									span= warning.text_overview + " "
+									span
+										b
+											a(href=warning.link) More Information
 					h2 Comments #{(request.comments.length > 0 ? "(" + request.comments.length + ")" : "")}
 					.shadow-box
 						table#comments
@@ -65,8 +68,8 @@ block content
 								.comment
 									p
 										span 
-											b Email: 
-										span= comment.email
+											b Name: 
+										span= comment.name
 									p
 										span 
 											b Time: 
@@ -83,9 +86,9 @@ block content
 				if user.access > 0 
 					#request_approval.row
 						.col-xs-6
-							button(class="btn btn-success" + (request.is_approved ? " disabled" : ""), id="request-approve-btn") Approve
+							button(class="btn btn-success" + (request.is_pending == false && request.is_approved ? " disabled" : ""), id="request-approve-btn") Approve
 						.col-xs-6
-							button(class="btn btn-danger" + (!request.is_approved ? " disabled" : ""), id="request-deny-btn") Deny
+							button(class="btn btn-danger" + (request.is_pending == false && !request.is_approved ? " disabled" : ""), id="request-deny-btn") Deny
 				// If the user is the owner of the request
 				if did_match_user && (user.email == request.user[0].email)
 					#request_delete.row

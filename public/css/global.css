@@ -150,3 +150,8 @@
 
 #htmlwrapper .alert .glyphicon {
   padding-right: 5px; }
+
+#htmlwrapper .warning a {
+  color: #a94442; }
+  #htmlwrapper .warning a:hover {
+    color: #891412; }

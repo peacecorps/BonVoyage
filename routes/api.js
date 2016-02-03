@@ -91,9 +91,6 @@ router.handleRequestId = function(req, res, next, request_id) {
 	// Look up request_id to determine if it is pending or not
 	Request.findOne({ _id: request_id }, 'is_pending', function(err, request) {
 		if (err) next(err);
-		console.log("Returned from handle request id")
-		console.log(request);
-		console.log(request.is_pending);
 		getRequests(req, res, request.is_pending, function(err, requests) {
 			if (err) next(err);
 			else {
@@ -225,6 +222,7 @@ router.postComments = function(req, res) {
 	Request.findByIdAndUpdate(id, {$push: {
 		comments: {
 			$each:[{
+				name:req.user.name,
 				email:req.user.email,
 				content:req.param('content')
 			}]
