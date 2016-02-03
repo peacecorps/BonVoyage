@@ -71,9 +71,9 @@ block content
 				if user.access > 0 
 					#request_approval.row
 						.col-xs-6
-							button(class="btn btn-success", id="request-approve-btn") Approve
+							button(class="btn btn-success" + (request.is_approved ? " disabled" : ""), id="request-approve-btn") Approve
 						.col-xs-6
-							button(class="btn btn-danger", id="request-deny-btn") Deny
+							button(class="btn btn-danger" + (!request.is_approved ? " disabled" : ""), id="request-deny-btn") Deny
 				// If the user is the owner of the request
 				if did_match_user && (user.email == request.user[0].email)
 					#request_delete.row
