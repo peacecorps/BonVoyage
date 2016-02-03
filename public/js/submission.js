@@ -1,6 +1,7 @@
 
 var count = 0;
 var arrCountries = [];
+var public_spreadsheet_url = 'https://docs.google.com/spreadsheets/d/1eQgsc94okiGh40EPfH6uwyq4a0aK45OwF5cFYkTlRlA/pubhtml';
 
 function insertAtIndex(i, id, data) {
     if(i === 1) {
@@ -67,6 +68,34 @@ function addWarning(warning, $warnings) {
     );
 }
 
+function addAlerts(data, tabletop) {
+    for (var i = 0; i < data.length; i++) {
+        console.log(data[i]['Message']);
+
+        var type, msg, link;
+
+        if (data[i]['Type']) {
+            type = "<b>" + data[i]['Type'] + ":</b>";
+        } else {
+            type = "<b>General Warning:</b>"
+        }
+
+        if (data[i]['Link']) {
+            link = " <b><a href='" + data[i]['Link'] + "'>More Information</a></b>"
+        } else {
+            link = "";
+        }
+
+        $('.alerts').append(
+        $(
+            "<div class='warning alert alert-danger' role='alert'> \
+                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>" + type + " " + data[i]['Message'] + link + "</span> \
+            </div>"
+        )
+    );
+    }
+}
+
 function initialize(n) {
     // Initialize the Pick a Date picker
     $('.leg:nth-child(' + n + ') .datepicker').pickadate();
@@ -88,6 +117,12 @@ function initialize(n) {
         $(this).closest($('.leg')).remove();
         count--;
         handleTripLegChanges();
+    });
+
+    Tabletop.init({
+        key: public_spreadsheet_url,
+        callback: addAlerts,
+        simpleSheet: true
     });
 
     // Show a warning if one exists when the select is clicked
