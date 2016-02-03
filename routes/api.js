@@ -189,7 +189,7 @@ router.postApprove = function(req, res) {
 	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":true}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
 		req.flash('dashboardFlash', { text: 'The request has been successfully approved.', class: 'success'});
-		res.end(JSON.stringify({redirect: '/dashboard#past'}));
+		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
 }
 
@@ -198,7 +198,7 @@ router.postDeny = function(req, res) {
 	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":false}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
 		req.flash('dashboardFlash', { text: 'The request has been successfully denied.', class: 'success'});
-		res.end(JSON.stringify({redirect: '/dashboard#past'}));
+		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
 }
 
