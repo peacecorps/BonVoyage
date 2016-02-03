@@ -16,6 +16,7 @@ var request_schema = mongoose.Schema({
 	}],
 
 	comments: [{
+		name: String,
 		email: String,
 		content: String,
 		timestamp: {type: Date, default: Date.now}

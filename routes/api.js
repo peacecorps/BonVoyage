@@ -69,6 +69,7 @@ function getRequests(req, res, pending, cb) {
 			if (err) 
 				return cb(err);
 			else {
+				console.log(JSON.stringify(requests, undefined, 4));
 				// Add start and end date to all requests
 				for (var i = 0; i < requests.length; i++) {
 					requests[i].start_date = getStartDate(requests[i]);
@@ -91,9 +92,6 @@ router.handleRequestId = function(req, res, next, request_id) {
 	// Look up request_id to determine if it is pending or not
 	Request.findOne({ _id: request_id }, 'is_pending', function(err, request) {
 		if (err) next(err);
-		console.log("Returned from handle request id")
-		console.log(request);
-		console.log(request.is_pending);
 		getRequests(req, res, request.is_pending, function(err, requests) {
 			if (err) next(err);
 			else {
@@ -222,6 +220,7 @@ router.postComments = function(req, res) {
 	Request.findByIdAndUpdate(id, {$push: {
 		comments: {
 			$each:[{
+				name:req.user.name,
 				email:req.user.email,
 				content:req.param('content')
 			}]
