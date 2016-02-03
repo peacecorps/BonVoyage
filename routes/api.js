@@ -46,7 +46,7 @@ function getEndDate(request) {
 	}
 }
 
-function getRequests(req, res, flag, pending, cb) {
+function getRequests(req, res, pending, cb) {
 	if (req.user) {
 		Request.aggregate([
 			{
@@ -63,7 +63,7 @@ function getRequests(req, res, flag, pending, cb) {
 				}
 			},
 			{
-				$match: (flag ? {} : { is_pending: pending })
+				$match: (pending != undefined ? {} : { is_pending: pending })
 			}
 		], function (err, requests) {
 			if (err) 
@@ -88,8 +88,7 @@ function getRequests(req, res, flag, pending, cb) {
  * Handle Parameters
  */
 router.handleRequestId = function(req, res, next, request_id) {
-	
-	getRequests(req, res, true, false, function(err, requests) {
+	getRequests(req, res, false, function(err, requests) {
 		if (err) next(err);
 		else {
 			// Lookup the id in this list of requests
@@ -112,21 +111,21 @@ router.handleRequestId = function(req, res, next, request_id) {
  */
 
 router.getRequests = function(req, res) {
-	getRequests(req, res, true, false, function(err, requests) {
+	getRequests(req, res, undefined, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
 };
 
 router.getPendingRequests = function(req, res) {
-	getRequests(req, res, false, true, function(err, requests) {
+	getRequests(req, res, true, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
 };
 
 router.getPastRequests = function(req, res){
-	getRequests(req, res, false, false, function(err, requests) {
+	getRequests(req, res, false, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
