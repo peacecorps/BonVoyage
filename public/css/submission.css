@@ -13,3 +13,6 @@
 
 #htmlwrapper .warning:first-child {
   margin-top: 3px; }
+
+#htmlwrapper .selectRequestee {
+  margin-bottom: 10px; }

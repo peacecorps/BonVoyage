@@ -66,6 +66,8 @@ app.get('/api/requests', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getReque
 app.get('/api/requests/past', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getPastRequests);
 app.get('/api/requests/pending', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getPendingRequests);
 
+app.get('/api/users', isLoggedIn, needsAccess(Access.SUPERVISOR), api.getUsers);
+
 app.post('/api/requests/:request_id/approve', isLoggedIn, needsAccess(Access.SUPERVISOR), api.postApprove);
 app.post('/api/requests/:request_id/deny', isLoggedIn, needsAccess(Access.SUPERVISOR), api.postDeny);
 app.post('/api/requests/:request_id/delete', isLoggedIn, needsAccess(Access.VOLUNTEER), api.postDelete);
@@ -83,7 +85,7 @@ app.post('/api/login', passport.authenticate('local-login', {
 }));
 app.post('/api/logout', api.logout);
 app.post('/api/requests',isLoggedIn, needsAccess(Access.VOLUNTEER), api.postRequests);
-app.post('/api/promote', isLoggedIn, needsAccess(Access.SUPERVISOR), api.promote);
+app.post('/api/access', isLoggedIn, needsAccess(Access.SUPERVISOR), api.modifyAccess);
 
 // middleware to ensure the user is authenticated. If not, redirect to login page.
 function isLoggedIn(req, res, next) {

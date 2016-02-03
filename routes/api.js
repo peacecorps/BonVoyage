@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var sUser = require("../models/user");
+var User = require("../models/user");
 var Request = require("../models/request");
 var Access = require("../config/access");
 var fs = require('fs');
@@ -84,6 +84,17 @@ function getRequests(req, res, pending, cb) {
 	}
 }
 
+function getUsers(options, cb) {
+	var q = (options.user != undefined ? options.user : {});
+	if (options.maxAccess != undefined) {
+		q.access = {$lte: options.maxAccess};
+	}
+	User.find(q, 'access name email phone _id', function(err, users) {
+		if (err) cb(err);
+		else cb(null, users);
+	});
+}
+
 /*
  * Handle Parameters
  */
@@ -128,66 +139,100 @@ router.getPendingRequests = function(req, res) {
 	});
 };
 
-router.getPastRequests = function(req, res){
+router.getPastRequests = function(req, res) {
 	getRequests(req, res, false, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
 };
 
+router.getUsers = function(req, res) {
+	var rawMaxAccess = req.query.maxAccess;
+	var maxAccess = Access[rawMaxAccess];
+	getUsers({
+		maxAccess: maxAccess,
+	}, function(err, users) {
+		if(err) console.error(err);
+		res.send(users);
+	});
+}
+
 /*
  * POST Requests
  */
 
 router.postRequests = function(req, res) {
-	var legs = [];
-	for (var i = 0; i < req.body.legs.length; i++) {
-		leg = req.body.legs[i];
-		var start = moment(leg.start_date);
-		var end = moment(leg.end_date);
-		if (!(start.isBefore(end) || start.isSame(end))) {
-			req.flash('submissionFlash', { text: 'The start date you entered for leg #' + (i+1) + ' comes after the end date.', class: 'danger' });
-			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
-			return;
-		} else if (Object.keys(countries_dictionary).indexOf(leg.country) == -1) {
-			req.flash('submissionFlash', { text: 'The country that you have selected for leg #' + (i+1) + ' is not a valid country.', class: 'danger' });
+	var email = req.user.email;
+	// Supervisors will select the user to submit the request for on the submission form
+	if (req.user.access >= Access.SUPERVISOR) {
+		email = req.body.email;
+		if (email == undefined) {
+			req.flash('submissionFlash', { text: 'You must select a requestee to submit this request for.', class: 'danger' });
 			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 			return;
 		}
-
-		legs.push({
-			start_date: start,
-			end_date: end,
-			country: countries_dictionary[leg.country],
-			country_code: leg.country,
-			hotel: leg.hotel,
-			contact: leg.contact,
-			companions: leg.companions,
-			description: leg.description
-		});
 	}
+	// Verify that the user exists
+	getUsers({
+		user: {
+			email: email
+		}
+	}, function(err, users) {
+		if(users.length > 0) {
+			var legs = [];
+			for (var i = 0; i < req.body.legs.length; i++) {
+				leg = req.body.legs[i];
+				var start = moment(leg.start_date);
+				var end = moment(leg.end_date);
+				if (!(start.isBefore(end) || start.isSame(end))) {
+					req.flash('submissionFlash', { text: 'The start date you entered for leg #' + (i+1) + ' comes after the end date.', class: 'danger' });
+					res.end(JSON.stringify({redirect: '/dashboard/submit'}));
+					return;
+				} else if (Object.keys(countries_dictionary).indexOf(leg.country) == -1) {
+					req.flash('submissionFlash', { text: 'The country that you have selected for leg #' + (i+1) + ' is not a valid country.', class: 'danger' });
+					res.end(JSON.stringify({redirect: '/dashboard/submit'}));
+					return;
+				}
 
-	if (legs.length > 0) {
-		var newRequest = new Request({
-			email: req.user.email,
-			is_pending: true,
-			is_approved: false,
-			legs: legs
-		});
+				legs.push({
+					start_date: start,
+					end_date: end,
+					country: countries_dictionary[leg.country],
+					country_code: leg.country,
+					hotel: leg.hotel,
+					contact: leg.contact,
+					companions: leg.companions,
+					description: leg.description
+				});
+			}
 
-		newRequest.save(function(err) {
-			if (err) {
+			if (legs.length > 0) {
+				var newRequest = new Request({
+					email: email,
+					is_pending: true,
+					is_approved: false,
+					legs: legs
+				});
+
+				newRequest.save(function(err) {
+					if (err) {
+						req.flash('submissionFlash', { text: 'An error has occurred while trying to save this request. Please try again.', class: 'danger' });
+						res.end(JSON.stringify({redirect: '/dashboard/submit'}));
+					} else {
+						req.flash('dashboardFlash', { text: 'Request successfully saved.', class: 'success' });
+						res.end(JSON.stringify({redirect: '/dashboard'}));
+					}
+				});
+			} else {
 				req.flash('submissionFlash', { text: 'An error has occurred while trying to save this request. Please try again.', class: 'danger' });
 				res.end(JSON.stringify({redirect: '/dashboard/submit'}));
-			} else {
-				req.flash('dashboardFlash', { text: 'Request successfully saved.', class: 'success' });
-				res.end(JSON.stringify({redirect: '/dashboard'}));
 			}
-		});
-	} else {
-		req.flash('submissionFlash', { text: 'An error has occurred while trying to save this request. Please try again.', class: 'danger' });
-		res.end(JSON.stringify({redirect: '/dashboard/submit'}));
-	}
+		} else {
+			req.flash('submissionFlash', { text: 'The user that you selected could not be found.', class: 'danger' });
+			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
+			return;
+		}
+	});
 }
 
 router.postApprove = function(req, res) {
@@ -240,17 +285,15 @@ router.logout = function(req, res) {
 	res.end(JSON.stringify({redirect: '/login'}));
 }
 
-/*
- * PUT Requests
- */
-
-router.promote = function(req, res) {
+router.modifyAccess = function(req, res) {
 	email = req.body.email;
 	access = req.body.access;
-	User.update({ email: email }, { $set: { access: access } }, function(err, numAffected) {
-		if (err) console.log(err);
-		else console.log(numAffected);
-	});
+	if (access <= req.user.access) {
+		User.update({ email: email }, { $set: { access: access } }, function(err, numAffected) {
+			if (err) console.error(err);
+			else console.log(numAffected);
+		});
+	}
 }
 
 module.exports = router;
