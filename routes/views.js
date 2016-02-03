@@ -52,6 +52,17 @@ router.renderApproval = function(req, res) {
 	for(var i = 0; i < req.request.legs.length; i++) {
 		req.request.legs[i].warnings = warnings[req.request.legs[i].country_code];
 	}
+	if (req.request.is_pending == false) {
+		var deniedFlash = { 
+			text: 'This request has been denied.', 
+			class: 'danger' 
+		};
+		var approvedFlash = { 
+			text: 'This request has been approved.', 
+			class: 'success' 
+		};
+		req.flash('approvalFlash', (req.request.is_approved ? approvedFlash : deniedFlash));
+	}
 	res.render('approval.jade', {
 		title: 'Request Approval',
 		links: [
