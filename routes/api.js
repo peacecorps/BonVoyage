@@ -63,7 +63,7 @@ function getRequests(req, res, pending, cb) {
 				}
 			},
 			{
-				$match: (pending != undefined ? {} : { is_pending: pending })
+				$match: (pending != undefined ? { is_pending: pending } : {})
 			}
 		], function (err, requests) {
 			if (err) 
@@ -88,21 +88,28 @@ function getRequests(req, res, pending, cb) {
  * Handle Parameters
  */
 router.handleRequestId = function(req, res, next, request_id) {
-	getRequests(req, res, false, function(err, requests) {
+	// Look up request_id to determine if it is pending or not
+	Request.findOne({ _id: request_id }, 'is_pending', function(err, request) {
 		if (err) next(err);
-		else {
-			// Lookup the id in this list of requests
-			for(var i = 0; i < requests.length; i++) {
-				if(requests[i]._id == request_id) {
-					req.request = requests[i];
-					req.next_request_id = (i < requests.length - 1 ? requests[i+1]._id : undefined);
-					req.prev_request_id = (i > 0 ? requests[i-1]._id : undefined);
-					next();
+		console.log("Returned from handle request id")
+		console.log(request);
+		console.log(request.is_pending);
+		getRequests(req, res, request.is_pending, function(err, requests) {
+			if (err) next(err);
+			else {
+				// Lookup the id in this list of requests
+				for(var i = 0; i < requests.length; i++) {
+					if(requests[i]._id == request_id) {
+						req.request = requests[i];
+						req.next_request_id = (i < requests.length - 1 ? requests[i+1]._id : undefined);
+						req.prev_request_id = (i > 0 ? requests[i-1]._id : undefined);
+						next();
+					}
 				}
+				if (req.request == undefined)
+					next();
 			}
-			if (req.request == undefined)
-				next();
-		}
+		});
 	});
 }
 
