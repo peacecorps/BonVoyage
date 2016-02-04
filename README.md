@@ -2,7 +2,8 @@
 
 BonVoyage is a web application built to provide a simplified and automated web-based method for Peace Corps volunteers to request leave. 
 
-[[https://github.com/peacecorps/bonvoyage/blob/master/demos/submission_page.jpg]]
+![Demo Image](https://raw.githubusercontent.com/peacecorps/BonVoyage/master/demos/submission_page.jpg)
+
 
 This project is currently in development under Patrick Choquette and Project Delta.
 
