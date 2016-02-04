@@ -1,0 +1,27 @@
+
+#htmlwrapper {
+	#users {
+		.panel-heading {
+			font-weight: 600;
+			font-size: 16px;
+		}
+		.text {
+			font-size: 16px;
+			line-height: 43px;
+			.light {
+				color: #aaa;
+			}
+		}
+		.actions {
+			button {
+				width: 100%;
+			}
+			.btn-group {
+				width: 100%;
+				button {
+					width: 50%;
+				}
+			}
+		}
+	}
+}

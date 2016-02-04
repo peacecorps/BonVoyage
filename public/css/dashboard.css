@@ -4,5 +4,11 @@
 .new-request-button {
   margin-bottom: 10px; }
 
+.nav-pills {
+  border: 3px solid #ccc;
+  border-radius: 6px; }
+  .nav-pills li:not(.active) a:hover {
+    background-color: #ddd; }
+
 table tbody tr {
   cursor: pointer; }

@@ -1,0 +1,60 @@
+extends layout
+
+block styles
+  link(rel='stylesheet', href='/css/users.css')
+
+block content
+  .row
+    .col-xs-12.col-md-offset-1.col-md-10
+
+      .jumbotron
+        h2.dash_text Users
+
+        include flash
+
+        mixin useritem(userToShow)
+          li.list-group-item&attributes({ 'data-access': userToShow.access })
+            .row
+              .text
+                .col-xs-12.col-sm-3.col-md-4
+                  span.name= userToShow.name 
+                  span.light.hidden-sm.hidden-md  --- 
+                  span.light.hidden-sm.hidden-md.email= userToShow.email
+              .actions
+                .col-xs-8.col-sm-6.col-md-5
+                  .btn-group
+                    button.promote.btn.btn-info(class=(userToShow.access == 2 || userToShow.access >= user.access ? 'disabled' : ''))
+                        span.glyphicon.glyphicon-arrow-up(aria-hidden='true')
+                        span  PROMOTE
+                    button.demote.btn.btn-primary(class=(userToShow.access == 0 || userToShow.access >= user.access ? 'disabled' : ''))
+                        span.glyphicon.glyphicon-arrow-down(aria-hidden='true')
+                        span  DEMOTE
+                .col-xs-4.col-sm-3.col-md-3
+                  button.btn.btn-danger.delete
+                    span.glyphicon.glyphicon-remove(aria-hidden='true')
+                    span  DELETE
+
+        #users
+          //- Admins will not show unless the user is an admin
+          if admins.length > 0
+            .panel.panel-default
+              .panel-heading Administrators
+              ul.list-group
+                for user in admins
+                  +useritem(user)
+
+          .panel.panel-default
+            .panel-heading Supervisors
+            ul.list-group
+              for user in supervisors
+                +useritem(user)
+
+          .panel.panel-default
+            .panel-heading Volunteers
+            ul.list-group
+              for user in volunteers
+                +useritem(user)
+
+block scripts
+  script(src='/js/users.js')
+

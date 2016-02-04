@@ -60,6 +60,7 @@ app.get('/register', views.renderRegister);
 app.get('/dashboard', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderDashboard);
 app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderSubform);
 app.get('/dashboard/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderApproval);
+app.get('/users', isLoggedIn, views.renderUsers);
 
 // API
 app.get('/api/requests', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getRequests);
@@ -86,6 +87,8 @@ app.post('/api/login', passport.authenticate('local-login', {
 app.post('/api/logout', api.logout);
 app.post('/api/requests',isLoggedIn, needsAccess(Access.VOLUNTEER), api.postRequests);
 app.post('/api/access', isLoggedIn, needsAccess(Access.SUPERVISOR), api.modifyAccess);
+
+app.delete('/api/users', isLoggedIn, needsAccess(Access.SUPERVISOR), api.deleteUser);
 
 // middleware to ensure the user is authenticated. If not, redirect to login page.
 function isLoggedIn(req, res, next) {

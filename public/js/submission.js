@@ -226,7 +226,7 @@ $(function() {
             success: function(response, textStatus, jqXHR) {
                 // if (err) console.log(err);
                 // console.log(response);
-                if (response.redirect) {
+                if (response && response.redirect) {
                     // response.redirect contains the string URL to redirect to
                     window.location.href = response.redirect;
                 }
