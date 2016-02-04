@@ -145,13 +145,26 @@
 #htmlwrapper .picker__weekday {
   text-align: center; }
 
-#htmlwrapper .alert-danger {
-  border-color: #a94442; }
-
 #htmlwrapper .alert .glyphicon {
   padding-right: 5px; }
 
-#htmlwrapper .warning a {
-  color: #a94442; }
-  #htmlwrapper .warning a:hover {
-    color: #891412; }
+#htmlwrapper .alert-info {
+  border-color: #31708F; }
+  #htmlwrapper .alert-info a {
+    color: #31708F; }
+    #htmlwrapper .alert-info a:hover {
+      color: #276685; }
+
+#htmlwrapper .alert-warning {
+  border-color: #8A6D3B; }
+  #htmlwrapper .alert-warning a {
+    color: #8A6D3B; }
+    #htmlwrapper .alert-warning a:hover {
+      color: #6C4F1D; }
+
+#htmlwrapper .alert-danger {
+  border-color: #a94442; }
+  #htmlwrapper .alert-danger a {
+    color: #a94442; }
+    #htmlwrapper .alert-danger a:hover {
+      color: #811C1C; }

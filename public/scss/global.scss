@@ -2,6 +2,11 @@
 @import 'mixins';
 @import 'variables';
 
+$info-color: #31708F;
+$alert-color: #8A6D3B;
+$danger-color: #a94442;
+
+
 #htmlwrapper {
 
 	body {
@@ -202,19 +207,37 @@
 		text-align: center;
 	}
 
-	.alert-danger {
-		border-color: #a94442
-	}
 	
 	.alert .glyphicon {
 		padding-right: 5px;
 	}
 
-	.warning {
+	.alert-info {
+		border-color: $info-color;
 		a {
-			color: #a94442;
+			color: $info-color;
 			&:hover {
-				color: #891412;
+				color: #276685;
+			}
+		}
+	}
+
+	.alert-warning {
+		border-color: $alert-color;
+		a {
+			color: $alert-color;
+			&:hover {
+				color: #6C4F1D;
+			}
+		}
+	}
+
+	.alert-danger {
+		border-color: $danger-color;
+		a {
+			color: $danger-color;
+			&:hover {
+				color: #811C1C;
 			}
 		}
 	}

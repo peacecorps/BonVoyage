@@ -59,41 +59,18 @@ function clearWarnings($warnings) {
 }
 
 function addWarning(warning, $warnings) {
+    var map = {
+        warning: "danger",
+        alert: "warning"
+    }
+
     $($warnings).append(
         $(
-            "<div class='warning alert alert-danger' role='alert'> \
-                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>" + toTitleCase(warning.type) + ":</b> " + warning.text_overview + " <b><a href='" + warning.link + "'>More Information</a></b></span> \
+            "<div class='warning alert alert-" + map[warning.type.toLowerCase()] + "' role='alert'> \
+                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>US State Department:</b> " + warning.text_overview + " <b><a href='" + warning.link + "'>More Information</a></b></span> \
             </div>"
         )
     );
-}
-
-function addAlerts(data, tabletop) {
-    for (var i = 0; i < data.length; i++) {
-        console.log(data[i]['Message']);
-
-        var type, msg, link;
-
-        if (data[i]['Type']) {
-            type = "<b>" + data[i]['Type'] + ":</b>";
-        } else {
-            type = "<b>General Warning:</b>"
-        }
-
-        if (data[i]['Link']) {
-            link = " <b><a href='" + data[i]['Link'] + "'>More Information</a></b>"
-        } else {
-            link = "";
-        }
-
-        $('.alerts').append(
-        $(
-            "<div class='warning alert alert-danger' role='alert'> \
-                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span>" + type + " " + data[i]['Message'] + link + "</span> \
-            </div>"
-        )
-    );
-    }
 }
 
 function initialize(n) {
@@ -119,29 +96,52 @@ function initialize(n) {
         handleTripLegChanges();
     });
 
-    Tabletop.init({
-        key: public_spreadsheet_url,
-        callback: addAlerts,
-        simpleSheet: true
-    });
-
     // Show a warning if one exists when the select is clicked
-    selectize.on('item_add', function(country_code, $item) {
-        console.log(country_code);
+    selectize.on('item_add', function(country_code, $item) {        
         // Get a selector for the warnings div, specific to the leg where the country was selected
         $warnings = $($item).closest($('.leg')).find('.warnings');
-        getWarnings(function(warnings) {
-            // Clear all warnings
-            clearWarnings($warnings);
-            // Get the warnings for the selected country
-            country_warnings = warnings[country_code];
-            if (country_warnings) {
-                for(var i = 0; i < country_warnings.length; i++) {
-                    // Add a warning for each country
-                    addWarning(country_warnings[i], $warnings);
+        clearWarnings($warnings);
+
+        Tabletop.init({
+            key: public_spreadsheet_url,
+            callback: function(data, tabletop) {
+                for (var i = 0; i < data.length; i++) {
+                    var type = data[i]['Type'];
+                    var msg = data[i]['Message'];
+                    var link = data[i]['Link'];
+
+                    if (link) {
+                        link = " <b><a href='" + data[i]['Link'] + "'>More Information</a></b>"
+                    } else {
+                        link = "";
+                    }
+
+                    $('.warnings').append($(
+                        "<div class='warning alert alert-" + type.toLowerCase() + "' role='alert'> \
+                            <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>Peace Corps:</b> " + data[i]['Message'] + link + "</span> \
+                        </div>"
+                    )
+                    );
                 }
-            }
+                
+                getWarnings(function(warnings) {
+                    // Clear all warnings
+                    // Get the warnings for the selected country
+                    country_warnings = warnings[country_code];
+                    if (country_warnings) {
+                        for(var i = 0; i < country_warnings.length; i++) {
+                            // Add a warning for each country
+                            addWarning(country_warnings[i], $warnings);
+                        }
+                    }
+                });
+            },
+            simpleSheet: true,
+            query: "country = " + country_code
         });
+
+
+        
     });
 }
 
