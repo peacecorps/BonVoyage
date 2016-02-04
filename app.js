@@ -88,6 +88,8 @@ app.post('/api/logout', api.logout);
 app.post('/api/requests',isLoggedIn, needsAccess(Access.VOLUNTEER), api.postRequests);
 app.post('/api/access', isLoggedIn, needsAccess(Access.SUPERVISOR), api.modifyAccess);
 
+app.delete('/api/users', isLoggedIn, needsAccess(Access.SUPERVISOR), api.deleteUser);
+
 // middleware to ensure the user is authenticated. If not, redirect to login page.
 function isLoggedIn(req, res, next) {
   if(req.isAuthenticated())

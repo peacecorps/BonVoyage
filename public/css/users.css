@@ -10,3 +10,8 @@
 
 #htmlwrapper #users .actions button {
   width: 100%; }
+
+#htmlwrapper #users .actions .btn-group {
+  width: 100%; }
+  #htmlwrapper #users .actions .btn-group button {
+    width: 50%; }

@@ -201,12 +201,25 @@ router.logout = function(req, res) {
 router.modifyAccess = function(req, res) {
 	email = req.body.email;
 	access = req.body.access;
-	if (access <= req.user.access) {
-		User.update({ email: email }, { $set: { access: access } }, function(err, numAffected) {
-			if (err) console.error(err);
-			else console.log(numAffected);
-		});
-	}
+	User.update({ email: email }, { $set: { access: access } }, function(err, numAffected) {
+		if (err) console.error(err);
+		else req.flash('usersFlash', { text: 'The user\'s access rights have been updated.' , class: 'success'});
+		res.end(JSON.stringify({redirect: '/users'}));
+	});
+}
+
+/*
+ * DELETE Requests
+ */
+
+router.deleteUser = function(req, res) {
+	email = req.body.email;
+	console.log(email);
+	User.find({ email: email }).remove(function(err, numAffected) {
+		if (err) console.error(err);
+		else req.flash('usersFlash', { text: 'The user has been deleted.' , class: 'success'});
+		res.end(JSON.stringify({redirect: '/users'}));
+	});
 }
 
 module.exports = router;

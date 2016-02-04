@@ -12,22 +12,26 @@ block content
 
         include flash
 
-        mixin useritem(user)
-          li.list-group-item
+        mixin useritem(userToShow)
+          li.list-group-item&attributes({ 'data-access': userToShow.access })
             .row
               .text
-                .col-xs-4.col-sm-6
-                  span= user.name 
-                  span.light.hidden-xs  --- 
-                  span.light.hidden-xs= user.email
+                .col-xs-12.col-sm-3.col-md-4
+                  span.name= userToShow.name 
+                  span.light.hidden-sm.hidden-md  --- 
+                  span.light.hidden-sm.hidden-md.email= userToShow.email
               .actions
-                .col-xs-4.col-sm-3
-                  button.btn.btn-info 
-                      span.hidden-xs.glyphicon.glyphicon-arrow-up(aria-hidden='true')
-                      span  PROMOTE
-                .col-xs-4.col-sm-3
-                  button.btn.btn-danger
-                    span.hidden-xs.glyphicon.glyphicon-remove(aria-hidden='true')
+                .col-xs-8.col-sm-6.col-md-5
+                  .btn-group
+                    button.promote.btn.btn-info(class=(userToShow.access == 2 || userToShow.access >= user.access ? 'disabled' : ''))
+                        span.glyphicon.glyphicon-arrow-up(aria-hidden='true')
+                        span  PROMOTE
+                    button.demote.btn.btn-primary(class=(userToShow.access == 0 || userToShow.access >= user.access ? 'disabled' : ''))
+                        span.glyphicon.glyphicon-arrow-down(aria-hidden='true')
+                        span  DEMOTE
+                .col-xs-4.col-sm-3.col-md-3
+                  button.btn.btn-danger.delete
+                    span.glyphicon.glyphicon-remove(aria-hidden='true')
                     span  DELETE
 
         #users
