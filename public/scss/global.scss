@@ -121,7 +121,7 @@ $danger-color: #a94442;
 
 		a {
 			color: $white-color;
-			&:hover {
+			&:hover:not(.nohover) {
 				color: $white-color-hover;
 			}
 		}

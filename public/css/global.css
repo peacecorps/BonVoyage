@@ -92,7 +92,7 @@
       height: 30px; }
   #htmlwrapper .navbar a {
     color: #e7e7e7; }
-    #htmlwrapper .navbar a:hover {
+    #htmlwrapper .navbar a:hover:not(.nohover) {
       color: #f7f7f7; }
   #htmlwrapper .navbar li.active a {
     color: #392F20; }

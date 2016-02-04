@@ -201,11 +201,15 @@ router.logout = function(req, res) {
 router.modifyAccess = function(req, res) {
 	email = req.body.email;
 	access = req.body.access;
-	User.update({ email: email }, { $set: { access: access } }, function(err, numAffected) {
-		if (err) console.error(err);
-		else req.flash('usersFlash', { text: 'The user\'s access rights have been updated.' , class: 'success'});
+	if (access >= Access.VOLUNTEER && access <= Access.ADMIN && (req.user.access == Access.ADMIN || access < req.user.access)) {
+		User.update({ email: email }, { $set: { access: access } }, function(err, numAffected) {
+			if (err) console.error(err);
+			else req.flash('usersFlash', { text: 'The user\'s access rights have been updated.' , class: 'success'});
+			res.end(JSON.stringify({redirect: '/users'}));
+		});
+	} else {
 		res.end(JSON.stringify({redirect: '/users'}));
-	});
+	}
 }
 
 /*

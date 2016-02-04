@@ -26,7 +26,7 @@ block content
                     button.promote.btn.btn-info(class=(userToShow.access == 2 || userToShow.access >= user.access ? 'disabled' : ''))
                         span.glyphicon.glyphicon-arrow-up(aria-hidden='true')
                         span  PROMOTE
-                    button.demote.btn.btn-primary(class=(userToShow.access == 0 || userToShow.access >= user.access ? 'disabled' : ''))
+                    button.demote.btn.btn-primary(class=(userToShow.access == 0 || (user.access != 2 && userToShow.access >= user.access) ? 'disabled' : ''))
                         span.glyphicon.glyphicon-arrow-down(aria-hidden='true')
                         span  DEMOTE
                 .col-xs-4.col-sm-3.col-md-3
