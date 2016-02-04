@@ -68,12 +68,15 @@ router.renderApproval = function(req, res) {
 		};
 		req.flash('approvalFlash', (req.request.is_approved ? approvedFlash : deniedFlash));
 	}
+	var links = [
+		{ text: "Dashboard", href: "/dashboard" },
+		{ text: "Submit a Request", href: "/dashboard/submit" }
+	];
+	if (req.user.access >= Access.SUPERVISOR) 
+		links.push({ text: "Users", href: "/users" });
 	res.render('approval.jade', {
 		title: 'Request Approval',
-		links: [
-			{ text: "Dashboard", href: "/dashboard" },
-			{ text: "Submit a Request", href: "/dashboard/submit" }
-		],
+		links: links,
 		messages: req.flash('approvalFlash'),
 		request: req.request,
 		next_request_id: req.next_request_id,
