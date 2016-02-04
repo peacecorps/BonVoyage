@@ -4,6 +4,7 @@ var User = require("../models/user");
 var Request = require("../models/request");
 var Access = require("../config/access");
 var fs = require('fs');
+var helpers = require('./helpers');
 var warnings = undefined;
 
 router.index = function(req, res, next) {
@@ -35,12 +36,15 @@ router.renderRegister = function(req, res) {
 }
 
 router.renderSubform = function(req, res) {
+	var links = [
+		{ text: "Dashboard", href: "/dashboard" },
+		{ text: "Submit a Request", href: "/dashboard/submit", active: true }
+	];
+	if (req.user.access >= Access.SUPERVISOR) 
+		links.push({ text: "Users", href: "/users" });
     res.render('submission_form.jade', {
     	title: 'Submission Form',
-    	links: [
-			{ text: "Dashboard", href: "/dashboard" },
-			{ text: "Submit a Request", href: "/dashboard/submit", active: true }
-    	],
+    	links: links,
     	messages: req.flash('submissionFlash'),
     	shouldSelectRequestee: req.user.access >= Access.SUPERVISOR
     });
@@ -78,14 +82,61 @@ router.renderApproval = function(req, res) {
 }
 
 router.renderDashboard = function(req, res) {
+	var links = [
+		{ text: "Dashboard", href: "/dashboard", active: true },
+		{ text: "Submit a Request", href: "/dashboard/submit" }
+	];
+	if (req.user.access >= Access.SUPERVISOR) 
+		links.push({ text: "Users", href: "/users" });
 	res.render('dashboard.jade', {
 		title: "Dashboard",
-		links: [
-			{ text: "Dashboard", href: "/dashboard", active: true },
-			{ text: "Submit a Request", href: "/dashboard/submit" }
-		],
+		links: links,
 		messages: req.flash('dashboardFlash')
 	});
+}
+
+router.renderUsers = function(req, res) {
+	if (req.user.access >= Access.SUPERVISOR) {
+		helpers.getUsers({
+			maxAccess: req.user.access
+		}, function(err, users) {
+			if (err) console.error(err);
+
+			// Split users based on their access level
+			admins = [];
+			supervisors = [];
+			volunteers = [];
+			for (var i = 0; i < users.length; i++) {
+				var user = users[i];
+				switch (user.access) {
+					case Access.ADMIN:
+						admins.push(user);
+						break;
+					case Access.SUPERVISOR:
+						supervisors.push(user);
+						break;
+					case Access.VOLUNTEER:
+						volunteers.push(user);
+						break;
+				}
+			};
+
+		    res.render('users.jade', {
+		    	title: 'Users',
+		    	links: [
+					{ text: "Dashboard", href: "/dashboard" },
+					{ text: "Submit a Request", href: "/dashboard/submit" },
+					{ text: "Users", href: "/users", active: true }
+		    	],
+		    	messages: req.flash('usersFlash'),
+		    	admins: admins,
+		    	supervisors: supervisors,
+		    	volunteers: volunteers
+		    });
+		});
+	} else {
+		res.redirect('/dashboard');
+	}
 }
 
 module.exports = router;

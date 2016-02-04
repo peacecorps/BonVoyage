@@ -6,94 +6,7 @@ var Access = require("../config/access");
 var fs = require('fs');
 var moment = require('moment');
 var countries_dictionary = JSON.parse(fs.readFileSync("public/data/countryList.json", 'utf8'));
-
-/* 
- * Helper Functions
- */
-function getStartDate(request) {
-	if (request.legs.length > 0) {
-		start_date = request.legs[0].start_date;
-		for (var i = 1; i < request.legs.length; i++) {
-			if (request.legs[i].start_date instanceof Date) {
-				if(request.legs[i].start_date < start_date)
-					start_date = request.legs[i].start_date;	
-			} else {
-				if (request.legs[i].start_date.isBefore(start_date))
-					start_date = request.legs[i].start_date;
-			}
-		}
-		return start_date;
-	} else {
-		return undefined;
-	}
-}
-
-function getEndDate(request) {
-	if (request.legs.length > 0) {
-		end_date = request.legs[0].end_date;
-		for (var i = 1; i < request.legs.length; i++) {
-			if (request.legs[i].end_date instanceof Date) {
-				if(request.legs[i].end_date > end_date)
-					end_date = request.legs[i].end_date;	
-			} else {
-				if (request.legs[i].end_date.isAfter(end_date))
-					end_date = request.legs[i].end_date;
-			}
-		}
-		return end_date;
-	} else {
-		return undefined;
-	}
-}
-
-function getRequests(req, res, pending, cb) {
-	if (req.user) {
-		Request.aggregate([
-			{
-				// If access is supervisor or higher, match all requests: else only the user's requests
-				$match: (req.user.access >= Access.SUPERVISOR ? {} : { email: req.user.email })
-			},
-			{
-				// JOIN with the user data belonging to each request
-				$lookup: {
-					from: "users", 
-					localField: "email", 
-					foreignField: "email", 
-					as: "user"
-				}
-			},
-			{
-				$match: (pending != undefined ? { is_pending: pending } : {})
-			}
-		], function (err, requests) {
-			if (err) 
-				return cb(err);
-			else {
-				// Add start and end date to all requests
-				for (var i = 0; i < requests.length; i++) {
-					requests[i].start_date = getStartDate(requests[i]);
-					requests[i].end_date = getEndDate(requests[i]);
-				}
-
-				// console.log(requests);
-				cb(null, requests);
-			}
-		});
-	} else {
-      	cb(null, []);
-	}
-}
-
-function getUsers(options, cb) {
-	var q = (options.user != undefined ? options.user : {});
-	if (options.maxAccess != undefined) {
-		q.access = {$lte: options.maxAccess};
-	}
-	User.find(q, 'access name email phone _id', function(err, users) {
-		if (err) cb(err);
-		else cb(null, users);
-	});
-}
+var helpers = require('./helpers');
 
 /*
  * Handle Parameters
@@ -102,7 +15,7 @@ router.handleRequestId = function(req, res, next, request_id) {
 	// Look up request_id to determine if it is pending or not
 	Request.findOne({ _id: request_id }, 'is_pending', function(err, request) {
 		if (err) next(err);
-		getRequests(req, res, request.is_pending, function(err, requests) {
+		helpers.getRequests(req, res, request.is_pending, function(err, requests) {
 			if (err) next(err);
 			else {
 				// Lookup the id in this list of requests
@@ -126,21 +39,21 @@ router.handleRequestId = function(req, res, next, request_id) {
  */
 
 router.getRequests = function(req, res) {
-	getRequests(req, res, undefined, function(err, requests) {
+	helpers.getRequests(req, res, undefined, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
 };
 
 router.getPendingRequests = function(req, res) {
-	getRequests(req, res, true, function(err, requests) {
+	helpers.getRequests(req, res, true, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
 };
 
 router.getPastRequests = function(req, res) {
-	getRequests(req, res, false, function(err, requests) {
+	helpers.getRequests(req, res, false, function(err, requests) {
 		if(err) console.error(err);
 		res.send(requests);
 	});
@@ -149,7 +62,7 @@ router.getPastRequests = function(req, res) {
 router.getUsers = function(req, res) {
 	var rawMaxAccess = req.query.maxAccess;
 	var maxAccess = Access[rawMaxAccess];
-	getUsers({
+	helpers.getUsers({
 		maxAccess: maxAccess,
 	}, function(err, users) {
 		if(err) console.error(err);
@@ -173,7 +86,7 @@ router.postRequests = function(req, res) {
 		}
 	}
 	// Verify that the user exists
-	getUsers({
+	helpers.getUsers({
 		user: {
 			email: email
 		}

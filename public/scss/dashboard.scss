@@ -6,6 +6,16 @@
     margin-bottom: 10px;
 }
 
+.nav-pills {
+    border: 3px solid #ccc;
+    border-radius: 6px;	
+    li:not(.active) {
+    	a:hover {
+    		background-color: #ddd;
+    	}
+    }
+}
+
 table tbody tr {
 	cursor: pointer;
 }

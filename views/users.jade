@@ -1,0 +1,56 @@
+extends layout
+
+block styles
+  link(rel='stylesheet', href='/css/users.css')
+
+block content
+  .row
+    .col-xs-12.col-md-offset-1.col-md-10
+
+      .jumbotron
+        h2.dash_text Users
+
+        include flash
+
+        mixin useritem(user)
+          li.list-group-item
+            .row
+              .text
+                .col-xs-4.col-sm-6
+                  span= user.name 
+                  span.light.hidden-xs  --- 
+                  span.light.hidden-xs= user.email
+              .actions
+                .col-xs-4.col-sm-3
+                  button.btn.btn-info 
+                      span.hidden-xs.glyphicon.glyphicon-arrow-up(aria-hidden='true')
+                      span  PROMOTE
+                .col-xs-4.col-sm-3
+                  button.btn.btn-danger
+                    span.hidden-xs.glyphicon.glyphicon-remove(aria-hidden='true')
+                    span  DELETE
+
+        #users
+          //- Admins will not show unless the user is an admin
+          if admins.length > 0
+            .panel.panel-default
+              .panel-heading Administrators
+              ul.list-group
+                for user in admins
+                  +useritem(user)
+
+          .panel.panel-default
+            .panel-heading Supervisors
+            ul.list-group
+              for user in supervisors
+                +useritem(user)
+
+          .panel.panel-default
+            .panel-heading Volunteers
+            ul.list-group
+              for user in volunteers
+                +useritem(user)
+
+block scripts
+  script(src='/js/users.js')
+
