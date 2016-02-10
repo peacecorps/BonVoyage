@@ -12,6 +12,11 @@ router.index = function(req, res, next) {
 };
 
 router.renderLogin = function(req, res) {
+	var sub = {};
+	if (req.session.submission) {
+		sub = req.session.submission;
+		req.session.submission = null;
+	}
 	res.render('login.jade', {
 		title: 'Login', 
 		messages: req.flash('loginFlash'), 
@@ -19,11 +24,17 @@ router.renderLogin = function(req, res) {
 			{ text: "Login", href: "/login", active: true },
 			{ text: "Register", href: "/register" }
 		],
-		hideLogout: true
+		hideLogout: true,
+		submission: sub
 	});
 }
 
 router.renderRegister = function(req, res) {
+	var sub = {};
+	if (req.session.submission) {
+		sub = req.session.submission;
+		req.session.submission = null;
+	}
     res.render('register.jade', {
     	title: 'Register', 
     	messages: req.flash('registerFlash'), 
@@ -31,7 +42,8 @@ router.renderRegister = function(req, res) {
 			{ text: "Login", href: "/login" },
 			{ text: "Register", href: "/register", active: true }
 		],
-		hideLogout: true
+		hideLogout: true,
+		submission: sub
 	});
 }
 

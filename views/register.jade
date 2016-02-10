@@ -11,24 +11,21 @@ block content
 
         include flash
 
-
         label.sr-only(for='signupName') Full Name
-        input#signupName.form-control(type='text', placeholder='Full Name', required='', autofocus='', name='name')
+        input#signupName.form-control(type='text', placeholder='Full Name', required='', autofocus='', name='name', value=submission.name)
         label.sr-only(for='signupEmail') Email address
-        input#signupEmail.form-control(type='email', placeholder='Enter Email Address', required='', autofocus='', name='email')
+        input#signupEmail.form-control(type='email', placeholder='Enter Email Address', required='', autofocus='', name='email', value=submission.email)
         label.sr-only(for='signupPhone') Phone Number
-        input#signupPhone.form-control(type='text', placeholder='Phone Number', required='', autofocus='', name='phone')
+        input#signupPhone.form-control(type='text', placeholder='Phone Number', required='', autofocus='', name='phone', value=submission.phone)
         label.sr-only(for='signupPassword') Password
-        input#signupPassword.form-control(type='password', placeholder='Enter Password', required='', name='password')
-        label.sr-only(for='signupRePassword') Password
-        input#signupRePassword.form-control(type='password', placeholder='Re-Enter Password', required='', name='password2')
+        input#signupPassword.form-control(type='password', placeholder='Enter Password', required='', name='password', value=submission.password)
+        label.sr-only(for='signupPassword2') Password
+        input#signupPassword2.form-control(type='password', placeholder='Re-Enter Password', required='', name='password2', value=submission.password2)
 
         button#signupInfo.submit-btn.btn.btn-lg.btn-default.btn-block(type='submit') Sign Up
 
 
 block scripts
-    script(src='/js/register.js')
-
     // jQuery (for Bootstrap's JavaScript plugins)
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
     // Include all complied plugins

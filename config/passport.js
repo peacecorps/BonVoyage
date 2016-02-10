@@ -50,8 +50,10 @@ module.exports = function(passport) {
 
                 // check to see if theres already a user with that email
                 if (user) {
+                    req.session.submission = req.body;
                     return done(null, false, req.flash('registerFlash', { text: 'That email is already taken.', class: 'danger'}));
                 } else if(password != req.body.password2) {
+                    req.session.submission = req.body;
                     return done(null, false, req.flash('registerFlash', { text: 'Those passwords do not match.', class: 'danger'}));
                 } else {
 
@@ -104,18 +106,21 @@ module.exports = function(passport) {
                 // if no user is found, return the message
                 if (!user) {
                     // req.flash is the way to set flashdata using connect-flash
+                    req.session.submission = req.body;
                     return done(null, false, req.flash('loginFlash', { text: 'That email/password combination is invalid.', class: 'danger'})); 
                 } 
                 // if the user is found but the password is wrong
                 user.comparePassword(password, function(err, valid) {
                     // check if
                     if (err) {
-                        console.log("Compare password error-ed: ");
+                        console.log("Compare password errored: ");
                         console.log(err);
                     }
-                    if(!valid)
-                        return done(null,false,req.flash('loginFlash', { text: 'That email/password combination is invalid.', class: 'danger'}));
-                    return done(null,user);
+                    if(!valid) {
+                        req.session.submission = req.body;
+                        return done(null, false, req.flash('loginFlash', { text: 'That email/password combination is invalid.', class: 'danger'}));
+                    }
+                    return done(null, user);
                 });
                 
                 
