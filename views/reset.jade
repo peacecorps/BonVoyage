@@ -1,0 +1,28 @@
+extends layout
+
+block styles
+  // Login page style
+  link(href='/css/login.css', rel='stylesheet')
+
+block content
+  .login-container
+    form.form-signin(action='/api/login', method='post')
+      h2.form-signin-heading
+        p Password Reset
+
+      include flash
+
+      //- label.sr-only(for='inputEmail') Email
+      //- input#inputEmail.form-control(type='email', placeholder='Email address', required='', autofocus='', name = 'email')
+      label.sr-only(for='inputPassword') New Password
+      input#inputPassword.form-control(type='password', placeholder='New Password', required='', name = 'newPassword')
+
+      label.sr-only(for='inputPassword') Re-enter New Password
+      input#inputPassword.form-control(type='password', placeholder='Re-enter New Password', required='', name = 'confirmPassword')
+      //- .checkbox
+      //-   label
+      //-     input(type='checkbox', value='remember-me')
+      //-     p#remember Remember me
+      button#submitInfo.submit-btn.btn.btn-lg.btn-default.btn-block(type='submit') Reset
+
+

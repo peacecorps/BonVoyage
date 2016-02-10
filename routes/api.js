@@ -201,9 +201,8 @@ router.reset = function(req, res) {
 	var email = req.body.email;
 
 	// first check if email is registered
-
-	User.findOne({ email: email }, function(err, doc) {
-		if (doc) {
+	User.findOne({ email: email }, function(err, user) {
+		if (user) {
 			var token = randtoken.generate(16);
 			Token.create({token: token, email: email}, function(err, doc) {
 			    if (err) {
@@ -212,8 +211,13 @@ router.reset = function(req, res) {
 					done();
 			    }
 
+			    var sendFrom = 'Peace Corps <team@projectdelta.io>';
+			    var sendTo = email;
+			    var subject = 'Peace Corps BonVoyage Password Reset Request';
+			    var text = 'Hi ' + user.name + ',\n\nWe have received a request to reset your password. Please visit the following URL to reset your password.\n\nhttp://localhost:3000/reset/' + token;
 
 			    // send email
+			    helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("email sent!"));
 
 
 			});
@@ -224,6 +228,19 @@ router.reset = function(req, res) {
 	req.flash('loginFlash', { text: 'Instructions to reset your password have been sent to your email address.', class: 'success'});
 	res.end(JSON.stringify({redirect: '/login'}));
 
+}
+
+router.resetValidator = function(req, res) {
+	var token = req.params.token;
+	var newPassword = req.body.password;
+
+	// validate token
+	// modify the password
+	Token.findOne({ token: token }, function(err, doc) {
+		
+	});
+
+	//
 }
 
 router.logout = function(req, res) {

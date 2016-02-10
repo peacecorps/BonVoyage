@@ -49,8 +49,8 @@ router.renderReset = function(req, res) {
 
 /* incomplete */
 router.renderValidReset = function(req, res) {
-	res.render('forgot_password.jade', {
-    	title: 'Forgot Password',
+	res.render('reset.jade', {
+    	title: 'Password Reset',
     	messages: req.flash('resetFlash'), 
 		links: [
 			{ text: "Login", href: "/login" },
