@@ -7,6 +7,9 @@ var Access = require("../config/access");
 var fs = require('fs');
 var moment = require('moment');
 var randtoken = require('rand-token');
+var api_key = require('../config/email');
+var uri = require('../config/domain');
+var mailgun = require('mailgun-js')({apiKey: api_key, domain: uri});
 var countries_dictionary = JSON.parse(fs.readFileSync("public/data/countryList.json", 'utf8'));
 var helpers = require('./helpers');
 
@@ -195,25 +198,28 @@ router.postComments = function(req, res) {
 }
 
 router.reset = function(req, res) {
-	console.log("this is a test!")
 	var email = req.body.email;
 
-	console.log(email);
+	// first check if email is registered
 
-	// hit an endpoint to create a token and send an email
-	var token = randtoken.generate(16);
-	console.log("this is a token");
-	console.log(token);
+	User.findOne({ email: email }, function(err, doc) {
+		if (doc) {
+			var token = randtoken.generate(16);
+			Token.create({token: token, email: email}, function(err, doc) {
+			    if (err) {
+					req.flash('loginFlash', { text: 'Failed to generate an email reset token.', class: 'success'});
+					res.end(JSON.stringify({redirect: '/login'}));
+					done();
+			    }
 
-	Token.create({token: token, email: email}, function(error, doc) {
-	    if (error) {
-			req.flash('loginFlash', { text: 'Failed to generate an email reset token.', class: 'success'});
-			res.end(JSON.stringify({redirect: '/login'}));
-			done();
-	    } 
 
-	    
+			    // send email
+
+
+			});
+		}
 	});
+
 
 	req.flash('loginFlash', { text: 'Instructions to reset your password have been sent to your email address.', class: 'success'});
 	res.end(JSON.stringify({redirect: '/login'}));

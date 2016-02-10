@@ -18,6 +18,7 @@
     "gulp": "^3.9.0",
     "gulp-sass": "^2.1.1",
     "jade": "~1.9.2",
+    "mailgun-js": "^0.7.7",
     "moment": "^2.10.6",
     "mongodb": "~2.0.33",
     "mongoose": "^4.2.3",
