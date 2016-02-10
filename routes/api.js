@@ -225,10 +225,22 @@ router.modifyAccess = function(req, res) {
 router.deleteUser = function(req, res) {
 	email = req.body.email;
 	console.log(email);
-	User.find({ email: email }).remove(function(err, numAffected) {
-		if (err) console.error(err);
-		else req.flash('usersFlash', { text: 'The user has been deleted.' , class: 'success'});
-		res.end(JSON.stringify({redirect: '/users'}));
+	Request.find({ email: email }).remove(function(err, numAffected) {
+		if(err) {
+			console.error(err);
+			req.flash('usersFlash', { text: 'An error has occurred while attempting to delete the user.' , class: 'danger'});
+			res.end(JSON.stringify({redirect: '/users'}));
+		} else {
+			User.find({ email: email }).remove(function(err, numAffected) {
+				if (err) {
+					console.error(err);
+					req.flash('usersFlash', { text: 'An error has occurred while attempting to delete the user.' , class: 'danger'});
+				} else {
+					req.flash('usersFlash', { text: 'The user has been deleted.' , class: 'success'});
+				}
+				res.end(JSON.stringify({redirect: '/users'}));
+			});
+		}
 	});
 }
 
