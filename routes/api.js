@@ -80,6 +80,7 @@ router.postRequests = function(req, res) {
 	if (req.user.access >= Access.SUPERVISOR) {
 		email = req.body.email;
 		if (email == undefined) {
+			req.session.submission = req.body;
 			req.flash('submissionFlash', { text: 'You must select a requestee to submit this request for.', class: 'danger' });
 			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 			return;
@@ -98,10 +99,12 @@ router.postRequests = function(req, res) {
 				var start = moment(leg.start_date);
 				var end = moment(leg.end_date);
 				if (!(start.isBefore(end) || start.isSame(end))) {
+					req.session.submission = req.body;
 					req.flash('submissionFlash', { text: 'The start date you entered for leg #' + (i+1) + ' comes after the end date.', class: 'danger' });
 					res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 					return;
 				} else if (Object.keys(countries_dictionary).indexOf(leg.country) == -1) {
+					req.session.submission = req.body;
 					req.flash('submissionFlash', { text: 'The country that you have selected for leg #' + (i+1) + ' is not a valid country.', class: 'danger' });
 					res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 					return;
@@ -129,6 +132,7 @@ router.postRequests = function(req, res) {
 
 				newRequest.save(function(err) {
 					if (err) {
+						req.session.submission = req.body;
 						req.flash('submissionFlash', { text: 'An error has occurred while trying to save this request. Please try again.', class: 'danger' });
 						res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 					} else {
@@ -137,10 +141,12 @@ router.postRequests = function(req, res) {
 					}
 				});
 			} else {
+				req.session.submission = req.body;
 				req.flash('submissionFlash', { text: 'An error has occurred while trying to save this request. Please try again.', class: 'danger' });
 				res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 			}
 		} else {
+			req.session.submission = req.body;
 			req.flash('submissionFlash', { text: 'The user that you selected could not be found.', class: 'danger' });
 			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
 			return;

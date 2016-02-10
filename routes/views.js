@@ -48,6 +48,11 @@ router.renderRegister = function(req, res) {
 }
 
 router.renderSubform = function(req, res) {
+	var sub = {};
+	if (req.session.submission) {
+		sub = req.session.submission;
+		req.session.submission = null;
+	}
 	var links = [
 		{ text: "Dashboard", href: "/dashboard" },
 		{ text: "Submit a Request", href: "/dashboard/submit", active: true }
@@ -58,7 +63,8 @@ router.renderSubform = function(req, res) {
     	title: 'Submission Form',
     	links: links,
     	messages: req.flash('submissionFlash'),
-    	shouldSelectRequestee: req.user.access >= Access.SUPERVISOR
+    	shouldSelectRequestee: req.user.access >= Access.SUPERVISOR,
+    	submission: sub
     });
 }
 

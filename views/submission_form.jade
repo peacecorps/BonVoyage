@@ -28,6 +28,8 @@ block content
           button.btn.btn-success#request-submit-btn Submit All Trip Legs
 
 block scripts
+  script.
+    var submissionData = !{JSON.stringify(submission)};
   script(src='/js/picker.js')
   script(src='/js/picker.date.js')
   script(src='/js/tabletop.js')

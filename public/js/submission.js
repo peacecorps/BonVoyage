@@ -11,26 +11,26 @@ function insertAtIndex(i, id, data) {
     }
 }
 
-function addLeg() {
+function addLeg(leg) {
     count++;
     html = 
     "<div class='leg shadow-box'> \
         <h2> Trip Leg #" + count + " </h2> \
         <label class='info'>Date leaving</label> \
-        <input class='form-control datepicker date-leaving' type='text' placeholder='1 January, 2000'> \
+        <input class='form-control datepicker date-leaving' type='text' placeholder='1 January, 2000', value='" + (leg && leg.start_date ? leg.start_date : '') + "'> \
         <label class='info'>Date returning</label> \
-        <input class='form-control datepicker date-returning' type='text' placeholder='31 December, 2000'> \
+        <input class='form-control datepicker date-returning' type='text' placeholder='31 December, 2000', value='" + (leg && leg.end_date ? leg.end_date : '') + "'> \
         <label class='info'>Country</label> \
         <select class='form-control select-country' placeholder='United States'></select> \
         <div class='warnings'></div> \
         <label class='info'>Travel contact</label> \
-        <input class='form-control contact' type='text' placeholder='+1 123-456-7890  and/or  johndoe@peacecorps.org'></input> \
+        <input class='form-control contact' type='text' placeholder='+1 123-456-7890  and/or  johndoe@peacecorps.org' value='" + (leg && leg.contact ? leg.contact : '') + "'></input> \
         <label class='info'>Hotel/Hostel Information</label> \
-        <input class='form-control hotel' type='text' placeholder='San Francisco Hotel: +1 123-456-7890'></input> \
+        <input class='form-control hotel' type='text' placeholder='San Francisco Hotel: +1 123-456-7890' value='" + (leg && leg.hotel ? leg.hotel : '') + "'></input> \
         <label class='info'>Travel companions</label> \
-        <input class='form-control companions' type='text' placeholder='John Doe: +1 123-456-7890'></input> \
+        <input class='form-control companions' type='text' placeholder='John Doe: +1 123-456-7890' value='" + (leg && leg.companions ? leg.companions : '') + "'></input> \
         <label class='info'>Reason for leave</label> \
-        <input class='form-control description' rows='6' type='text' placeholder='Emergency sick leave'></input> \
+        <input class='form-control description' rows='6' type='text' placeholder='Emergency sick leave' value='" + (leg && leg.description ? leg.description : '') + "'></input> \
         <button class='btn btn-danger remove-leg'> Remove Trip Leg </button> \
     </div>";
     insertAtIndex(count, '#request-submit', html);
@@ -76,6 +76,11 @@ function addWarning(warning, $warnings) {
 function initialize(n) {
     // Initialize the Pick a Date picker
     $('.leg:nth-child(' + n + ') .datepicker').pickadate();
+    $('.leg:nth-child(' + n + ') .datepicker').each(function() {
+        if($(this).val()) {
+            $(this).pickadate('picker').set('select', $(this).val())
+        }
+    });
     // Initialize the Selectize country selector
     $select = $('.leg:nth-child(' + n + ') .select-country').selectize({
         valueField: 'country_code',
@@ -85,7 +90,7 @@ function initialize(n) {
     });
 
     var selectize = $select[0].selectize;
-    selectize.addOption(arrCountries);
+    selectize.addOption(arrCountries); 
     selectize.refreshOptions(false);
 
     // Add remove leg buttons
@@ -102,43 +107,46 @@ function initialize(n) {
         $warnings = $($item).closest($('.leg')).find('.warnings');
         clearWarnings($warnings);
 
-        Tabletop.init({
-            key: public_spreadsheet_url,
-            callback: function(data, tabletop) {
-                for (var i = 0; i < data.length; i++) {
-                    var type = data[i]['Type'];
-                    var msg = data[i]['Message'];
-                    var link = data[i]['Link'];
+        (function(country_code, $warnings) {
+            Tabletop.init({
+                key: public_spreadsheet_url,
+                callback: function(data, tabletop) {
+                    for (var i = 0; i < data.length; i++) {
+                        var type = data[i]['Type'];
+                        var msg = data[i]['Message'];
+                        var link = data[i]['Link'];
 
-                    if (link) {
-                        link = " <b><a href='" + data[i]['Link'] + "'>More Information</a></b>"
-                    } else {
-                        link = "";
-                    }
+                        if (link) {
+                            link = " <b><a href='" + data[i]['Link'] + "'>More Information</a></b>"
+                        } else {
+                            link = "";
+                        }
 
-                    $('.warnings').append($(
-                        "<div class='warning alert alert-" + type.toLowerCase() + "' role='alert'> \
-                            <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>Peace Corps:</b> " + data[i]['Message'] + link + "</span> \
-                        </div>"
-                    )
-                    );
-                }
-                
-                getWarnings(function(warnings) {
-                    // Clear all warnings
-                    // Get the warnings for the selected country
-                    country_warnings = warnings[country_code];
-                    if (country_warnings) {
-                        for(var i = 0; i < country_warnings.length; i++) {
-                            // Add a warning for each country
-                            addWarning(country_warnings[i], $warnings);
+                        if (data[i]['Message'] || link) {
+                            $warnings.append($(
+                                "<div class='warning alert alert-" + (type ? type.toLowerCase() : 'info') + "' role='alert'> \
+                                    <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>Peace Corps:</b> " + (data[i]['Message'] ? data[i]['Message'] : 'No details provided.') + link + "</span> \
+                                </div>"
+                            ));
                         }
                     }
-                });
-            },
-            simpleSheet: true,
-            query: "country = " + country_code
-        });
+                    
+                    getWarnings(function(warnings) {
+                        // Clear all warnings
+                        // Get the warnings for the selected country
+                        country_warnings = warnings[country_code];
+                        if (country_warnings) {
+                            for(var i = 0; i < country_warnings.length; i++) {
+                                // Add a warning for each country
+                                addWarning(country_warnings[i], $warnings);
+                            }
+                        }
+                    });
+                },
+                simpleSheet: true,
+                query: "country = " + country_code
+            });
+        })(country_code, $warnings);
 
 
         
@@ -159,6 +167,14 @@ function getLeg(n) {
     return data;
 }
 
+function isSubmitAsOtherUserShowing() {
+    return $('.selectRequestee').length > 0;
+}
+
+function submissionDataExists() {
+    return !$.isEmptyObject(submissionData);
+}
+
 $(function() {
     $select = $('.select-country').selectize();
     $select_requestee = $('.selectRequestee').selectize({
@@ -168,16 +184,26 @@ $(function() {
         sortField: 'name'
     });
 
-    $.ajax({
-        method: "GET",
-        url: "/api/users?maxAccess=VOLUNTEER",
-        dataType: "json",
-        success: function(json, status, request) {
-            console.log(json);
-            $select_requestee[0].selectize.addOption(json);
-            $select_requestee[0].selectize.refreshOptions(false);
-        }
-    });
+
+    if (isSubmitAsOtherUserShowing()) {
+        $.ajax({
+            method: "GET",
+            url: "/api/users?maxAccess=VOLUNTEER",
+            dataType: "json",
+            success: function(json, status, request) {
+                console.log(json);
+                $select_requestee[0].selectize.addOption(json);
+                $select_requestee[0].selectize.refreshOptions(false);
+                if(submissionDataExists()) {
+                    // A failure just occurred during submission: we need to replace the previously submitted data
+                    // Set the email, if they are a supervisor
+                    if (isSubmitAsOtherUserShowing() && submissionData.email != undefined) {
+                        $select_requestee[0].selectize.setValue(submissionData.email);
+                    }
+                }
+            }
+        })
+    };
 
     // Load the JSON file of the countries
     $.ajax({
@@ -189,19 +215,38 @@ $(function() {
                 arrCountries.push({ "country": json[key], "country_code": key });
             }
 
+            var $select = $('.select-country.selectized').selectize();
             $select.each(function(_, $s) {
                 $s.selectize.addOption(arrCountries);
                 $s.selectize.refreshOptions(false);
             });
 
+            if(submissionDataExists()) {
+                // A failure just occurred during submission: we need to replace the previously submitted data
+                for(var i = 0; i < $select.length; i++) {
+                    console.log($select[i]);
+                    $select[i].selectize.setValue(submissionData.legs[i].country);
+                }
+            }
         }
     });
 
+
+    if(submissionDataExists()) {
+        // A failure just occurred during submission: we need to replace the previously submitted data
+        // Create all of the legs, and fill what data can be filled without the above AJAX calls finishing (countries, submit as other user)
+        console.log(submissionData);
+        for (var i = 0; i < submissionData.legs.length; i++) {
+            var leg = submissionData.legs[i];
+            addLeg(leg);
+        }
+    } else {
+        // Start the request with a single trip leg
+        addLeg();
+    }
+
     // Load the warnings
     getWarnings();
-
-    // Start the request with a single trip leg
-    addLeg();
 
     $('#request-add-leg-btn').click(addLeg);
 
@@ -211,7 +256,7 @@ $(function() {
             legs.push(getLeg(i));
         }
         var email = undefined;
-        if ($('.selectRequestee').length > 0) {
+        if (isSubmitAsOtherUserShowing()) {
             email = $select_requestee[0].selectize.getValue();
         }
         $.ajax({
@@ -234,3 +279,4 @@ $(function() {
         });
     });
 });
+
