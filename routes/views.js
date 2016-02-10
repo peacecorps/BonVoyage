@@ -35,6 +35,31 @@ router.renderRegister = function(req, res) {
 	});
 }
 
+router.renderReset = function(req, res) {
+	res.render('forgot_password.jade', {
+    	title: 'Forgot Password',
+    	messages: req.flash('resetFlash'), 
+		links: [
+			{ text: "Login", href: "/login" },
+			{ text: "Register", href: "/register", active: true }
+		],
+		hideLogout: true
+	});
+}
+
+/* incomplete */
+router.renderValidReset = function(req, res) {
+	res.render('forgot_password.jade', {
+    	title: 'Forgot Password',
+    	messages: req.flash('resetFlash'), 
+		links: [
+			{ text: "Login", href: "/login" },
+			{ text: "Register", href: "/register", active: true }
+		],
+		hideLogout: true
+	});
+}
+
 router.renderSubform = function(req, res) {
 	var links = [
 		{ text: "Dashboard", href: "/dashboard" },

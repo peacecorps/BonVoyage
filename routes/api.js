@@ -2,9 +2,11 @@ var express = require('express');
 var router = express.Router();
 var User = require("../models/user");
 var Request = require("../models/request");
+var Token = require("../models/token");
 var Access = require("../config/access");
 var fs = require('fs');
 var moment = require('moment');
+var randtoken = require('rand-token');
 var countries_dictionary = JSON.parse(fs.readFileSync("public/data/countryList.json", 'utf8'));
 var helpers = require('./helpers');
 
@@ -190,6 +192,32 @@ router.postComments = function(req, res) {
 		req.flash('approvalFlash', { text: 'Your comment has been added.', class: 'success' });
 		res.end(JSON.stringify({redirect: '/dashboard/requests/' + id}));
 	});
+}
+
+router.reset = function(req, res) {
+	console.log("this is a test!")
+	var email = req.body.email;
+
+	console.log(email);
+
+	// hit an endpoint to create a token and send an email
+	var token = randtoken.generate(16);
+	console.log("this is a token");
+	console.log(token);
+
+	Token.create({token: token, email: email}, function(error, doc) {
+	    if (error) {
+			req.flash('loginFlash', { text: 'Failed to generate an email reset token.', class: 'success'});
+			res.end(JSON.stringify({redirect: '/login'}));
+			done();
+	    } 
+
+	    
+	});
+
+	req.flash('loginFlash', { text: 'Instructions to reset your password have been sent to your email address.', class: 'success'});
+	res.end(JSON.stringify({redirect: '/login'}));
+
 }
 
 router.logout = function(req, res) {

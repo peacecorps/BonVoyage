@@ -46,7 +46,7 @@ mongoose.connect(configDB.url);
 mongoose.connection.on('error', function(err){
   if (err)
     console.log(err);
-})
+});
 
 require('./config/passport.js')(passport); // pass passport for configuration
 
@@ -57,6 +57,8 @@ app.param('request_id', api.handleRequestId);
 app.get('/', views.index);
 app.get('/login', isNotLoggedIn, views.renderLogin);
 app.get('/register', views.renderRegister);
+app.get('/reset', isNotLoggedIn, views.renderReset);
+app.get('/reset/:token', views.renderValidReset);
 app.get('/dashboard', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderDashboard);
 app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderSubform);
 app.get('/dashboard/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderApproval);
@@ -85,6 +87,7 @@ app.post('/api/login', passport.authenticate('local-login', {
         failureFlash : true // allow flash messages
 }));
 app.post('/api/logout', api.logout);
+app.post('/api/reset', api.reset);
 app.post('/api/requests',isLoggedIn, needsAccess(Access.VOLUNTEER), api.postRequests);
 app.post('/api/access', isLoggedIn, needsAccess(Access.SUPERVISOR), api.modifyAccess);
 
