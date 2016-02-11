@@ -1,6 +1,9 @@
 var User = require("../models/user");
 var Request = require("../models/request");
 var Access = require("../config/access");
+var api_key = require('../config/email');
+var uri = require('../config/domain');
+var mailgun = require('mailgun-js')({apiKey: api_key, domain: uri});
 
 /* 
  * Helper Functions
@@ -89,3 +92,24 @@ module.exports.getUsers = function(options, cb) {
 		else cb(null, users);
 	});
 }
+
+module.exports.sendEmail = function(sendFrom, sendTo, subject, text, callback) {
+	var data = {
+		from: sendFrom,
+		to: sendTo,
+		subject: subject,
+		text: text
+	};
+
+	mailgun.messages().send(data, function(err, body) {
+		console.log(body);
+
+		if (callback) {
+			callback();
+		}
+	});
+}
+
+
+
+

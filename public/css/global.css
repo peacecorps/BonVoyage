@@ -168,3 +168,10 @@
     color: #a94442; }
     #htmlwrapper .alert-danger a:hover {
       color: #811C1C; }
+
+#htmlwrapper .g-recaptcha {
+  margin-top: 10px;
+  transform: scale(0.99);
+  -webkit-transform: scale(0.99);
+  transform-origin: 0 0;
+  -webkit-transform-origin: 0 0; }

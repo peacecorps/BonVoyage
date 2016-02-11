@@ -8,6 +8,9 @@ logs
 # HTML builds
 views/*.html
 
+# Configuration files
+config
+
 # Runtime data
 pids
 *.pid
