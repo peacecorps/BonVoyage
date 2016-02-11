@@ -88,6 +88,7 @@ app.post('/api/login', passport.authenticate('local-login', {
 }));
 app.post('/api/logout', api.logout);
 app.post('/api/reset', api.reset);
+app.post('/api/reset/:token', api.resetValidator);
 app.post('/api/requests',isLoggedIn, needsAccess(Access.VOLUNTEER), api.postRequests);
 app.post('/api/access', isLoggedIn, needsAccess(Access.SUPERVISOR), api.modifyAccess);
 

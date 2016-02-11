@@ -6,7 +6,7 @@ block styles
 
 block content
   .login-container
-    form.form-signin(action='/api/login', method='post')
+    form.form-signin
       h2.form-signin-heading
         p Password Reset
 
@@ -23,6 +23,8 @@ block content
       //-   label
       //-     input(type='checkbox', value='remember-me')
       //-     p#remember Remember me
-      button#submitInfo.submit-btn.btn.btn-lg.btn-default.btn-block(type='submit') Reset
+      button#submitInfo.submit-btn.btn.btn-lg.btn-default.btn-block Reset
 
+
+  script(src='/js/update.js')
 

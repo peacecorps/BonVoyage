@@ -8,6 +8,11 @@ var token_schema = mongoose.Schema({
 	email: {
 		type: String,
 		required: true
+	},
+	timestamp: {
+		type: Date,
+		required: true,
+		default: false
 	}
 });
 
