@@ -7,9 +7,6 @@ var Access = require("../config/access");
 var fs = require('fs');
 var moment = require('moment');
 var randtoken = require('rand-token');
-var api_key = require('../config/email');
-var uri = require('../config/domain');
-var mailgun = require('mailgun-js')({apiKey: api_key, domain: uri});
 var countries_dictionary = JSON.parse(fs.readFileSync("public/data/countryList.json", 'utf8'));
 var helpers = require('./helpers');
 
