@@ -5,17 +5,19 @@
 
 $(function() {
 	var uri = window.location.href;
-	var token = uri.substring(uri.indexOf('/reset') + 7);
-	console.log(token);
+	var index = uri.indexOf('/reset') + 7;
+	var token = uri.substring(index, index + 64);
 
 	$('#submitInfo').click(function(e) {
-		var data = $('#inputPassword').val();
-		console.log(data);
+		var newPassword = $('#inputPassword').val();
+		var confirmPassword = $('#confirmPassword').val();
+
 		$.ajax({
 			method: 'POST',
             contentType: "application/x-www-form-urlencoded",
 			data: {
-				password: data
+				newPassword: newPassword,
+				confirmPassword: confirmPassword
 			},
 			url: '/api/reset/' + token,
 			dataType: 'json',

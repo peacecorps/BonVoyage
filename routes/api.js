@@ -237,50 +237,62 @@ router.reset = function(req, res) {
 
 router.resetValidator = function(req, res) {
 	var token = req.params.token;
-	var newPassword = req.body.password;
+	var newPassword = req.body.newPassword;
+	var confirmPassword = req.body.confirmPassword;
 
-	// validate token
-	// modify the password
-	Token.findOneAndRemove({ token: token }, function(err, validToken) {
-		if (err) {
-			req.flash('loginFlash', { text: 'Invalid token. Please request to reset your password again.', class: 'danger'});
-			res.end(JSON.stringify({redirect: '/login'}));
-		} else {
-			// token has been found
+	console.log('this is the body');
+	console.log(req.body);
 
-			if (validToken) {
-				var email = validToken.email;
-
-				User.findOne({ email: email }, function(err, account) {
-					if (err) {
-						req.flash('loginFlash', { text: 'This account does not exist in our records anymore.', class: 'danger'});
-						res.end(JSON.stringify({redirect: '/login'}));
-					} else {
-						account.hash = newPassword;
-
-						account.save(function(err) {
-							if (err) {
-								// couldn't save the user
-								req.flash('loginFlash', { text: 'There has been an error resetting your password. Please retry.', class: 'danger'});
-								res.end(JSON.stringify({redirect: '/login'}));
-							}
-
-							req.flash('loginFlash', { text: 'Your password has been successfully updated.', class: 'success'});
-							res.end(JSON.stringify({redirect: '/login'}));
-						});
-					}
-				});
-			} else {
+	if (newPassword == confirmPassword) {
+		// validate token
+		// modify the password
+		Token.findOneAndRemove({ token: token }, function(err, validToken) {
+			if (err) {
 				req.flash('loginFlash', { text: 'Invalid token. Please request to reset your password again.', class: 'danger'});
 				res.end(JSON.stringify({redirect: '/login'}));
+			} else {
+				// token has been found
+
+				if (validToken) {
+					var email = validToken.email;
+
+					User.findOne({ email: email }, function(err, account) {
+						if (err) {
+							req.flash('loginFlash', { text: 'This account does not exist in our records anymore.', class: 'danger'});
+							res.end(JSON.stringify({redirect: '/login'}));
+						} else {
+							account.hash = newPassword;
+
+							account.save(function(err) {
+								if (err) {
+									// couldn't save the user
+									req.flash('loginFlash', { text: 'There has been an error resetting your password. Please retry.', class: 'danger'});
+									res.end(JSON.stringify({redirect: '/login'}));
+								}
+
+								req.flash('loginFlash', { text: 'Your password has been successfully updated.', class: 'success'});
+								res.end(JSON.stringify({redirect: '/login'}));
+							});
+						}
+					});
+				} else {
+					req.flash('loginFlash', { text: 'Invalid token. Please request to reset your password again.', class: 'danger'});
+					res.end(JSON.stringify({redirect: '/login'}));
+				}
+
+				
 			}
 
 			
-		}
+			
+		});
+	} else {
+		console.log('nay');
+		req.flash('loginFlash', { text: 'New Password is different from Confirm Password. Please retry.', class: 'danger'});
+		res.end(JSON.stringify({redirect: '/login'}));
+	}
 
-		
-		
-	});
+	
 
 	
 }
