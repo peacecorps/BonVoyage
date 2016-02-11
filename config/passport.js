@@ -1,4 +1,5 @@
 var LocalStrategy = require('passport-local').Strategy;
+var helpers = require('../routes/helpers');
 
 // load user model
 var User = require('../models/user');
@@ -73,6 +74,14 @@ module.exports = function(passport) {
                     newUser.save(function(err) {
                         if (err)
                             return done(err);
+
+                        var sendFrom = 'Peace Corps <team@projectdelta.io>';
+                        var sendTo = email;
+                        var subject = 'Peace Corps BonVoyage Registration Confirmation';
+                        var text = 'Hi ' + req.body.name + ',\n\nThank you for registering for BonVoyage. You can now access your account at http://peacecorps.projectdelta.io';
+
+                        helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("registration email sent!"));
+
                         return done(null, newUser);
                     });
                 }
