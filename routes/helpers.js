@@ -4,6 +4,9 @@ var Access = require("../config/access");
 var api_key = require('../config/email');
 var uri = require('../config/domain');
 var mailgun = require('mailgun-js')({apiKey: api_key, domain: uri});
+var twilio = require('twilio');
+var twilioCfg = require('../config/twilio');
+var twilioClient = new twilio.RestClient(twilioCfg.account_sid, twilioCfg.auth_token);
 
 /* 
  * Helper Functions
@@ -24,7 +27,7 @@ module.exports.getStartDate = function(request) {
 	} else {
 		return undefined;
 	}
-}
+};
 
 module.exports.getEndDate = function(request) {
 	if (request.legs.length > 0) {
@@ -42,7 +45,7 @@ module.exports.getEndDate = function(request) {
 	} else {
 		return undefined;
 	}
-}
+};
 
 module.exports.getRequests = function(req, res, pending, cb) {
 	if (req.user) {
@@ -80,7 +83,7 @@ module.exports.getRequests = function(req, res, pending, cb) {
 	} else {
       	cb(null, []);
 	}
-}
+};
 
 module.exports.getUsers = function(options, cb) {
 	var q = (options.user != undefined ? options.user : {});
@@ -91,7 +94,7 @@ module.exports.getUsers = function(options, cb) {
 		if (err) cb(err);
 		else cb(null, users);
 	});
-}
+};
 
 module.exports.sendEmail = function(sendFrom, sendTo, subject, text, callback) {
 	var data = {
@@ -108,8 +111,24 @@ module.exports.sendEmail = function(sendFrom, sendTo, subject, text, callback) {
 			callback();
 		}
 	});
-}
+};
 
+module.exports.sendSMS = function(sendTo, sendFrom, body, callback) {
+	twilioClient.sms.message.create({
+		to: sendTo,
+		from: sendFrom,
+		body: body
+	}, function(err, message) {
+		if (err) {
+			console.log('Unable to send SMS');
+		} else {
+			console.log('Successfully sent SMS. SID is: ');
+			console.log(message.sid);
 
+			console.log('Sent on: ');
+			console.log(message.dateCreated);
+		}
+	});
+};
 
 

@@ -240,9 +240,6 @@ router.resetValidator = function(req, res) {
 	var newPassword = req.body.newPassword;
 	var confirmPassword = req.body.confirmPassword;
 
-	console.log('this is the body');
-	console.log(req.body);
-
 	if (newPassword == confirmPassword) {
 		// validate token
 		// modify the password
@@ -252,7 +249,6 @@ router.resetValidator = function(req, res) {
 				res.end(JSON.stringify({redirect: '/login'}));
 			} else {
 				// token has been found
-
 				if (validToken) {
 					var email = validToken.email;
 
@@ -269,7 +265,6 @@ router.resetValidator = function(req, res) {
 									req.flash('loginFlash', { text: 'There has been an error resetting your password. Please retry.', class: 'danger'});
 									res.end(JSON.stringify({redirect: '/login'}));
 								}
-
 								req.flash('loginFlash', { text: 'Your password has been successfully updated.', class: 'success'});
 								res.end(JSON.stringify({redirect: '/login'}));
 							});
@@ -279,22 +274,12 @@ router.resetValidator = function(req, res) {
 					req.flash('loginFlash', { text: 'Invalid token. Please request to reset your password again.', class: 'danger'});
 					res.end(JSON.stringify({redirect: '/login'}));
 				}
-
-				
 			}
-
-			
-			
 		});
 	} else {
-		console.log('nay');
 		req.flash('loginFlash', { text: 'New Password is different from Confirm Password. Please retry.', class: 'danger'});
 		res.end(JSON.stringify({redirect: '/login'}));
 	}
-
-	
-
-	
 }
 
 router.logout = function(req, res) {
