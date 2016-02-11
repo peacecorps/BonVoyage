@@ -128,6 +128,10 @@ module.exports.sendSMS = function(sendTo, sendFrom, body, callback) {
 			console.log('Sent on: ');
 			console.log(message.dateCreated);
 		}
+
+		if (callback) {
+			callback();
+		}
 	});
 };
 
