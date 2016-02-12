@@ -160,6 +160,16 @@ router.postApprove = function(req, res) {
 	var id = req.params.request_id;
 	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":true}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
+
+		var sendFrom = 'Peace Corps <team@projectdelta.io>';
+		var sendTo = doc.email;
+		var subject = 'Peace Corps BonVoyage Request Approved';
+		var text = 'Hi ' + user.name + ',\n\n Your travel request has been approved. Please visit BonVoyage website to review your request.';
+
+		// send email
+		helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("email sent!"));
+
+
 		req.flash('dashboardFlash', { text: 'The request has been successfully approved.', class: 'success'});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
@@ -169,6 +179,15 @@ router.postDeny = function(req, res) {
 	var id = req.params.request_id;
 	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":false}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
+
+		var sendFrom = 'Peace Corps <team@projectdelta.io>';
+		var sendTo = doc.email;
+		var subject = 'Peace Corps BonVoyage Request Denied';
+		var text = 'Hi ' + user.name + ',\n\n Your travel request has been denied. Please visit BonVoyage website to review your request.';
+
+		// send email
+		helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("email sent!"));
+
 		req.flash('dashboardFlash', { text: 'The request has been successfully denied.', class: 'success'});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
@@ -213,18 +232,18 @@ router.reset = function(req, res) {
 			var token = randtoken.generate(64);
 
 			Token.create({token: token, email: email}, function(err, doc) {
-			    if (err) {
+				if (err) {
 					req.flash('loginFlash', { text: 'Failed to generate an email reset token.', class: 'danger'});
 					res.end(JSON.stringify({redirect: '/login'}));
-			    }
+				}
 
-			    var sendFrom = 'Peace Corps <team@projectdelta.io>';
-			    var sendTo = email;
-			    var subject = 'Peace Corps BonVoyage Password Reset Request';
-			    var text = 'Hi ' + user.name + ',\n\nWe have received a request to reset your password. Please visit the following URL to reset your password.\n\nhttp://localhost:3000/reset/' + token;
+				var sendFrom = 'Peace Corps <team@projectdelta.io>';
+				var sendTo = email;
+				var subject = 'Peace Corps BonVoyage Password Reset Request';
+				var text = 'Hi ' + user.name + ',\n\nWe have received a request to reset your password. Please visit the following URL to reset your password.\n\nhttp://localhost:3000/reset/' + token;
 
-			    // send email
-			    helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("email sent!"));
+				// send email
+				helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("email sent!"));
 			});
 		}
 			
