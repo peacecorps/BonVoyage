@@ -164,7 +164,7 @@ router.postApprove = function(req, res) {
 		var sendFrom = 'Peace Corps <team@projectdelta.io>';
 		var sendTo = doc.email;
 		var subject = 'Peace Corps BonVoyage Request Approved';
-		var text = 'Hi ' + user.name + ',\n\n Your travel request has been approved. Please visit BonVoyage website to review your request.';
+		var text = 'Hi ' + req.user.name + ',\n\n Your travel request has been approved. Please visit BonVoyage website to review your request.';
 
 		// send email
 		helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("email sent!"));
@@ -183,7 +183,7 @@ router.postDeny = function(req, res) {
 		var sendFrom = 'Peace Corps <team@projectdelta.io>';
 		var sendTo = doc.email;
 		var subject = 'Peace Corps BonVoyage Request Denied';
-		var text = 'Hi ' + user.name + ',\n\n Your travel request has been denied. Please visit BonVoyage website to review your request.';
+		var text = 'Hi ' + req.user.name + ',\n\n Your travel request has been denied. Please visit BonVoyage website to review your request.';
 
 		// send email
 		helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("email sent!"));

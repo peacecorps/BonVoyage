@@ -1,12 +1,38 @@
 var User = require("../models/user");
 var Request = require("../models/request");
 var Access = require("../config/access");
-var api_key = require('../config/email');
-var uri = require('../config/domain');
-var mailgun = require('mailgun-js')({apiKey: api_key, domain: uri});
-var twilio = require('twilio');
-var twilioCfg = require('../config/twilio');
-var twilioClient = new twilio.RestClient(twilioCfg.account_sid, twilioCfg.auth_token);
+
+
+// Attempt to load credentials for email and SMS
+var dropEmail = false;
+var dropSMS = false;
+
+try {
+	var credentials = require('../config/credentials');
+} catch(exc) {
+	console.error("Credentials file not found. (../config/credentials). Email and SMS will be dropped silently.");
+	dropEmail = true;
+	dropSMS = true;
+}
+
+try {
+	var domain = require('../config/domain');
+} catch(exc) {
+	console.error("Domain file not found. (../config/domain). Email will be dropped silently.");
+	dropEmail = true;
+}
+
+if (credentials && credentials.mailgun && domain) {
+	var mailgunAPIKey = credentials.mailgun;
+	var mailgun = require('mailgun-js')({apiKey: mailgunAPIKey, domain: domain});
+} else dropEmail = true;
+
+if (credentials && credentials.twilio) {
+	var twilio = require('twilio');
+	var twilioCfg = credentials.twilio;
+	var twilioClient = new twilio.RestClient(twilioCfg.account_sid, twilioCfg.auth_token);
+} else dropSMS = true;
+
 
 /* 
  * Helper Functions
@@ -104,35 +130,51 @@ module.exports.sendEmail = function(sendFrom, sendTo, subject, text, callback) {
 		text: text
 	};
 
-	mailgun.messages().send(data, function(err, body) {
-		console.log(body);
-
-		if (callback) {
+	if (dropEmail) {
+		console.error("Email dropped. Email data:");
+		console.error(data);
+		if (callback)
 			callback();
-		}
-	});
+	} else {
+		mailgun.messages().send(data, function(err, body) {
+			console.log(body);
+
+			if (callback) {
+				callback();
+			}
+		});
+	}
 };
 
 module.exports.sendSMS = function(sendTo, sendFrom, body, callback) {
-	twilioClient.sms.message.create({
-		to: sendTo,
-		from: sendFrom,
-		body: body
-	}, function(err, message) {
-		if (err) {
-			console.log('Unable to send SMS');
-		} else {
-			console.log('Successfully sent SMS. SID is: ');
-			console.log(message.sid);
+	var data = {
+			to: sendTo,
+			from: sendFrom,
+			body: body
+	};
 
-			console.log('Sent on: ');
-			console.log(message.dateCreated);
-		}
-
-		if (callback) {
+	if (dropSMS) {
+		console.error("SMS dropped. SMS data:");
+		console.error(data);
+		if (callback)
 			callback();
-		}
-	});
+	} else {
+		twilioClient.sms.message.create(data, function(err, message) {
+			if (err) {
+				console.log('Unable to send SMS');
+			} else {
+				console.log('Successfully sent SMS. SID is: ');
+				console.log(message.sid);
+
+				console.log('Sent on: ');
+				console.log(message.dateCreated);
+			}
+
+			if (callback) {
+				callback();
+			}
+		});
+	}
 };
 
 

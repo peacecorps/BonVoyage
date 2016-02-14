@@ -12,7 +12,7 @@ var token_schema = mongoose.Schema({
 	timestamp: {
 		type: Date,
 		required: true,
-		default: false
+		default: new Date()
 	}
 });
 

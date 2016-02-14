@@ -43,3 +43,9 @@ node_modules
 
 # Node Debug Logs
 npm-debug.log
+
+# Mailgun/Twilio credentials
+config/credentials.js
+# Placeholder, until renamed to credentials.js
+config/email.js 
+
