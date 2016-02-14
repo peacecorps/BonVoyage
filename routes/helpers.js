@@ -58,7 +58,7 @@ module.exports.getRequests = function(req, res, pending, cb) {
 				}
 			},
 			{
-				$match: (pending != undefined ? { is_pending: pending } : {})
+				$match: (pending != undefined ? {'status.is_pending': pending } : {})
 			}
 		], function (err, requests) {
 			if (err) 

@@ -64,8 +64,6 @@ app.get('/users', isLoggedIn, views.renderUsers);
 
 // API
 app.get('/api/requests', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getRequests);
-app.get('/api/requests/past', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getPastRequests);
-app.get('/api/requests/pending', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getPendingRequests);
 
 app.get('/api/users', isLoggedIn, needsAccess(Access.SUPERVISOR), api.getUsers);
 

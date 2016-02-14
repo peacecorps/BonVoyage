@@ -72,10 +72,11 @@ router.renderApproval = function(req, res) {
 	if (!warnings)
 		warnings = JSON.parse(fs.readFileSync("public/data/warnings.json", 'utf8'));
 	// Merge warnings to requests
+	console.log(req.request);
 	for(var i = 0; i < req.request.legs.length; i++) {
 		req.request.legs[i].warnings = warnings[req.request.legs[i].country_code];
 	}
-	if (req.request.is_pending == false) {
+	if (req.request.status.is_pending == false) {
 		var deniedFlash = { 
 			text: 'This request has been denied.', 
 			class: 'danger' 
@@ -84,7 +85,7 @@ router.renderApproval = function(req, res) {
 			text: 'This request has been approved.', 
 			class: 'success' 
 		};
-		req.flash('approvalFlash', (req.request.is_approved ? approvedFlash : deniedFlash));
+		req.flash('approvalFlash', (req.request.status.is_approved == true ? approvedFlash : deniedFlash));
 	}
 	var links = [
 		{ text: "Dashboard", href: "/dashboard" },

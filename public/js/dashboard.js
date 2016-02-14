@@ -1,47 +1,75 @@
 
-function addRequest(id, request) {
-	count = count + 1;
-	console.log(request.end_date);
-	$('div#' + id + " table").find('tbody').append(
-		$('<tr>').append(
-			$('<th>').text(count)
-		).append(
-			$('<td>').text((request.user && request.user.length > 0 ? request.user[0].name : "None"))
-		).append(
-			$('<td>').text(format_date(request.start_date, ISO_FORMAT))
-		).append(
-			$('<td>').text(format_date(request.end_date, ISO_FORMAT))
-		).append(
-			$('<td>').text(format_approval(request))
-		).addClass(
-			(request.is_pending ? "warning" : (request.is_approved ? "success" : "danger"))
-		).click(function() {
-			window.location.href = "/dashboard/requests/" + request._id;
-		})
-	);
-}
-
-function clearRequests(id) {
-	$('table#' + id).empty();
-}
-
-function format_approval(request) {
-	return (request.is_pending ? "Pending" : (request.is_approved ? "Approved" : "Denied"));
+function $table() {
+	return $('div#dashboardTable table');
 }
 
 $(function() {
-	$.each([{ url: '/api/requests/pending', id: 'pending' }, { url: '/api/requests/past', id: 'past' }], function(_, d) {
-		$.getJSON(d.url, function(request_list) {
-	    	count = 0;
-	        for (index in request_list) {
-	        	request = request_list[index]
-	        	addRequest(d.id, request);
-	        }
-	    });
-	});
-	$('.nav-pills a').click(function (e) {
-	  e.preventDefault()
-	  $(this).tab('show')
+	// Configure the past and present DataTables indivudally
+	var table = $table().DataTable({
+		// responsive: true, // TODO
+		ajax: {
+			url: '/api/requests',
+			dataSrc: ''
+		},
+		order: [[3, 'desc'], [1, 'asc'], [0, 'asc']],
+		// lengthChange: false,
+		language: {
+			emptyTable: 'No requests found.',
+			infoFiltered: "(filtered from _MAX_ requests)",
+			zeroRecords: "No matching requests found",
+			info: "Showing _START_ to _END_ of _TOTAL_ requests",
+			lengthMenu: "Show _MENU_ requests"
+		},
+		columns: [
+			{
+				data: 'user',
+				render: function(data, type, row) {
+					if (data && data.length > 0) {
+						return data[0].name;
+					} else {
+						return 'None';
+					}
+				}
+			},
+			{
+				data: 'start_date',
+				render: function(data, type, row) {
+					return format_date(data, ISO_FORMAT);
+				}
+			},
+			{
+				data: 'end_date',
+				render: function(data, type, row) {
+					return format_date(data, ISO_FORMAT);
+				}
+			},
+			{
+				data: 'status',
+				render: function(data, type, row) {
+					return (data.is_pending ? "Pending" : (data.is_approved ? "Approved" : "Denied"));
+				}
+			}
+		],
+		"rowCallback": function( row, data, index ) {
+
+			// Add Bootstrap coloration
+			if (data.status.is_pending == true) {
+				$(row).addClass('warning');
+			} else {
+				if (data.status.is_approved == true) {
+					$(row).addClass('success');
+				} else {
+					$(row).addClass('danger');
+				}
+			}
+
+			// Add click handler
+			(function(data) {
+				$(row).click(function(event) {
+					window.location.href = "/dashboard/requests/" + data._id;
+				});
+			})(data);
+		}
 	});
 });
 

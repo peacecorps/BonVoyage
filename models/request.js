@@ -3,8 +3,10 @@ var moment = require('moment');
 
 var request_schema = mongoose.Schema({
 	email: String,
-	is_pending: Boolean,
-	is_approved: Boolean,
+	status: {
+		is_pending: Boolean,
+		is_approved: Boolean
+	},
 	timestamp: {type: Date, default: Date.now},
 
 	legs: [{

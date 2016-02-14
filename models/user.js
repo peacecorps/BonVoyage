@@ -22,8 +22,6 @@ var presave = function(finish_saving_callback) {
 			finish_saving_callback();
 		})
 	});
-	
-	
 };
 
 user_schema.methods.comparePassword = function(password, cb){

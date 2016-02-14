@@ -13,9 +13,9 @@ var helpers = require('./helpers');
  */
 router.handleRequestId = function(req, res, next, request_id) {
 	// Look up request_id to determine if it is pending or not
-	Request.findOne({ _id: request_id }, 'is_pending', function(err, request) {
+	Request.findOne({ _id: request_id }, 'status', function(err, request) {
 		if (err) next(err);
-		helpers.getRequests(req, res, request.is_pending, function(err, requests) {
+		helpers.getRequests(req, res, request.status.is_pending, function(err, requests) {
 			if (err) next(err);
 			else {
 				// Lookup the id in this list of requests
@@ -28,7 +28,7 @@ router.handleRequestId = function(req, res, next, request_id) {
 					}
 				}
 				if (req.request == undefined)
-					next();
+					next(new Error('Request not found.'));
 			}
 		});
 	});
@@ -125,8 +125,10 @@ router.postRequests = function(req, res) {
 			if (legs.length > 0) {
 				var newRequest = new Request({
 					email: email,
-					is_pending: true,
-					is_approved: false,
+					status: {
+						is_pending: true,
+						is_approved: false
+					},
 					legs: legs
 				});
 
@@ -156,7 +158,7 @@ router.postRequests = function(req, res) {
 
 router.postApprove = function(req, res) {
 	var id = req.params.request_id;
-	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":true}}, function(err, doc) {
+	Request.findByIdAndUpdate(id, {$set:{"status.is_pending":false, "status.is_approved":true}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
 		req.flash('dashboardFlash', { text: 'The request has been successfully approved.', class: 'success'});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
@@ -165,7 +167,7 @@ router.postApprove = function(req, res) {
 
 router.postDeny = function(req, res) {
 	var id = req.params.request_id;
-	Request.findByIdAndUpdate(id, {$set:{"is_pending":false, "is_approved":false}}, function(err, doc) {
+	Request.findByIdAndUpdate(id, {$set:{"status.is_pending":false, "status.is_approved":false}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
 		req.flash('dashboardFlash', { text: 'The request has been successfully denied.', class: 'success'});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
