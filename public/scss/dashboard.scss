@@ -1,15 +1,26 @@
-.dash_text {
-    text-align: center;
-}
 
-table tbody tr {
-	cursor: pointer;
-}
+#htmlwrapper {
+	.dash_text {
+	    text-align: center;
+	}
 
-table.dataTable {
-	width: 100% !important;
-}
+	table tbody tr {
+		cursor: pointer;
+	}
 
-div.dataTables_wrapper div.dataTables_info {
-	padding-bottom: 8px;
+	table.dataTable {
+		width: 100% !important;
+	}
+
+	div.dataTables_wrapper div.dataTables_info {
+		padding-bottom: 8px;
+	}
+
+	input[type=checkbox] {
+	  margin-right: 5px;
+	}
+
+	#searchBar {
+		margin-bottom: 10px;
+	}
 }

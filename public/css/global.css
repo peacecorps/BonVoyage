@@ -5,15 +5,15 @@
     padding-left: 15px;
     color: #e7e7e7; }
 
-#htmlwrapper .btn {
+#htmlwrapper .btn:not(.btn-override) {
   padding: 10px 15px; }
 
-#htmlwrapper .btn-default {
+#htmlwrapper .btn-default:not(.btn-override) {
   background-color: #3C7F8C;
   border-color: #2b6e7b;
   color: #f7f7f7; }
 
-#htmlwrapper .btn-default:hover {
+#htmlwrapper .btn-default:hover:not(.btn-override) {
   background-color: #2b6e7b; }
 
 #htmlwrapper .shadow-box {

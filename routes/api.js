@@ -104,7 +104,7 @@ router.postRequests = function(req, res) {
 				console.log(start);
 				console.log(end);
 
-				if (helpers.compareDateOnly(start, end) > 0) {
+				if (start > end) {
 					req.session.submission = req.body;
 					req.flash('submissionFlash', { text: 'The start date you entered for leg #' + (i+1) + ' comes after the end date.', class: 'danger' });
 					res.end(JSON.stringify({redirect: '/dashboard/submit'}));

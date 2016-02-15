@@ -169,32 +169,4 @@ module.exports.sendSMS = function(sendTo, sendFrom, body, callback) {
 	}
 };
 
-/*
- * Compares DateOnly objects
- * -1 if d1 comes before d2
- * 0 if d1 is the same day as d2
- * 1 if d1 comes after d2
- */
-module.exports.compareDateOnly = function(d1, d2) {
-	if(d1.getFullYear() < d2.getFullYear()) {
-		return -1;
-	} else if (d1.getFullYear() > d2.getFullYear()) {
-		return 1;
-	} else {
-		if(d1.getMonth() < d2.getMonth()) {
-			return -1;
-		} else if(d1.getMonth() > d2.getMonth()) {
-			return 1;
-		} else {
-			if(d1.getDay() < d2.getDay()) {
-				return -1;
-			} else if(d1.getDay() > d2.getDay()) {
-				return 1;
-			} else {
-				return 0;
-			}
-		}
-	}
-}
-
 

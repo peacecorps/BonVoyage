@@ -1,11 +1,17 @@
-.dash_text {
+#htmlwrapper .dash_text {
   text-align: center; }
 
-table tbody tr {
+#htmlwrapper table tbody tr {
   cursor: pointer; }
 
-table.dataTable {
+#htmlwrapper table.dataTable {
   width: 100% !important; }
 
-div.dataTables_wrapper div.dataTables_info {
+#htmlwrapper div.dataTables_wrapper div.dataTables_info {
   padding-bottom: 8px; }
+
+#htmlwrapper input[type=checkbox] {
+  margin-right: 5px; }
+
+#htmlwrapper #searchBar {
+  margin-bottom: 10px; }

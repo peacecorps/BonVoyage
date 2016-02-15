@@ -14,17 +14,17 @@
 		}
 	}
 
-	.btn {
+	.btn:not(.btn-override) {
 		padding: 10px 15px;
 	}
 
-	.btn-default {
+	.btn-default:not(.btn-override) {
 		background-color: $fg-color-light;
 		border-color: $fg-color-light-hover;
 		color: $white-color-hover;
 	}
 
-	.btn-default:hover {
+	.btn-default:hover:not(.btn-override) {
 		background-color: $fg-color-light-hover;
 	}
 

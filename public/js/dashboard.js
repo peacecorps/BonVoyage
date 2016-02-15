@@ -4,6 +4,19 @@ function $table() {
 }
 
 $(function() {
+	FastClick.attach(document.body);
+	// Track what has been toggled in the search filters
+	var search_options = {
+		show: {
+			approved: true,
+			denied: true,
+			pending: true
+		},
+		limit: {
+			on_leave: false
+		}
+	};
+
 	// Configure the past and present DataTables indivudally
 	var table = $table().DataTable({
 		// responsive: true, // TODO
@@ -12,7 +25,10 @@ $(function() {
 			dataSrc: ''
 		},
 		order: [[3, 'desc'], [1, 'asc'], [0, 'asc']],
-		lengthChange: false,
+		dom: 
+			"<'row'>" +
+			"<'row'<'col-sm-12'tr>>" +
+			"<'row'<'col-sm-4 hidden-xs'i><'col-sm-8 col-xs-12'p><'col-xs-12 visible-xs'i>>",
 		language: {
 			emptyTable: 'No requests found.',
 			infoFiltered: "(filtered from _MAX_ requests)",
@@ -70,6 +86,60 @@ $(function() {
 				});
 			})(data);
 		}
+	});
+
+	function updateSearch() {
+		console.log(search_options);
+	}
+
+	$('.dropdown-menu a').on( 'click', function( event ) {
+		var $target = $(event.currentTarget),
+			val = $target.attr('data-value'),
+			$inp = $target.find('input');
+
+		var split_val = val.split('.');
+		if(split_val.length == 2) {
+			var type = split_val[0];
+			var value = split_val[1];
+			search_options[type][value] = !search_options[type][value]
+			setTimeout( function() { $inp.prop('checked', search_options[type][value])}, 0);
+		}
+
+		$(event.target).blur();
+
+		// Update the table
+		table.draw();
+
+		return false;
+	});
+
+	/* Custom filtering function which will search data in column four between two values */
+	$.fn.dataTable.ext.search.push(
+		function( settings, data, dataIndex ) {
+			var approval_status = data[3];
+
+			if(
+				(search_options.show.approved && approval_status == "Approved") ||
+				(search_options.show.denied && approval_status == "Denied") ||
+				(search_options.show.pending && approval_status == "Pending")
+			){
+				if (search_options.limit.on_leave) {
+					var start_date = new DateOnly(data[1]);
+					var end_date = new DateOnly(data[2]);
+					var today = new DateOnly();
+					return today >= start_date && today <= end_date;
+				} else {
+					return true;
+				}
+			} else {
+				return false;
+			}
+		}
+	);
+
+	$('#searchBar input[type=text]').keyup(function() {
+		var q = $(this).val();
+		table.search(q).draw();
 	});
 });
 
