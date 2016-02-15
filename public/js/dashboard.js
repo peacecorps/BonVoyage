@@ -110,7 +110,13 @@ $(function() {
 			// Add click handler
 			(function(data) {
 				$(row).click(function(event) {
-					window.location.href = "/requests/" + data._id;
+					// Pass the search query and filter options on to the approval page
+					// so that the next/prev buttons can be set
+					// var query_data = {
+					// 	q: $('#searchBar input[type=text]').val(),
+					// 	filters: search_options
+					// }
+					window.location.href = "/requests/" + data._id //+ "?" + $.param(query_data);
 				});
 			})(data);
 		}

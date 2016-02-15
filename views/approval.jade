@@ -94,13 +94,13 @@ block content
 					#request_delete.row
 						.col-xs-12
 							button(class="btn btn-danger", id="request-delete-btn") Delete Request
-				#request_pagination.row
-					.col-xs-6
-						a(href=(prev_request_id ? "/requests/#{prev_request_id}" : "")) 
-							button(class="btn btn-default" + (prev_request_id ? "" : " disabled")) < Prev
-					.col-xs-6
-						a(href=(next_request_id ? "/requests/#{next_request_id}" : "")) 
-							button(class="btn btn-default" + (next_request_id ? "" : " disabled")) Next >
+				//- #request_pagination.row
+				//- 	.col-xs-6
+				//- 		a(href=(prev_request_id ? "/requests/#{prev_request_id}" : "")) 
+				//- 			button(class="btn btn-default" + (prev_request_id ? "" : " disabled")) < Prev
+				//- 	.col-xs-6
+				//- 		a(href=(next_request_id ? "/requests/#{next_request_id}" : "")) 
+				//- 			button(class="btn btn-default" + (next_request_id ? "" : " disabled")) Next >
 
 block scripts
 	script(src='/js/moment.js')

@@ -97,7 +97,6 @@ router.renderApproval = function(req, res) {
 	if (!warnings)
 		warnings = JSON.parse(fs.readFileSync("public/data/warnings.json", 'utf8'));
 	// Merge warnings to requests
-	console.log(req.request);
 	for(var i = 0; i < req.request.legs.length; i++) {
 		req.request.legs[i].warnings = warnings[req.request.legs[i].country_code];
 	}

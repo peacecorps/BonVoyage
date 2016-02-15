@@ -15,6 +15,7 @@ var DateOnly = require('dateonly');
  * Handle Parameters
  */
 router.handleRequestId = function(req, res, next, request_id) {
+	// console.log(req.query);
 	// Look up request_id to determine if it is pending or not
 	Request.findOne({ _id: request_id }, 'status', function(err, request) {
 		if (err) next(err);
@@ -40,7 +41,6 @@ router.handleRequestId = function(req, res, next, request_id) {
 /*
  * GET Requests
  */
-
 router.getRequests = function(req, res) {
 	helpers.getRequests(req, res, undefined, function(err, requests) {
 		if(err) console.error(err);
@@ -101,8 +101,6 @@ router.postRequests = function(req, res) {
 				leg = req.body.legs[i];
 				var start = new DateOnly(leg.start_date);
 				var end = new DateOnly(leg.end_date);
-				console.log(start);
-				console.log(end);
 
 				if (start > end) {
 					req.session.submission = req.body;
@@ -361,7 +359,6 @@ router.modifyAccess = function(req, res) {
 
 router.deleteUser = function(req, res) {
 	email = req.body.email;
-	console.log(email);
 	Request.find({ email: email }).remove(function(err, numAffected) {
 		if(err) {
 			console.error(err);
