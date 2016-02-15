@@ -24,7 +24,7 @@ $(function() {
 			url: '/api/requests',
 			dataSrc: ''
 		},
-		order: [[3, 'desc'], [1, 'asc'], [0, 'asc']],
+		order: [[4, 'desc'], [1, 'asc'], [0, 'asc']],
 		dom: 
 			"<'row'>" +
 			"<'row'<'col-sm-12'tr>>" +
@@ -60,11 +60,39 @@ $(function() {
 				}
 			},
 			{
+				data: 'legs',
+				render: function(data, type, row) {
+					var countries = "";
+					var separator = "";
+					for (var i = 0; i < data.length; i++) {
+						var leg = data[i];
+						countries += separator + leg.country_code;
+						separator = ", ";
+					}
+					return countries;
+				},
+				width: "20%"
+			},
+			{
 				data: 'status',
 				render: function(data, type, row) {
 					return (data.is_pending ? "Pending" : (data.is_approved ? "Approved" : "Denied"));
 				}
-			}
+			},
+			{
+				data: 'legs',
+				render: function(data, type, row) {
+					var countries = "";
+					var separator = "";
+					for (var i = 0; i < data.length; i++) {
+						var leg = data[i];
+						countries += separator + leg.country;
+						separator = ", ";
+					}
+					return countries;
+				},
+                "visible": false			
+            },
 		],
 		"rowCallback": function( row, data, index ) {
 
@@ -116,7 +144,7 @@ $(function() {
 	/* Custom filtering function which will search data in column four between two values */
 	$.fn.dataTable.ext.search.push(
 		function( settings, data, dataIndex ) {
-			var approval_status = data[3];
+			var approval_status = data[4];
 
 			if(
 				(search_options.show.approved && approval_status == "Approved") ||

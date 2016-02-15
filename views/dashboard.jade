@@ -2,7 +2,7 @@ extends layout
 
 block styles
   link(rel='stylesheet', href='/css/dashboard.css')
-  link(rel='stylesheet', href='/css/datatables.min.css')
+  link(rel='stylesheet', href='/css/datatables.css')
 block content
   .row
     .col-xs-12.col-md-offset-1.col-md-10
@@ -48,12 +48,13 @@ block content
                   th Name
                   th Start Date
                   th End Date
+                  th Countries
                   th Approved
               tbody
 
 block scripts
   script(src='/js/moment.js')
-  script(src='/js/datatables.min.js')
+  script(src='/js/datatables.js')
   script(src='/js/fastclick.js')
   script(src='/js/dashboard.js')
 
