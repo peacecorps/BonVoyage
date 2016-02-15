@@ -12,7 +12,7 @@ $(function() {
 			dataSrc: ''
 		},
 		order: [[3, 'desc'], [1, 'asc'], [0, 'asc']],
-		// lengthChange: false,
+		lengthChange: false,
 		language: {
 			emptyTable: 'No requests found.',
 			infoFiltered: "(filtered from _MAX_ requests)",

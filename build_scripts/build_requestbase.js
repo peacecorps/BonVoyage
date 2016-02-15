@@ -4,13 +4,14 @@ var ipsum = require('lorem-ipsum');
 var sprintf = require("sprintf-js").sprintf;
 var moment = require('moment');
 var fs = require('fs');
+var DateOnly = require('dateonly');
 var countries_dictionary = JSON.parse(fs.readFileSync("../public/data/countryList.json", 'utf8'));
 var country_codes = Object.keys(countries_dictionary);
 var n_countries = country_codes.length;
-var today = moment().startOf('day');
+var today = new DateOnly();
 
-var REQUESTS_TO_GENERATE = 5; // * Math.floor((50 * Math.random()));
-var DRY_RUN = true;
+var REQUESTS_TO_GENERATE = 100; // * Math.floor((50 * Math.random()));
+var DRY_RUN = false;
 
 mongoose.connect('mongodb://localhost:27017/bonvoyage');
 mongoose.connection.on('error', function(err){
@@ -60,13 +61,13 @@ function randCountryCode() {
 }
 
 function randDatePair() {
-	var timeUntilLeave = randIndex(100) + 1;
-	var start = today;
+	var timeUntilLeave = randIndex(200) - 20;
+	var start = moment();
 	start.add(timeUntilLeave, 'days');
-	var lengthOfVacation = randIndex(20) + 1;
-	var end = start;
+	var lengthOfVacation = randIndex(20);
+	var end = moment(start);
 	end.add(lengthOfVacation, 'days');
-	return [today, today];
+	return [new DateOnly(start), new DateOnly(end)];
 }
 
 function generateRequest(email) {
