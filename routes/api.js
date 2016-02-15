@@ -174,7 +174,14 @@ router.postApprove = function(req, res) {
 		helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("email sent!"));
 
 
-		req.flash('dashboardFlash', { text: 'The request has been successfully approved.', class: 'success'});
+		req.flash('dashboardFlash', { 
+			text: 'The request has been successfully approved.', 
+			class: 'success',
+			link: {
+				url: '/requests/' + id,
+				text: 'View Request.'
+			}
+		});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
 }
@@ -192,7 +199,14 @@ router.postDeny = function(req, res) {
 		// send email
 		helpers.sendEmail(sendFrom, sendTo, subject, text, console.log("email sent!"));
 
-		req.flash('dashboardFlash', { text: 'The request has been successfully denied.', class: 'success'});
+		req.flash('dashboardFlash', { 
+			text: 'The request has been successfully denied.', 
+			class: 'success',
+			link: {
+				url: '/requests/' + id,
+				text: 'View Request.'
+			}
+		});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
 }
@@ -201,7 +215,14 @@ router.postDelete = function(req, res) {
 	var id = req.params.request_id;
 	Request.findOneAndRemove({'_id':id, email: req.user.email}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
-		req.flash('dashboardFlash', { text: 'The request has been successfully deleted.', class: 'success'});
+		req.flash('dashboardFlash', { 
+			text: 'The request has been successfully deleted.', 
+			class: 'success',
+			link: {
+				url: '/requests/' + id,
+				text: 'View Request.'
+			}
+		});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
 }
@@ -219,7 +240,7 @@ router.postComments = function(req, res) {
 	}}, function(err, doc) {
 		if (err) return res.send(500, {error: err});
 		req.flash('approvalFlash', { text: 'Your comment has been added.', class: 'success' });
-		res.end(JSON.stringify({redirect: '/dashboard/requests/' + id}));
+		res.end(JSON.stringify({redirect: '/requests/' + id}));
 	});
 }
 

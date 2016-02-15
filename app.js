@@ -61,7 +61,7 @@ app.get('/reset', isNotLoggedIn, views.renderReset);
 app.get('/reset/:token', views.renderValidReset);
 app.get('/dashboard', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderDashboard);
 app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderSubform);
-app.get('/dashboard/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderApproval);
+app.get('/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderApproval);
 app.get('/users', isLoggedIn, views.renderUsers);
 
 // API

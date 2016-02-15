@@ -15,7 +15,7 @@ function addRequest(id, request) {
 		).addClass(
 			(request.is_pending ? "warning" : (request.is_approved ? "success" : "danger"))
 		).click(function() {
-			window.location.href = "/dashboard/requests/" + request._id;
+			window.location.href = "/requests/" + request._id;
 		})
 	);
 }
