@@ -9,6 +9,7 @@ var moment = require('moment');
 var randtoken = require('rand-token');
 var countries_dictionary = JSON.parse(fs.readFileSync("public/data/countryList.json", 'utf8'));
 var helpers = require('./helpers');
+var DateOnly = require('dateonly');
 
 /*
  * Handle Parameters
@@ -98,9 +99,12 @@ router.postRequests = function(req, res) {
 			var legs = [];
 			for (var i = 0; i < req.body.legs.length; i++) {
 				leg = req.body.legs[i];
-				var start = moment(leg.start_date);
-				var end = moment(leg.end_date);
-				if (!(start.isBefore(end) || start.isSame(end))) {
+				var start = new DateOnly(leg.start_date);
+				var end = new DateOnly(leg.end_date);
+				console.log(start);
+				console.log(end);
+
+				if (helpers.compareDateOnly(start, end) > 0) {
 					req.session.submission = req.body;
 					req.flash('submissionFlash', { text: 'The start date you entered for leg #' + (i+1) + ' comes after the end date.', class: 'danger' });
 					res.end(JSON.stringify({redirect: '/dashboard/submit'}));

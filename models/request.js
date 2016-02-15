@@ -1,5 +1,6 @@
 var mongoose = require("mongoose");
 var moment = require('moment');
+var DateOnly = require('mongoose-dateonly')(mongoose);
 
 var request_schema = mongoose.Schema({
 	email: String,
@@ -8,8 +9,8 @@ var request_schema = mongoose.Schema({
 	timestamp: {type: Date, default: Date.now},
 
 	legs: [{
-		start_date: Date,
-		end_date: Date,
+		start_date: DateOnly,
+		end_date: DateOnly,
 		country: String,
 		country_code: String,
 		hotel: String,
