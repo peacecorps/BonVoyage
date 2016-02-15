@@ -1,8 +1,19 @@
 
 $bg-color: #e1dec7;
+
 $fg-color-light: #3C7F8C;
 $fg-color-light-hover: $fg-color-light - #111;
 $fg-color-dark: #392F20;
 $fg-color-dark-hover: $fg-color-dark - #222;
+
 $white-color: #e7e7e7;
 $white-color-hover: #e7e7e7 + #101010;
+
+$success-color: #3c763d;
+$success-color-hover: #3c763d;
+$info-color: #31708F;
+$info-color-hover: #276685;
+$alert-color: #8A6D3B;
+$alert-color-hover: #6C4F1D;
+$danger-color: #a94442;
+$danger-color-hover: #811C1C;

@@ -12,7 +12,7 @@ $(function() {
 	// Format the dates for the trip itinerary
 	$('.date').each(function(_, date) {
 		var date_unf = $(date).data('unformatted');
-		$(date).text(format_date(date_unf, UTC_FORMAT));
+		$(date).text(format_dateonly(date_unf));
 	});
 	// Format the timestamps for the comments
 	$('.timestamp').each(function(_, time) {

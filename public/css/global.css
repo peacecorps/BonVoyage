@@ -155,6 +155,13 @@
     #htmlwrapper .alert-info a:hover {
       color: #276685; }
 
+#htmlwrapper .alert-success {
+  border-color: #3c763d; }
+  #htmlwrapper .alert-success a {
+    color: #3c763d; }
+    #htmlwrapper .alert-success a:hover {
+      color: #3c763d; }
+
 #htmlwrapper .alert-warning {
   border-color: #8A6D3B; }
   #htmlwrapper .alert-warning a {
@@ -168,3 +175,10 @@
     color: #a94442; }
     #htmlwrapper .alert-danger a:hover {
       color: #811C1C; }
+
+#htmlwrapper .g-recaptcha {
+  margin-top: 10px;
+  transform: scale(0.99);
+  -webkit-transform: scale(0.99);
+  transform-origin: 0 0;
+  -webkit-transform-origin: 0 0; }

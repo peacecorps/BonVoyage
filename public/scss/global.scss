@@ -2,10 +2,6 @@
 @import 'mixins';
 @import 'variables';
 
-$info-color: #31708F;
-$alert-color: #8A6D3B;
-$danger-color: #a94442;
-
 
 #htmlwrapper {
 
@@ -217,7 +213,17 @@ $danger-color: #a94442;
 		a {
 			color: $info-color;
 			&:hover {
-				color: #276685;
+				color: $info-color-hover;
+			}
+		}
+	}
+
+	.alert-success {
+		border-color: $success-color;
+		a {
+			color: $success-color;
+			&:hover {
+				color: $success-color-hover;
 			}
 		}
 	}
@@ -227,7 +233,7 @@ $danger-color: #a94442;
 		a {
 			color: $alert-color;
 			&:hover {
-				color: #6C4F1D;
+				color: $alert-color-hover;
 			}
 		}
 	}
@@ -237,8 +243,17 @@ $danger-color: #a94442;
 		a {
 			color: $danger-color;
 			&:hover {
-				color: #811C1C;
+				color: $danger-color-hover;
 			}
 		}
+	}
+
+	.g-recaptcha {
+		margin-top: 10px;
+
+		transform:scale(0.99);
+		-webkit-transform:scale(0.99);
+		transform-origin:0 0;
+		-webkit-transform-origin:0 0;
 	}
 }

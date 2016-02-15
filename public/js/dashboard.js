@@ -34,13 +34,13 @@ $(function() {
 			{
 				data: 'start_date',
 				render: function(data, type, row) {
-					return format_date(data, ISO_FORMAT);
+					return format_dateonly(data);
 				}
 			},
 			{
 				data: 'end_date',
 				render: function(data, type, row) {
-					return format_date(data, ISO_FORMAT);
+					return format_dateonly(data);
 				}
 			},
 			{
@@ -66,7 +66,7 @@ $(function() {
 			// Add click handler
 			(function(data) {
 				$(row).click(function(event) {
-					window.location.href = "/dashboard/requests/" + data._id;
+					window.location.href = "/requests/" + data._id;
 				});
 			})(data);
 		}

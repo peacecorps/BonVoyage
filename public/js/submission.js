@@ -17,9 +17,9 @@ function addLeg(leg) {
     "<div class='leg shadow-box'> \
         <h2> Trip Leg #" + count + " </h2> \
         <label class='info'>Date leaving</label> \
-        <input class='form-control datepicker date-leaving' type='text' placeholder='1 January, 2000', value='" + (leg && leg.start_date ? leg.start_date : '') + "'> \
+        <input class='form-control datepicker date-leaving' type='text' placeholder='Jan 1, 2000', value='" + (leg && leg.start_date ? leg.start_date : '') + "'> \
         <label class='info'>Date returning</label> \
-        <input class='form-control datepicker date-returning' type='text' placeholder='31 December, 2000', value='" + (leg && leg.end_date ? leg.end_date : '') + "'> \
+        <input class='form-control datepicker date-returning' type='text' placeholder='Dec 31, 2000', value='" + (leg && leg.end_date ? leg.end_date : '') + "'> \
         <label class='info'>Country</label> \
         <select class='form-control select-country' placeholder='United States'></select> \
         <div class='warnings'></div> \
@@ -75,10 +75,12 @@ function addWarning(warning, $warnings) {
 
 function initialize(n) {
     // Initialize the Pick a Date picker
-    $('.leg:nth-child(' + n + ') .datepicker').pickadate();
+    $('.leg:nth-child(' + n + ') .datepicker').pickadate({
+        format: PICKADATE_DISPLAY_FORMAT,
+    });
     $('.leg:nth-child(' + n + ') .datepicker').each(function() {
         if($(this).val()) {
-            $(this).pickadate('picker').set('select', $(this).val())
+            $(this).pickadate('picker').set('select', new Date($(this).val()))
         }
     });
     // Initialize the Selectize country selector
@@ -155,9 +157,11 @@ function initialize(n) {
 
 function getLeg(n) {
     leg = $('.leg:nth-child(' + n + ')');
+    var start = $(leg).find('.date-leaving').val();
+    var end = $(leg).find('.date-returning').val();
     data = {
-        start_date: $(leg).find('.date-leaving').val(), 
-        end_date: $(leg).find('.date-returning').val(),
+        start_date: (start ? (new DateOnly(start).toString()) : undefined), 
+        end_date: (end ? (new DateOnly(end).toString()) : undefined),
         country: $(leg).find('.selectized').selectize()[0].selectize.getValue(),
         hotel: $(leg).find('.hotel').val(),
         contact: $(leg).find('.contact').val(),
