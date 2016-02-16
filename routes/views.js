@@ -110,6 +110,12 @@ router.renderApproval = function(req, res) {
 			class: 'success' 
 		};
 		req.flash('approvalFlash', (req.request.status.is_approved == true ? approvedFlash : deniedFlash));
+	} else {
+		var pendingFlash = { 
+			text: 'This request is currently pending.', 
+			class: 'warning' 
+		};
+		req.flash('approvalFlash', pendingFlash);
 	}
 	var links = [
 		{ text: "Dashboard", href: "/dashboard" },
