@@ -67,10 +67,17 @@ module.exports.getEndDate = function(request) {
 
 module.exports.getRequests = function(req, res, pending, cb) {
 	if (req.user) {
+		var matchEmail = {};
+		if (req.user.access < Access.SUPERVISOR) {
+			matchEmail.email = req.user.email;
+		}
+		var matchCountry = {};
+		if (req.user.access == Access.SUPERVISOR) {
+			matchCountry['user.country_code'] = req.user.country_code;
+		}
 		Request.aggregate([
 			{
-				// If access is supervisor or higher, match all requests: else only the user's requests
-				$match: (req.user.access >= Access.SUPERVISOR ? {} : { email: req.user.email })
+				$match: matchEmail
 			},
 			{
 				// JOIN with the user data belonging to each request
@@ -80,6 +87,14 @@ module.exports.getRequests = function(req, res, pending, cb) {
 					foreignField: "email", 
 					as: "user"
 				}
+			},
+			{
+				// Only one user will ever match (emails are unique)
+				// Convert the user key to a single document from an array
+				$unwind: "$user"
+			},
+			{
+				$match: matchCountry
 			},
 			{
 				$match: (pending != undefined ? {'status.is_pending': pending } : {})

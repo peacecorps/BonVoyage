@@ -7,7 +7,8 @@ var user_schema = mongoose.Schema({
 	email: {type: String, index: {unique: true}}, // Prevent MongoDB from ever saving two duplicate emails
 	phone: String,
 	hash: String,
-	access: Number
+	access: Number,
+	country_code: String
 });
 
 var presave = function(finish_saving_callback) {

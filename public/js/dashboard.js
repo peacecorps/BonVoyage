@@ -40,8 +40,8 @@ $(function() {
 			{
 				data: 'user',
 				render: function(data, type, row) {
-					if (data && data.length > 0) {
-						return data[0].name;
+					if (data) {
+						return data.name;
 					} else {
 						return 'None';
 					}

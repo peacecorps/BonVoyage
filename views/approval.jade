@@ -19,15 +19,15 @@ block content
 							p
 								span 
 									b Name: 
-								span= request.user[0].name
+								span= request.user.name
 							p
 								span 
 									b Email: 
-								span= (request.user[0].email ? request.user[0].email : "No email on file.")
+								span= (request.user.email ? request.user.email : "No email on file.")
 							p
 								span 
 									b Phone: 
-								span= (request.user[0].phone ? request.user[0].phone : "No phone on file.")
+								span= (request.user.phone ? request.user.phone : "No phone on file.")
 					h2 Trip Itinerary
 					.shadow-box
 						each leg in request.legs
@@ -90,7 +90,7 @@ block content
 						.col-xs-6
 							button(class="btn btn-danger" + (request.status.is_pending == false && !request.status.is_approved ? " disabled" : ""), id="request-deny-btn") Deny
 				// If the user is the owner of the request
-				if did_match_user && (user.email == request.user[0].email)
+				if did_match_user && (user.email == request.user.email)
 					#request_delete.row
 						.col-xs-12
 							button(class="btn btn-danger", id="request-delete-btn") Delete Request

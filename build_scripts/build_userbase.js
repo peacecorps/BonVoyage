@@ -31,31 +31,36 @@ var userbase = [
 		name: "Patrick Choquette",
 		email: "pchoquette@peacecorps.gov",
 		hash: "patrick",
-		access: 1
+		access: 1,
+		country_code: "US"
 	},
 	{
 		name: "Jane Smith",
 		email: "jane@peacecorps.gov",
 		hash: "jane",
-		access: 1
+		access: 1,
+		country_code: "BW"
 	},
 	{
 		name: "John Doe",
 		email: "john@test.com",
 		hash: "john",
-		access: 0
+		access: 0,
+		country_code: "BW"
 	},
 	{
 		name: "Ishaan Parikh‎",
 		email: "ishaan@test.com",
 		hash: "ishaan",
-		access: 0
+		access: 0,
+		country_code: "US"
 	},
 	{
 		name: "Jeff Hilnbrand",
 		email: "jeff@test.com",
 		hash: "jeff",
-		access: 0
+		access: 0,
+		country_code: "US"
 	},
 ];
 
