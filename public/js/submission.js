@@ -13,13 +13,20 @@ function insertAtIndex(i, id, data) {
 
 function addLeg(leg) {
     count++;
+    var m = new moment();
+    m.add(1, 'month');
+    var default_start = new DateOnly(m);
+    m.add(4, 'days');
+    var default_end = new DateOnly(m);
+    console.log(default_start);
+    console.log(default_end);
     html = 
     "<div class='leg shadow-box'> \
         <h2> Trip Leg #" + count + " </h2> \
         <label class='info'>Date leaving</label> \
-        <input class='form-control datepicker date-leaving' type='text' placeholder='Jan 1, 2000', value='" + (leg && leg.start_date ? leg.start_date : '') + "'> \
+        <input class='form-control datepicker date-leaving' type='text' placeholder='Jan 1, 2000', value='" + (leg && leg.start_date ? leg.start_date : default_start.toString()) + "'> \
         <label class='info'>Date returning</label> \
-        <input class='form-control datepicker date-returning' type='text' placeholder='Dec 31, 2000', value='" + (leg && leg.end_date ? leg.end_date : '') + "'> \
+        <input class='form-control datepicker date-returning' type='text' placeholder='Dec 31, 2000', value='" + (leg && leg.end_date ? leg.end_date : default_end.toString()) + "'> \
         <label class='info'>Country</label> \
         <select class='form-control select-country' placeholder='United States'></select> \
         <div class='warnings'></div> \
