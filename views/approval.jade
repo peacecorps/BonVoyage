@@ -12,8 +12,7 @@ block content
 				include flash
 				
 				#request
-					- var did_match_user = (request.user && request.user.length > 0);
-					if did_match_user
+					if user
 						h2 Contact 
 						.shadow-box
 							p
@@ -32,9 +31,9 @@ block content
 					.shadow-box
 						each leg in request.legs
 							p
-								span.date(data-unformatted="#{leg.start_date}")
+								span.date(data-unformatted="#{leg.startDate}")
 								span  - 
-								span.date(data-unformatted="#{leg.end_date}")
+								span.date(data-unformatted="#{leg.endDate}")
 								span : #{leg.country}
 							p
 								span
@@ -57,7 +56,7 @@ block content
 									span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
 									span
 										b #{warning.type}: 
-									span= warning.text_overview + " "
+									span= warning.textOverview + " "
 									span
 										b
 											a(href=warning.link) More Information
@@ -86,11 +85,11 @@ block content
 				if user.access > 0 
 					#request_approval.row
 						.col-xs-6
-							button(class="btn btn-success" + (request.status.is_pending == false && request.status.is_approved ? " disabled" : ""), id="request-approve-btn") Approve
+							button(class="btn btn-success" + (request.status.isPending == false && request.status.isApproved ? " disabled" : ""), id="request-approve-btn") Approve
 						.col-xs-6
-							button(class="btn btn-danger" + (request.status.is_pending == false && !request.status.is_approved ? " disabled" : ""), id="request-deny-btn") Deny
+							button(class="btn btn-danger" + (request.status.isPending == false && !request.status.isApproved ? " disabled" : ""), id="request-deny-btn") Deny
 				// If the user is the owner of the request
-				if did_match_user && (user.email == request.user.email)
+				if user && (user.email == request.user.email)
 					#request_delete.row
 						.col-xs-12
 							button(class="btn btn-danger", id="request-delete-btn") Delete Request

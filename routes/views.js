@@ -90,7 +90,7 @@ router.renderSubform = function (req, res) {
 		links.push({ text: 'Users', href: '/users' });
 	}
 
-	res.render('submission_form.jade', {
+	res.render('submissionForm.jade', {
 		title: 'Submission Form',
 		links: links,
 		messages: req.flash('submissionFlash'),
@@ -111,7 +111,7 @@ router.renderApproval = function (req, res) {
 
 	if (req.request.status.isPending === false) {
 		var flash = {};
-		if (req.request.status.isApproved === true) {
+		if (req.request.status.isApproved === false) {
 			flash = {
 				text: 'This request has been denied.',
 				class: 'danger',
@@ -213,4 +213,3 @@ router.renderUsers = function (req, res) {
 };
 
 module.exports = router;
-

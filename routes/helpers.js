@@ -112,7 +112,7 @@ module.exports.getRequests = function (req, res, pending, cb) {
 				$match: matchCountry,
 			},
 			{
-				$match: (pending !== undefined ? { 'status.is_pending': pending } : {}),
+				$match: (pending !== undefined ? { 'status.isPending': pending } : {}),
 			},
 		], function (err, requests) {
 			if (err) {
@@ -124,12 +124,11 @@ module.exports.getRequests = function (req, res, pending, cb) {
 					requests[i].endDate = module.exports.getEndDate(requests[i]);
 				}
 
-				// console.log(requests);
 				cb(null, requests);
 			}
 		});
 	} else {
-		cb(null, []);
+		cb(new Error('User not logged in!'));
 	}
 };
 

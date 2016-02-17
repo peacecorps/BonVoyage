@@ -1,9 +1,8 @@
 {
-	// Enable options in order to produce more warnings
 	"bitwise": true,
 	"curly": true,
 	"futurehostile": true,
-	"predef": ["require"],
+	"predef": ["require", "$"],
 	"nonbsp": true,
 	"undef": true,
 	"unused": true,

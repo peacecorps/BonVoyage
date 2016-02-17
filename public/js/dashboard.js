@@ -1,106 +1,115 @@
+/* global FastClick */
+/* global document */
 
-function $table() {
-	return $('div#dashboardTable table');
-}
+$(function () {
+	'use strict';
 
-$(function() {
+	function $table() {
+		return $('div#dashboardTable table');
+	}
+
 	FastClick.attach(document.body);
+
 	// Track what has been toggled in the search filters
-	var search_options = {
+	var searchOptions = {
 		show: {
 			approved: true,
 			denied: true,
-			pending: true
+			pending: true,
 		},
 		limit: {
-			on_leave: false
-		}
+			onLeave: false,
+		},
 	};
 
 	// Configure the past and present DataTables indivudally
 	var table = $table().DataTable({
-		// responsive: true, // TODO
 		ajax: {
 			url: '/api/requests',
-			dataSrc: ''
+			dataSrc: '',
 		},
 		order: [[4, 'desc'], [1, 'asc'], [0, 'asc']],
-		dom: 
+		dom:
 			"<'row'>" +
 			"<'row'<'col-sm-12'tr>>" +
-			"<'row'<'col-sm-4 hidden-xs'i><'col-sm-8 col-xs-12'p><'col-xs-12 visible-xs'i>>",
+			"<'row'<'col-sm-4 hidden-xs'i><'col-sm-8 col-xs-12'p>" +
+				"<'col-xs-12 visible-xs'i>>",
 		language: {
 			emptyTable: 'No requests found.',
-			infoFiltered: "(filtered from _MAX_ requests)",
-			zeroRecords: "No matching requests found",
-			info: "Showing _START_ to _END_ of _TOTAL_ requests",
-			lengthMenu: "Show _MENU_ requests"
+			infoFiltered: '(filtered from _MAX_ requests)',
+			zeroRecords: 'No matching requests found',
+			info: 'Showing _START_ to _END_ of _TOTAL_ requests',
+			lengthMenu: 'Show _MENU_ requests',
 		},
 		columns: [
 			{
 				data: 'user',
-				render: function(data, type, row) {
+				render: function (data) {
 					if (data) {
 						return data.name;
 					} else {
 						return 'None';
 					}
-				}
+				},
 			},
 			{
-				data: 'start_date',
-				render: function(data, type, row) {
+				data: 'startDate',
+				render: function (data) {
 					return format_dateonly(data);
-				}
+				},
 			},
 			{
-				data: 'end_date',
-				render: function(data, type, row) {
+				data: 'endDate',
+				render: function (data) {
 					return format_dateonly(data);
-				}
+				},
 			},
 			{
 				data: 'legs',
-				render: function(data, type, row) {
-					var countries = "";
-					var separator = "";
+				render: function (data) {
+					var countries = '';
+					var separator = '';
 					for (var i = 0; i < data.length; i++) {
 						var leg = data[i];
-						countries += separator + leg.country_code;
-						separator = ", ";
+						countries += separator + leg.countryCode;
+						separator = ', ';
 					}
+
 					return countries;
 				},
-				width: "20%"
+
+				width: '20%',
 			},
 			{
 				data: 'status',
-				render: function(data, type, row) {
-					return (data.is_pending ? "Pending" : (data.is_approved ? "Approved" : "Denied"));
-				}
+				render: function (data, type, row) {
+					return (data.isPending ? 'Pending' : (data.isApproved ? 'Approved' : 'Denied'));
+				},
 			},
 			{
 				data: 'legs',
-				render: function(data, type, row) {
-					var countries = "";
-					var separator = "";
+				render: function (data, type, row) {
+					var countries = '';
+					var separator = '';
 					for (var i = 0; i < data.length; i++) {
 						var leg = data[i];
 						countries += separator + leg.country;
-						separator = ", ";
+						separator = ', ';
 					}
+
 					return countries;
 				},
-                "visible": false			
-            },
-		],
-		"rowCallback": function( row, data, index ) {
+
+				visible: false,
+			},
+					],
+		rowCallback: function (row, data, index) {
 
 			// Add Bootstrap coloration
-			if (data.status.is_pending == true) {
+			if (data.status.isPending == true) {
 				$(row).addClass('warning');
 			} else {
-				if (data.status.is_approved == true) {
+				if (data.status.isApproved == true) {
 					$(row).addClass('success');
 				} else {
 					$(row).addClass('danger');
@@ -108,35 +117,35 @@ $(function() {
 			}
 
 			// Add click handler
-			(function(data) {
-				$(row).click(function(event) {
+			(function (data) {
+				$(row).click(function (event) {
 					// Pass the search query and filter options on to the approval page
 					// so that the next/prev buttons can be set
 					// var query_data = {
 					// 	q: $('#searchBar input[type=text]').val(),
-					// 	filters: search_options
+					// 	filters: searchOptions
 					// }
-					window.location.href = "/requests/" + data._id //+ "?" + $.param(query_data);
+					window.location.href = '/requests/' + data._id; //+ "?" + $.param(query_data);
 				});
 			})(data);
-		}
+		},
 	});
 
 	function updateSearch() {
-		console.log(search_options);
+		console.log(searchOptions);
 	}
 
-	$('.dropdown-menu a').on( 'click', function( event ) {
+	$('.dropdown-menu a').on('click', function (event) {
 		var $target = $(event.currentTarget),
 			val = $target.attr('data-value'),
 			$inp = $target.find('input');
 
 		var split_val = val.split('.');
-		if(split_val.length == 2) {
+		if (split_val.length == 2) {
 			var type = split_val[0];
 			var value = split_val[1];
-			search_options[type][value] = !search_options[type][value]
-			setTimeout( function() { $inp.prop('checked', search_options[type][value])}, 0);
+			searchOptions[type][value] = !searchOptions[type][value];
+			setTimeout(function () { $inp.prop('checked', searchOptions[type][value]);}, 0);
 		}
 
 		$(event.target).blur();
@@ -149,15 +158,15 @@ $(function() {
 
 	/* Custom filtering function which will search data in column four between two values */
 	$.fn.dataTable.ext.search.push(
-		function( settings, data, dataIndex ) {
+		function (settings, data, dataIndex) {
 			var approval_status = data[4];
 
-			if(
-				(search_options.show.approved && approval_status == "Approved") ||
-				(search_options.show.denied && approval_status == "Denied") ||
-				(search_options.show.pending && approval_status == "Pending")
-			){
-				if (search_options.limit.on_leave) {
+			if (
+				(searchOptions.show.approved && approval_status == 'Approved') ||
+				(searchOptions.show.denied && approval_status == 'Denied') ||
+				(searchOptions.show.pending && approval_status == 'Pending')
+			) {
+				if (searchOptions.limit.onLeave) {
 					var start_date = new DateOnly(data[1]);
 					var end_date = new DateOnly(data[2]);
 					var today = new DateOnly();
@@ -171,9 +180,8 @@ $(function() {
 		}
 	);
 
-	$('#searchBar input[type=text]').keyup(function() {
+	$('#searchBar input[type=text]').keyup(function () {
 		var q = $(this).val();
 		table.search(q).draw();
 	});
 });
-

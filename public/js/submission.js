@@ -20,7 +20,7 @@ function addLeg(leg) {
     var default_end = new DateOnly(m);
     console.log(default_start);
     console.log(default_end);
-    html = 
+    html =
     "<div class='leg shadow-box'> \
         <h2> Trip Leg #" + count + " </h2> \
         <label class='info'>Date leaving</label> \
@@ -74,7 +74,7 @@ function addWarning(warning, $warnings) {
     $($warnings).append(
         $(
             "<div class='warning alert alert-" + map[warning.type.toLowerCase()] + "' role='alert'> \
-                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>US State Department:</b> " + warning.text_overview + " <b><a href='" + warning.link + "'>More Information</a></b></span> \
+                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>US State Department:</b> " + warning.textOverview + " <b><a href='" + warning.link + "'>More Information</a></b></span> \
             </div>"
         )
     );
@@ -99,7 +99,7 @@ function initialize(n) {
     });
 
     var selectize = $select[0].selectize;
-    selectize.addOption(arrCountries); 
+    selectize.addOption(arrCountries);
     selectize.refreshOptions(false);
 
     // Add remove leg buttons
@@ -111,7 +111,7 @@ function initialize(n) {
     });
 
     // Show a warning if one exists when the select is clicked
-    selectize.on('item_add', function(country_code, $item) {        
+    selectize.on('item_add', function(country_code, $item) {
         // Get a selector for the warnings div, specific to the leg where the country was selected
         $warnings = $($item).closest($('.leg')).find('.warnings');
         clearWarnings($warnings);
@@ -139,7 +139,7 @@ function initialize(n) {
                             ));
                         }
                     }
-                    
+
                     getWarnings(function(warnings) {
                         // Clear all warnings
                         // Get the warnings for the selected country
@@ -158,7 +158,7 @@ function initialize(n) {
         })(country_code, $warnings);
 
 
-        
+
     });
 }
 
@@ -167,7 +167,7 @@ function getLeg(n) {
     var start = $(leg).find('.date-leaving').val();
     var end = $(leg).find('.date-returning').val();
     data = {
-        start_date: (start ? (new DateOnly(start).toString()) : undefined), 
+        start_date: (start ? (new DateOnly(start).toString()) : undefined),
         end_date: (end ? (new DateOnly(end).toString()) : undefined),
         country: $(leg).find('.selectized').selectize()[0].selectize.getValue(),
         hotel: $(leg).find('.hotel').val(),
@@ -290,4 +290,3 @@ $(function() {
         });
     });
 });
-

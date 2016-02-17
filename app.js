@@ -81,7 +81,7 @@ function needsAccess(access) {
 }
 
 // Route Parameters
-app.param('request_id', api.handleRequestId);
+app.param('requestId', api.handleRequestId);
 
 // Render Views
 app.get('/', views.index);
@@ -93,7 +93,7 @@ app.get('/dashboard', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderDashboard);
 app.get('/dashboard/submit', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderSubform);
-app.get('/requests/:request_id', isLoggedIn,
+app.get('/requests/:requestId', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
 app.get('/users', isLoggedIn, views.renderUsers);
 
@@ -104,13 +104,13 @@ app.get('/api/requests', isLoggedIn,
 app.get('/api/users', isLoggedIn,
 	needsAccess(Access.SUPERVISOR), api.getUsers);
 
-app.post('/api/requests/:request_id/approve', isLoggedIn,
+app.post('/api/requests/:requestId/approve', isLoggedIn,
 	needsAccess(Access.SUPERVISOR), api.postApprove);
-app.post('/api/requests/:request_id/deny', isLoggedIn,
+app.post('/api/requests/:requestId/deny', isLoggedIn,
 	needsAccess(Access.SUPERVISOR), api.postDeny);
-app.post('/api/requests/:request_id/delete', isLoggedIn,
+app.post('/api/requests/:requestId/delete', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postDelete);
-app.post('/api/requests/:request_id/comments', isLoggedIn,
+app.post('/api/requests/:requestId/comments', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postComments);
 
 app.post('/api/register', passport.authenticate('local-signup', {
