@@ -1,4 +1,5 @@
 {
+    "excludeFiles": ["public/js/**"],
     "disallowSpacesInNamedFunctionExpression": {
         "beforeOpeningRoundBrace": true
     },
