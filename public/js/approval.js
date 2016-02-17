@@ -32,10 +32,7 @@ $(function() {
                 if (response) {
                 	window.location.href = JSON.parse(response).redirect;
                 }
-            },
-			error: function() {
-				console.error("Error!");
-			}
+            }
         });
 	});
 
@@ -49,10 +46,7 @@ $(function() {
                 if (response) {
                 	window.location.href = JSON.parse(response).redirect;
                 }
-            },
-			error: function() {
-				console.error("Error!");
-			}
+            }
         });
     });
 
@@ -66,10 +60,7 @@ $(function() {
                 if (response) {
                     window.location.href = JSON.parse(response).redirect;
                 }
-            },
-			error: function() {
-				console.error("Error!");
-			}
+            }
         });
     });
 
@@ -83,10 +74,7 @@ $(function() {
                 if (response) {
                     window.location.href = JSON.parse(response).redirect;
                 }
-            },
-			error: function() {
-				console.error("Error!");
-			}
+            }
         });
     });
 
