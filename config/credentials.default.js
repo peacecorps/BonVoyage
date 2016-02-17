@@ -2,9 +2,9 @@
 'use strict';
 
 module.exports = {
-	mailgun: "MAILGUN_KEY",
+	mailgun: 'MAILGUN_KEY',
 	twilio: {
-		account_sid: "TWILIO_ACCOUNT_SID",
-		auth_token: "TWILIO_AUTH_TOKEN"
-	}
+		accountSid: 'TWILIO_ACCOUNT_SID',
+		authToken: 'TWILIO_AUTH_TOKEN',
+	},
 };

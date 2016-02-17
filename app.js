@@ -14,7 +14,7 @@ var passport = require('passport');
 var session = require('express-session');
 var configDB = require('./config/database.js');
 var flash    = require('connect-flash');
-var Access = require("./config/access");
+var Access = require('./config/access');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -36,47 +36,48 @@ app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 
 // Pass the access level to our Jade templates
-app.use(function(req,res,next) {
-  res.locals.user = req.user;
-  next();
+app.use(function (req, res, next) {
+	res.locals.user = req.user;
+	next();
 });
 
 mongoose.connect(configDB.url);
-mongoose.connection.on('error', function(err){
-  if (err) {
-    console.log(err);
-  }
+mongoose.connection.on('error', function (err) {
+	if (err) {
+		console.log(err);
+	}
 });
 
 require('./config/passport.js')(passport); // pass passport for configuration
 
-// middleware to ensure the user is authenticated. If not, redirect to login page.
+// middleware to ensure the user is authenticated.
+// If not, redirect to login page.
 function isLoggedIn(req, res, next) {
-  if(req.isAuthenticated()) {
-    return next();
-  } else {
-    res.redirect('/login');
-  }
+	if (req.isAuthenticated()) {
+		return next();
+	} else {
+		res.redirect('/login');
+	}
 }
 
 // middleware to redirect the user to the dashboard if they already logged in
 function isNotLoggedIn(req, res, next) {
-  if(req.isAuthenticated()) {
-    res.redirect('/dashboard');
-  } else {
-    return next();
-  }
+	if (req.isAuthenticated()) {
+		res.redirect('/dashboard');
+	} else {
+		return next();
+	}
 }
 
 // middleware to check if the user is at least that access level
 function needsAccess(access) {
-    return function(req, res, next) {
-      if (req.user && req.user.access >= access) {
-        next();
-      } else {
-        res.status(401).send("Unauthorized");
-      }
-    };
+	return function (req, res, next) {
+		if (req.user && req.user.access >= access) {
+			next();
+		} else {
+			res.status(401).send('Unauthorized');
+		}
+	};
 }
 
 // Route Parameters
@@ -88,69 +89,80 @@ app.get('/login', isNotLoggedIn, views.renderLogin);
 app.get('/register', views.renderRegister);
 app.get('/reset', isNotLoggedIn, views.renderReset);
 app.get('/reset/:token', views.renderValidReset);
-app.get('/dashboard', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderDashboard);
-app.get('/dashboard/submit', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderSubform);
-app.get('/requests/:request_id', isLoggedIn, needsAccess(Access.VOLUNTEER), views.renderApproval);
+app.get('/dashboard', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), views.renderDashboard);
+app.get('/dashboard/submit', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), views.renderSubform);
+app.get('/requests/:request_id', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), views.renderApproval);
 app.get('/users', isLoggedIn, views.renderUsers);
 
 // API
-app.get('/api/requests', isLoggedIn, needsAccess(Access.VOLUNTEER), api.getRequests);
+app.get('/api/requests', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.getRequests);
 
-app.get('/api/users', isLoggedIn, needsAccess(Access.SUPERVISOR), api.getUsers);
+app.get('/api/users', isLoggedIn,
+	needsAccess(Access.SUPERVISOR), api.getUsers);
 
-app.post('/api/requests/:request_id/approve', isLoggedIn, needsAccess(Access.SUPERVISOR), api.postApprove);
-app.post('/api/requests/:request_id/deny', isLoggedIn, needsAccess(Access.SUPERVISOR), api.postDeny);
-app.post('/api/requests/:request_id/delete', isLoggedIn, needsAccess(Access.VOLUNTEER), api.postDelete);
-app.post('/api/requests/:request_id/comments', isLoggedIn, needsAccess(Access.VOLUNTEER), api.postComments);
+app.post('/api/requests/:request_id/approve', isLoggedIn,
+	needsAccess(Access.SUPERVISOR), api.postApprove);
+app.post('/api/requests/:request_id/deny', isLoggedIn,
+	needsAccess(Access.SUPERVISOR), api.postDeny);
+app.post('/api/requests/:request_id/delete', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.postDelete);
+app.post('/api/requests/:request_id/comments', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.postComments);
 
 app.post('/api/register', passport.authenticate('local-signup', {
-        successRedirect : '/dashboard', // redirect to the dashboard
-        failureRedirect : '/register', // redirect back to the register page if there is an error
-        failureFlash : true // allow flash messages
+	successRedirect: '/dashboard',
+	failureRedirect: '/register',
+	failureFlash: true,
 }));
 app.post('/api/login', passport.authenticate('local-login', {
-        successRedirect : '/dashboard', // redirect to the dashboard
-        failureRedirect : '/login', // redirect back to the login page if there is an error
-        failureFlash : true // allow flash messages
+	successRedirect: '/dashboard',
+	failureRedirect: '/login',
+	failureFlash: true,
 }));
 app.post('/api/logout', api.logout);
 app.post('/api/reset', api.reset);
 app.post('/api/reset/:token', api.resetValidator);
-app.post('/api/requests',isLoggedIn, needsAccess(Access.VOLUNTEER), api.postRequests);
-app.post('/api/access', isLoggedIn, needsAccess(Access.SUPERVISOR), api.modifyAccess);
+app.post('/api/requests', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.postRequests);
+app.post('/api/access', isLoggedIn,
+	needsAccess(Access.SUPERVISOR), api.modifyAccess);
 
-app.delete('/api/users', isLoggedIn, needsAccess(Access.SUPERVISOR), api.deleteUser);
+app.delete('/api/users', isLoggedIn,
+	needsAccess(Access.SUPERVISOR), api.deleteUser);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+app.use(function (req, res, next) {
+	var err = new Error('Not Found');
+	err.status = 404;
+	next(err);
 });
 
-// error handlers
+/* error handlers */
 
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-  app.use(function(err, req, res) {
-    res.status(err.status || 500);
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
-  });
+	app.use(function (err, req, res) {
+		res.status(err.status || 500);
+		res.render('error', {
+			message: err.message,
+			error: err,
+		});
+	});
 }
 
 // production error handler
 // no stacktraces leaked to user
-app.use(function(err, req, res) {
-  res.status(err.status || 500);
-  res.render('error', {
-    message: err.message,
-    error: {}
-  });
+app.use(function (err, req, res) {
+	res.status(err.status || 500);
+	res.render('error', {
+		message: err.message,
+		error: {},
+	});
 });
-
 
 module.exports = app;

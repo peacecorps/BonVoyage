@@ -1,22 +1,22 @@
 /* jshint node: true */
 'use strict';
 
-var mongoose = require("mongoose");
+var mongoose = require('mongoose');
 
-var token_schema = mongoose.Schema({
+var tokenSchema = mongoose.Schema({
 	token: {
 		type: String,
-		required: true
+		required: true,
 	},
 	email: {
 		type: String,
-		required: true
+		required: true,
 	},
 	timestamp: {
 		type: Date,
 		required: true,
-		default: Date.now
-	}
+		default: Date.now,
+	},
 });
 
-module.exports = mongoose.model("token",token_schema);
+module.exports = mongoose.model('token', tokenSchema);

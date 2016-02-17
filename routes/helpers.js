@@ -1,9 +1,9 @@
 /* jshint node: true */
 'use strict';
 
-var User = require("../models/user");
-var Request = require("../models/request");
-var Access = require("../config/access");
+var User = require('../models/user');
+var Request = require('../models/request');
+var Access = require('../config/access');
 var DateOnly = require('dateonly');
 
 // Attempt to load credentials for email and SMS
@@ -12,22 +12,24 @@ var dropSMS = false;
 
 try {
 	var credentials = require('../config/credentials');
-} catch(exc) {
-	console.error("Credentials file not found. (../config/credentials). Email and SMS will be dropped silently.");
+} catch (exc) {
+	console.error('Credentials file not found. (../config/credentials).' +
+	' Email and SMS will be dropped silently.');
 	dropEmail = true;
 	dropSMS = true;
 }
 
 try {
 	var domain = require('../config/domain');
-} catch(exc) {
-	console.error("Domain file not found. (../config/domain). Email will be dropped silently.");
+} catch (exc) {
+	console.error('Domain file not found. (../config/domain).' +
+		' Email will be dropped silently.');
 	dropEmail = true;
 }
 
 if (credentials && credentials.mailgun && domain) {
 	var mailgunAPIKey = credentials.mailgun;
-	var mailgun = require('mailgun-js')({apiKey: mailgunAPIKey, domain: domain});
+	var mailgun = require('mailgun-js')({ apiKey: mailgunAPIKey, domain: domain });
 } else {
 	dropEmail = true;
 }
@@ -35,87 +37,91 @@ if (credentials && credentials.mailgun && domain) {
 if (credentials && credentials.twilio) {
 	var twilio = require('twilio');
 	var twilioCfg = credentials.twilio;
-	var twilioClient = new twilio.RestClient(twilioCfg.account_sid, twilioCfg.auth_token);
+	var twilioClient = new twilio.RestClient(twilioCfg.accountSid,
+		twilioCfg.authToken);
 } else {
 	dropSMS = true;
 }
 
-
-/* 
+/*
  * Helper Functions
  */
-module.exports.getStartDate = function(request) {
+module.exports.getStartDate = function (request) {
 	if (request.legs.length > 0) {
-		var start_date = new DateOnly(request.legs[0].start_date);
+		var startDate = new DateOnly(request.legs[0].startDate);
 		for (var i = 1; i < request.legs.length; i++) {
-			var d = new DateOnly(request.legs[i].start_date);
-			if(d < start_date) {
-				start_date = d;
+			var d = new DateOnly(request.legs[i].startDate);
+			if (d < startDate) {
+				startDate = d;
 			}
 		}
-		return start_date;
+
+		return startDate;
 	} else {
 		return undefined;
 	}
 };
 
-module.exports.getEndDate = function(request) {
+module.exports.getEndDate = function (request) {
 	if (request.legs.length > 0) {
-		var end_date = new DateOnly(request.legs[0].end_date);
+		var endDate = new DateOnly(request.legs[0].endDate);
 		for (var i = 1; i < request.legs.length; i++) {
-			var d = new DateOnly(request.legs[i].end_date);
-			if(d > end_date) {
-				end_date = d;
+			var d = new DateOnly(request.legs[i].endDate);
+			if (d > endDate) {
+				endDate = d;
 			}
 		}
-		return end_date;
+
+		return endDate;
 	} else {
 		return undefined;
 	}
 };
 
-module.exports.getRequests = function(req, res, pending, cb) {
+module.exports.getRequests = function (req, res, pending, cb) {
 	if (req.user) {
 		var matchEmail = {};
 		if (req.user.access < Access.SUPERVISOR) {
 			matchEmail.email = req.user.email;
 		}
+
 		var matchCountry = {};
 		if (req.user.access == Access.SUPERVISOR) {
-			matchCountry['user.country_code'] = req.user.country_code;
+			matchCountry['user.countryCode'] = req.user.countryCode;
 		}
+
 		Request.aggregate([
 			{
-				$match: matchEmail
+				$match: matchEmail,
 			},
 			{
 				// JOIN with the user data belonging to each request
 				$lookup: {
-					from: "users", 
-					localField: "email", 
-					foreignField: "email", 
-					as: "user"
-				}
+					from: 'users',
+					localField: 'email',
+					foreignField: 'email',
+					as: 'user',
+				},
 			},
 			{
 				// Only one user will ever match (emails are unique)
 				// Convert the user key to a single document from an array
-				$unwind: "$user"
+				$unwind: '$user',
 			},
 			{
-				$match: matchCountry
+				$match: matchCountry,
 			},
 			{
-				$match: (pending !== undefined ? {'status.is_pending': pending } : {})
-			}
+				$match: (pending !== undefined ? { 'status.is_pending': pending } : {}),
+			},
 		], function (err, requests) {
 			if (err) {
 				return cb(err);
 			} else {
 				// Add start and end date to all requests
 				for (var i = 0; i < requests.length; i++) {
-					requests[i].start_date = module.exports.getStartDate(requests[i]);
-					requests[i].end_date = module.exports.getEndDate(requests[i]);
+					requests[i].startDate = module.exports.getStartDate(requests[i]);
+					requests[i].endDate = module.exports.getEndDate(requests[i]);
 				}
 
 				// console.log(requests);
@@ -123,16 +129,17 @@ module.exports.getRequests = function(req, res, pending, cb) {
 			}
 		});
 	} else {
-      	cb(null, []);
+		cb(null, []);
 	}
 };
 
-module.exports.getUsers = function(options, cb) {
+module.exports.getUsers = function (options, cb) {
 	var q = (options.user !== undefined ? options.user : {});
 	if (options.maxAccess !== undefined) {
-		q.access = {$lte: options.maxAccess};
+		q.access = { $lte: options.maxAccess };
 	}
-	User.find(q, 'access name email phone _id', function(err, users) {
+
+	User.find(q, 'access name email phone _id', function (err, users) {
 		if (err) {
 			cb(err);
 		} else {
@@ -141,22 +148,23 @@ module.exports.getUsers = function(options, cb) {
 	});
 };
 
-module.exports.sendEmail = function(sendFrom, sendTo, subject, text, callback) {
+module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
+	callback) {
 	var data = {
 		from: sendFrom,
 		to: sendTo,
 		subject: subject,
-		text: text
+		text: text,
 	};
 
 	if (dropEmail) {
-		console.error("Email dropped. Email data:");
+		console.error('Email dropped. Email data:');
 		console.error(data);
 		if (callback) {
 			callback();
 		}
 	} else {
-		mailgun.messages().send(data, function(err, body) {
+		mailgun.messages().send(data, function (err, body) {
 			console.log(body);
 
 			if (callback) {
@@ -166,21 +174,21 @@ module.exports.sendEmail = function(sendFrom, sendTo, subject, text, callback) {
 	}
 };
 
-module.exports.sendSMS = function(sendTo, sendFrom, body, callback) {
+module.exports.sendSMS = function (sendTo, sendFrom, body, callback) {
 	var data = {
-			to: sendTo,
-			from: sendFrom,
-			body: body
+		to: sendTo,
+		from: sendFrom,
+		body: body,
 	};
 
 	if (dropSMS) {
-		console.error("SMS dropped. SMS data:");
+		console.error('SMS dropped. SMS data:');
 		console.error(data);
 		if (callback) {
 			callback();
 		}
 	} else {
-		twilioClient.sms.message.create(data, function(err, message) {
+		twilioClient.sms.message.create(data, function (err, message) {
 			if (err) {
 				console.log('Unable to send SMS');
 			} else {
@@ -197,5 +205,3 @@ module.exports.sendSMS = function(sendTo, sendFrom, body, callback) {
 		});
 	}
 };
-
-

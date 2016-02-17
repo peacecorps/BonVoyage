@@ -1,37 +1,39 @@
 /* jshint node: true */
 'use strict';
 
-var mongoose = require("mongoose");
-var bcrypt = require("bcrypt-nodejs");
+var mongoose = require('mongoose');
+var bcrypt = require('bcrypt-nodejs');
 
-var user_schema = mongoose.Schema({
+var userSchema = mongoose.Schema({
 	name: String,
-	email: {type: String, index: {unique: true}}, // Prevent MongoDB from ever saving two duplicate emails
+
+	// Prevent MongoDB from ever saving two duplicate emails
+	email: { type: String, index: { unique: true } },
 	phone: String,
 	hash: String,
 	access: Number,
-	country_code: String
+	countryCode: String,
 });
 
-var presave = function(finish_saving_callback) {
-	var current_user = this;
-	console.log("presave");
-	bcrypt.genSalt(10, function(err, salt) {
-		// console.log(salt);
-		var plain_text_password = current_user.hash; // new passwords are set to the hash and then overwritten below
-		bcrypt.hash(plain_text_password, salt, null, function(err, password_hash){
-			// console.log(password_hash);
-			current_user.hash = password_hash;
-			finish_saving_callback();
+var presave = function (callback) {
+	var _this = this;
+	console.log('presave');
+	bcrypt.genSalt(10, function (err, salt) {
+		// new passwords are set to the hash and then overwritten below
+		var plainTextPassword = _this.hash;
+		bcrypt.hash(plainTextPassword, salt, null, function (err, passwordHash) {
+			// console.log(passwordHash);
+			_this.hash = passwordHash;
+			callback();
 		});
 	});
 };
 
-user_schema.methods.comparePassword = function(password, cb){
-	var current_user = this;
-	bcrypt.compare(password, current_user.hash, cb);
+userSchema.methods.comparePassword = function (password, cb) {
+	var _this = this;
+	bcrypt.compare(password, _this.hash, cb);
 };
 
-user_schema.pre("save", presave);
+userSchema.pre('save', presave);
 
-module.exports = mongoose.model("user", user_schema);
+module.exports = mongoose.model('user', userSchema);
