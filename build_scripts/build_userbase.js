@@ -1,9 +1,13 @@
+/* jshint node: true */
+'use strict';
+
 var mongoose = require("mongoose");
 
 mongoose.connect('mongodb://localhost:27017/bonvoyage');
-mongoose.connection.on('error', function(err){
-  if (err)
-    console.log(err);
+mongoose.connection.on('error', function(err) {
+	if (err) {
+		console.log(err);
+	}
 });
 
 var User = require("../models/user");
@@ -49,7 +53,7 @@ var userbase = [
 		country_code: "BW"
 	},
 	{
-		name: "Ishaan Parikh‎",
+		name: "Ishaan Parikh",
 		email: "ishaan@test.com",
 		hash: "ishaan",
 		access: 0,
@@ -65,16 +69,19 @@ var userbase = [
 ];
 
 var finished = 0;
+var handleSave = function(err) {
+	if(err) {
+		console.error(err);
+	} else {
+		finished += 1;
+		if (finished == userbase.length) {
+			console.log("Done.");
+			mongoose.connection.close();
+		}
+	}
+};
+
 for (var i = userbase.length - 1; i >= 0; i--) {
 	var user = new User(userbase[i]);
-	user.save(function(err) {
-		if(err) console.error(err);
-		else {
-			finished += 1;
-			if (finished == userbase.length) {
-				console.log("Done.");
-				mongoose.connection.close();
-			}
-		}
-	})
-};
+	user.save(handleSave);
+}

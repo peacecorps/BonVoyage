@@ -1,3 +1,6 @@
+/* jshint node: true */
+'use strict';
+
 var express = require('express');
 var router = express.Router();
 var User = require("../models/user");
@@ -5,7 +8,6 @@ var Request = require("../models/request");
 var Token = require("../models/token");
 var Access = require("../config/access");
 var fs = require('fs');
-var moment = require('moment');
 var randtoken = require('rand-token');
 var countries_dictionary = JSON.parse(fs.readFileSync("public/data/countryList.json", 'utf8'));
 var helpers = require('./helpers');
@@ -18,10 +20,13 @@ router.handleRequestId = function(req, res, next, request_id) {
 	// console.log(req.query);
 	// Look up request_id to determine if it is pending or not
 	Request.findOne({ _id: request_id }, 'status', function(err, request) {
-		if (err) next(err);
+		if (err) {
+			next(err);
+		}
 		helpers.getRequests(req, res, request.status.is_pending, function(err, requests) {
-			if (err) next(err);
-			else {
+			if (err) {
+				next(err);
+			} else {
 				// Lookup the id in this list of requests
 				for(var i = 0; i < requests.length; i++) {
 					if(requests[i]._id == request_id) {
@@ -31,33 +36,40 @@ router.handleRequestId = function(req, res, next, request_id) {
 						next();
 					}
 				}
-				if (req.request == undefined)
+				if (req.request === undefined) {
 					next(new Error('Request not found.'));
+				}
 			}
 		});
 	});
-}
+};
 
 /*
  * GET Requests
  */
 router.getRequests = function(req, res) {
 	helpers.getRequests(req, res, undefined, function(err, requests) {
-		if(err) console.error(err);
+		if(err) {
+			console.error(err);
+		}
 		res.send(requests);
 	});
 };
 
 router.getPendingRequests = function(req, res) {
 	helpers.getRequests(req, res, true, function(err, requests) {
-		if(err) console.error(err);
+		if(err) {
+			console.error(err);
+		}
 		res.send(requests);
 	});
 };
 
 router.getPastRequests = function(req, res) {
 	helpers.getRequests(req, res, false, function(err, requests) {
-		if(err) console.error(err);
+		if(err) {
+			console.error(err);
+		}
 		res.send(requests);
 	});
 };
@@ -68,10 +80,12 @@ router.getUsers = function(req, res) {
 	helpers.getUsers({
 		maxAccess: maxAccess,
 	}, function(err, users) {
-		if(err) console.error(err);
+		if(err) {
+			console.error(err);
+		}
 		res.send(users);
 	});
-}
+};
 
 /*
  * POST Requests
@@ -82,7 +96,7 @@ router.postRequests = function(req, res) {
 	// Supervisors will select the user to submit the request for on the submission form
 	if (req.user.access >= Access.SUPERVISOR) {
 		email = req.body.email;
-		if (email == undefined) {
+		if (email === undefined) {
 			req.session.submission = req.body;
 			req.flash('submissionFlash', { text: 'You must select a requestee to submit this request for.', class: 'danger' });
 			res.end(JSON.stringify({redirect: '/dashboard/submit'}));
@@ -98,7 +112,7 @@ router.postRequests = function(req, res) {
 		if(users.length > 0) {
 			var legs = [];
 			for (var i = 0; i < req.body.legs.length; i++) {
-				leg = req.body.legs[i];
+				var leg = req.body.legs[i];
 				var start = new DateOnly(leg.start_date);
 				var end = new DateOnly(leg.end_date);
 
@@ -165,12 +179,14 @@ router.postRequests = function(req, res) {
 			return;
 		}
 	});
-}
+};
 
 router.postApprove = function(req, res) {
 	var id = req.params.request_id;
 	Request.findByIdAndUpdate(id, {$set:{"status.is_pending":false, "status.is_approved":true}}, function(err, doc) {
-		if (err) return res.send(500, {error: err});
+		if (err) {
+			return res.send(500, {error: err});
+		}
 
 		var sendFrom = 'Peace Corps <team@projectdelta.io>';
 		var sendTo = doc.email;
@@ -191,12 +207,14 @@ router.postApprove = function(req, res) {
 		});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
-}
+};
 
 router.postDeny = function(req, res) {
 	var id = req.params.request_id;
 	Request.findByIdAndUpdate(id, {$set:{"status.is_pending":false, "status.is_approved":false}}, function(err, doc) {
-		if (err) return res.send(500, {error: err});
+		if (err) {
+			return res.send(500, {error: err});
+		}
 
 		var sendFrom = 'Peace Corps <team@projectdelta.io>';
 		var sendTo = doc.email;
@@ -216,12 +234,14 @@ router.postDeny = function(req, res) {
 		});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
-}
+};
 
 router.postDelete = function(req, res) {
 	var id = req.params.request_id;
-	Request.findOneAndRemove({'_id':id, email: req.user.email}, function(err, doc) {
-		if (err) return res.send(500, {error: err});
+	Request.findOneAndRemove({'_id':id, email: req.user.email}, function(err) {
+		if (err) {
+			return res.send(500, {error: err});
+		}
 		req.flash('dashboardFlash', { 
 			text: 'The request has been successfully deleted.', 
 			class: 'success',
@@ -232,7 +252,7 @@ router.postDelete = function(req, res) {
 		});
 		res.end(JSON.stringify({redirect: '/dashboard'}));
 	});
-}
+};
 
 router.postComments = function(req, res) {
 	var id = req.params.request_id;
@@ -244,12 +264,14 @@ router.postComments = function(req, res) {
 				content:req.param('content')
 			}]
 		}
-	}}, function(err, doc) {
-		if (err) return res.send(500, {error: err});
+	}}, function(err) {
+		if (err) {
+			return res.send(500, {error: err});
+		}
 		req.flash('approvalFlash', { text: 'Your comment has been added.', class: 'success' });
 		res.end(JSON.stringify({redirect: '/requests/' + id}));
 	});
-}
+};
 
 router.reset = function(req, res) {
 	var email = req.body.email;
@@ -263,7 +285,7 @@ router.reset = function(req, res) {
 			// TODO: existing token must be removed
 			var token = randtoken.generate(64);
 
-			Token.create({token: token, email: email}, function(err, doc) {
+			Token.create({token: token, email: email}, function(err) {
 				if (err) {
 					req.flash('loginFlash', { text: 'Failed to generate an email reset token.', class: 'danger'});
 					res.end(JSON.stringify({redirect: '/login'}));
@@ -283,8 +305,7 @@ router.reset = function(req, res) {
 
 	req.flash('loginFlash', { text: 'Instructions to reset your password have been sent to your email address.', class: 'success'});
 	res.end(JSON.stringify({redirect: '/login'}));
-
-}
+};
 
 router.resetValidator = function(req, res) {
 	var token = req.params.token;
@@ -331,41 +352,44 @@ router.resetValidator = function(req, res) {
 		req.flash('loginFlash', { text: 'New Password is different from Confirm Password. Please retry.', class: 'danger'});
 		res.end(JSON.stringify({redirect: '/login'}));
 	}
-}
+};
 
 router.logout = function(req, res) {
 	req.logout();
 	req.flash('loginFlash', { text: 'You have been logged out.', class: 'success'});
 	res.end(JSON.stringify({redirect: '/login'}));
-}
+};
 
 router.modifyAccess = function(req, res) {
-	email = req.body.email;
-	access = req.body.access;
+	var email = req.body.email;
+	var access = req.body.access;
 	if (access >= Access.VOLUNTEER && access <= Access.ADMIN && (req.user.access == Access.ADMIN || access < req.user.access)) {
-		User.update({ email: email }, { $set: { access: access } }, function(err, numAffected) {
-			if (err) console.error(err);
-			else req.flash('usersFlash', { text: 'The user\'s access rights have been updated.' , class: 'success'});
+		User.update({ email: email }, { $set: { access: access } }, function(err) {
+			if (err) {
+				console.error(err);
+			} else {
+				req.flash('usersFlash', { text: 'The user\'s access rights have been updated.' , class: 'success'});
+			}
 			res.end(JSON.stringify({redirect: '/users'}));
 		});
 	} else {
 		res.end(JSON.stringify({redirect: '/users'}));
 	}
-}
+};
 
 /*
  * DELETE Requests
  */
 
 router.deleteUser = function(req, res) {
-	email = req.body.email;
-	Request.find({ email: email }).remove(function(err, numAffected) {
+	var email = req.body.email;
+	Request.find({ email: email }).remove(function(err) {
 		if(err) {
 			console.error(err);
 			req.flash('usersFlash', { text: 'An error has occurred while attempting to delete the user.' , class: 'danger'});
 			res.end(JSON.stringify({redirect: '/users'}));
 		} else {
-			User.find({ email: email }).remove(function(err, numAffected) {
+			User.find({ email: email }).remove(function(err) {
 				if (err) {
 					console.error(err);
 					req.flash('usersFlash', { text: 'An error has occurred while attempting to delete the user.' , class: 'danger'});
@@ -376,7 +400,7 @@ router.deleteUser = function(req, res) {
 			});
 		}
 	});
-}
+};
 
 module.exports = router;
 

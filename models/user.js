@@ -1,3 +1,5 @@
+/* jshint node: true */
+'use strict';
 
 var mongoose = require("mongoose");
 var bcrypt = require("bcrypt-nodejs");
@@ -21,7 +23,7 @@ var presave = function(finish_saving_callback) {
 			// console.log(password_hash);
 			current_user.hash = password_hash;
 			finish_saving_callback();
-		})
+		});
 	});
 };
 

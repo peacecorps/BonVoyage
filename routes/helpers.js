@@ -1,3 +1,6 @@
+/* jshint node: true */
+'use strict';
+
 var User = require("../models/user");
 var Request = require("../models/request");
 var Access = require("../config/access");
@@ -25,13 +28,17 @@ try {
 if (credentials && credentials.mailgun && domain) {
 	var mailgunAPIKey = credentials.mailgun;
 	var mailgun = require('mailgun-js')({apiKey: mailgunAPIKey, domain: domain});
-} else dropEmail = true;
+} else {
+	dropEmail = true;
+}
 
 if (credentials && credentials.twilio) {
 	var twilio = require('twilio');
 	var twilioCfg = credentials.twilio;
 	var twilioClient = new twilio.RestClient(twilioCfg.account_sid, twilioCfg.auth_token);
-} else dropSMS = true;
+} else {
+	dropSMS = true;
+}
 
 
 /* 
@@ -39,11 +46,12 @@ if (credentials && credentials.twilio) {
  */
 module.exports.getStartDate = function(request) {
 	if (request.legs.length > 0) {
-		start_date = new DateOnly(request.legs[0].start_date);
+		var start_date = new DateOnly(request.legs[0].start_date);
 		for (var i = 1; i < request.legs.length; i++) {
-			var d = new DateOnly(request.legs[i].start_date)
-			if(d < start_date)
+			var d = new DateOnly(request.legs[i].start_date);
+			if(d < start_date) {
 				start_date = d;
+			}
 		}
 		return start_date;
 	} else {
@@ -53,11 +61,12 @@ module.exports.getStartDate = function(request) {
 
 module.exports.getEndDate = function(request) {
 	if (request.legs.length > 0) {
-		end_date = new DateOnly(request.legs[0].end_date);
+		var end_date = new DateOnly(request.legs[0].end_date);
 		for (var i = 1; i < request.legs.length; i++) {
-			var d = new DateOnly(request.legs[i].end_date)
-			if(d > end_date)
+			var d = new DateOnly(request.legs[i].end_date);
+			if(d > end_date) {
 				end_date = d;
+			}
 		}
 		return end_date;
 	} else {
@@ -97,12 +106,12 @@ module.exports.getRequests = function(req, res, pending, cb) {
 				$match: matchCountry
 			},
 			{
-				$match: (pending != undefined ? {'status.is_pending': pending } : {})
+				$match: (pending !== undefined ? {'status.is_pending': pending } : {})
 			}
 		], function (err, requests) {
-			if (err) 
+			if (err) {
 				return cb(err);
-			else {
+			} else {
 				// Add start and end date to all requests
 				for (var i = 0; i < requests.length; i++) {
 					requests[i].start_date = module.exports.getStartDate(requests[i]);
@@ -119,13 +128,16 @@ module.exports.getRequests = function(req, res, pending, cb) {
 };
 
 module.exports.getUsers = function(options, cb) {
-	var q = (options.user != undefined ? options.user : {});
-	if (options.maxAccess != undefined) {
+	var q = (options.user !== undefined ? options.user : {});
+	if (options.maxAccess !== undefined) {
 		q.access = {$lte: options.maxAccess};
 	}
 	User.find(q, 'access name email phone _id', function(err, users) {
-		if (err) cb(err);
-		else cb(null, users);
+		if (err) {
+			cb(err);
+		} else {
+			cb(null, users);
+		}
 	});
 };
 
@@ -140,8 +152,9 @@ module.exports.sendEmail = function(sendFrom, sendTo, subject, text, callback) {
 	if (dropEmail) {
 		console.error("Email dropped. Email data:");
 		console.error(data);
-		if (callback)
+		if (callback) {
 			callback();
+		}
 	} else {
 		mailgun.messages().send(data, function(err, body) {
 			console.log(body);
@@ -163,8 +176,9 @@ module.exports.sendSMS = function(sendTo, sendFrom, body, callback) {
 	if (dropSMS) {
 		console.error("SMS dropped. SMS data:");
 		console.error(data);
-		if (callback)
+		if (callback) {
 			callback();
+		}
 	} else {
 		twilioClient.sms.message.create(data, function(err, message) {
 			if (err) {

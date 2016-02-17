@@ -1,3 +1,5 @@
+/* jshint node: true */
+'use strict';
 
 var request = require('request');
 var cheerio = require('cheerio');
@@ -26,14 +28,15 @@ function matchCountryCodes(country_text) {
 			"republic of south sudan": ["SD"]
 		};
 		// Check if the text to match is one of the hardcoded countries
-		if (matches[country_text]) 
+		if (matches[country_text]) {
 			country_codes = matches[country_text];
-		else {
+		} else {
 			// Otherwise search the countries dictionary for the text to match
-			for (country_code in countries_dictionary) {
+			for (var country_code in countries_dictionary) {
 				// NOTE: this only pushes exact matches, thus the need for the hardcoded values
-				if (countries_dictionary[country_code].toLowerCase() == country_text)
+				if (countries_dictionary[country_code].toLowerCase() == country_text) {
 					country_codes.push(country_code);
+				}
 			}
 		}
 	}
@@ -41,7 +44,7 @@ function matchCountryCodes(country_text) {
 }
 
 function parseText(text, index) {
-	text_l = text.toLowerCase();
+	var text_l = text.toLowerCase();
 	switch (index) {
 		case COLUMNS.TYPE: 
 			return text; // 'Alert' or 'Warning'
@@ -50,13 +53,13 @@ function parseText(text, index) {
 			return strip_time(text_l).toDate();
 		case COLUMNS.COUNTRY:
 			// Crop out the country from the text ('Honduras Travel Warning' -> 'Honduras')
-			var index = text_l.indexOf('travel');
-			if (index != -1)
-				return text_l.substring(0,index-1);
-			else 
-				// Some special cases occur (ex. 'South Pacific Tropical Cyclone Season - 2015 - 2016')
-				// We should handle these eventually
-				return undefined;
+			var i = text_l.indexOf('travel');
+			if (i != -1) {
+				return text_l.substring(0,i-1);
+			}
+			// Some special cases occur (ex. 'South Pacific Tropical Cyclone Season - 2015 - 2016')
+			// We should handle these eventually
+			return undefined;
 		default:
 			throw "Table index out of range";
 	}
@@ -66,7 +69,9 @@ function storeWarnings(warnings) {
 	var fs = require('fs');
 	var json = JSON.stringify(warnings, null, 2);
 	fs.writeFile(OUTPUT_FILE, json, function(err) {
-		if(err) return console.log(err);
+		if(err) {
+			return console.log(err);
+		}
 	});
 }
 
@@ -74,8 +79,8 @@ function getWarningText(warning, callback) {
 	if (warning.link) {
 		request(warning.link, function(error, response, body) {
 			if(!error && response.statusCode == 200) {
-				$ = cheerio.load(body);
-				warning.text = $('.content_par').text().trim()
+				var $ = cheerio.load(body);
+				warning.text = $('.content_par').text().trim();
 				warning.text_overview = $('.callout_text').text().trim();
 			}
 			callback();
@@ -88,23 +93,24 @@ function getWarningText(warning, callback) {
 request('http://travel.state.gov/content/passports/en/alertswarnings.html', 
 	function (error, response, body) {
 		// This hash table holds the data that we will store in JSON later
-		warnings = {};
+		var warnings = {};
 
 		if (!error && response.statusCode == 200) {
-			$ = cheerio.load(body);
+			var $ = cheerio.load(body);
 			var rows_to_parse = $("tr").length;
 
-			$("tr").each(function(row, elem) {
-				raw_data = [];
-				link = undefined; // Link to the full detail on the warning
-				$(this).find("td").each(function(td_index, ele) {
+			$("tr").each(function() {
+				var raw_data = [];
+				var link; // Link to the full detail on the warning
+				$(this).find("td").each(function(td_index) {
 					raw_data.push(parseText($(this).text(), td_index)); // Parse the raw text
 					// Get the link that is in the country column
 					if (td_index == COLUMNS.COUNTRY) {
 						link = $(this).find('a').attr('href');	
 						// If further info exists, add the domain to make it a full link
-						if (link)
+						if (link) {
 							link = "http://travel.state.gov" + link;
+						}
 					}
 				});
 				var country_codes = matchCountryCodes(raw_data[COLUMNS.COUNTRY]);
@@ -118,11 +124,12 @@ request('http://travel.state.gov/content/passports/en/alertswarnings.html',
 					rows_to_parse--;
 					// Insert this warning at each of the match countries
 					for (var i = 0; i < country_codes.length; i++) {
-						if (warnings[country_codes[i]] == undefined) 
+						if (warnings[country_codes[i]] === undefined) {
 							warnings[country_codes[i]] = [];
-						warnings[country_codes[i]].push(warning)
+						}
+						warnings[country_codes[i]].push(warning);
 					}
-					if (rows_to_parse == 0) {
+					if (rows_to_parse === 0) {
 						storeWarnings(warnings);
 					}
 				});

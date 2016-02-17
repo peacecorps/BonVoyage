@@ -1,13 +1,14 @@
+/* jshint node: true */
+'use strict';
+
 var express = require('express');
 var router = express.Router();
-var User = require("../models/user");
-var Request = require("../models/request");
 var Access = require("../config/access");
 var fs = require('fs');
 var helpers = require('./helpers');
-var warnings = undefined;
+var warnings;
 
-router.index = function(req, res, next) {
+router.index = function(req, res) {
 	res.redirect('/login');
 };
 
@@ -27,7 +28,7 @@ router.renderLogin = function(req, res) {
 		hideLogout: true,
 		submission: sub
 	});
-}
+};
 
 router.renderRegister = function(req, res) {
 	var sub = {};
@@ -45,7 +46,7 @@ router.renderRegister = function(req, res) {
 		hideLogout: true,
 		submission: sub
 	});
-}
+};
 
 router.renderReset = function(req, res) {
 	res.render('forgot_password.jade', {
@@ -57,7 +58,7 @@ router.renderReset = function(req, res) {
 		],
 		hideLogout: true
 	});
-}
+};
 
 /* incomplete */
 router.renderValidReset = function(req, res) {
@@ -70,7 +71,7 @@ router.renderValidReset = function(req, res) {
 		],
 		hideLogout: true
 	});
-}
+};
 
 router.renderSubform = function(req, res) {
 	var sub = {};
@@ -82,8 +83,9 @@ router.renderSubform = function(req, res) {
 		{ text: "Dashboard", href: "/dashboard" },
 		{ text: "Submit a Request", href: "/dashboard/submit", active: true }
 	];
-	if (req.user.access >= Access.SUPERVISOR) 
+	if (req.user.access >= Access.SUPERVISOR) {
 		links.push({ text: "Users", href: "/users" });
+	}
     res.render('submission_form.jade', {
     	title: 'Submission Form',
     	links: links,
@@ -91,16 +93,17 @@ router.renderSubform = function(req, res) {
     	shouldSelectRequestee: req.user.access >= Access.SUPERVISOR,
     	submission: sub
     });
-}
+};
 
 router.renderApproval = function(req, res) {
-	if (!warnings)
+	if (!warnings) {
 		warnings = JSON.parse(fs.readFileSync("public/data/warnings.json", 'utf8'));
+	}
 	// Merge warnings to requests
 	for(var i = 0; i < req.request.legs.length; i++) {
 		req.request.legs[i].warnings = warnings[req.request.legs[i].country_code];
 	}
-	if (req.request.status.is_pending == false) {
+	if (req.request.status.is_pending === false) {
 		var deniedFlash = { 
 			text: 'This request has been denied.', 
 			class: 'danger' 
@@ -109,7 +112,7 @@ router.renderApproval = function(req, res) {
 			text: 'This request has been approved.', 
 			class: 'success' 
 		};
-		req.flash('approvalFlash', (req.request.status.is_approved == true ? approvedFlash : deniedFlash));
+		req.flash('approvalFlash', (req.request.status.is_approved === true ? approvedFlash : deniedFlash));
 	} else {
 		var pendingFlash = { 
 			text: 'This request is currently pending.', 
@@ -121,8 +124,9 @@ router.renderApproval = function(req, res) {
 		{ text: "Dashboard", href: "/dashboard" },
 		{ text: "Submit a Request", href: "/dashboard/submit" }
 	];
-	if (req.user.access >= Access.SUPERVISOR) 
+	if (req.user.access >= Access.SUPERVISOR) {
 		links.push({ text: "Users", href: "/users" });
+	}
 	res.render('approval.jade', {
 		title: 'Request Approval',
 		links: links,
@@ -131,33 +135,36 @@ router.renderApproval = function(req, res) {
 		next_request_id: req.next_request_id,
 		prev_request_id: req.prev_request_id
 	});
-}
+};
 
 router.renderDashboard = function(req, res) {
 	var links = [
 		{ text: "Dashboard", href: "/dashboard", active: true },
 		{ text: "Submit a Request", href: "/dashboard/submit" }
 	];
-	if (req.user.access >= Access.SUPERVISOR) 
+	if (req.user.access >= Access.SUPERVISOR) {
 		links.push({ text: "Users", href: "/users" });
+	}
 	res.render('dashboard.jade', {
 		title: "Dashboard",
 		links: links,
 		messages: req.flash('dashboardFlash')
 	});
-}
+};
 
 router.renderUsers = function(req, res) {
 	if (req.user.access >= Access.SUPERVISOR) {
 		helpers.getUsers({
 			maxAccess: req.user.access
 		}, function(err, users) {
-			if (err) console.error(err);
+			if (err) {
+				console.error(err);
+			}
 
 			// Split users based on their access level
-			admins = [];
-			supervisors = [];
-			volunteers = [];
+			var admins = [];
+			var supervisors = [];
+			var volunteers = [];
 			for (var i = 0; i < users.length; i++) {
 				var user = users[i];
 				switch (user.access) {
@@ -171,7 +178,7 @@ router.renderUsers = function(req, res) {
 						volunteers.push(user);
 						break;
 				}
-			};
+			}
 
 		    res.render('users.jade', {
 		    	title: 'Users',
@@ -189,7 +196,7 @@ router.renderUsers = function(req, res) {
 	} else {
 		res.redirect('/dashboard');
 	}
-}
+};
 
 module.exports = router;
 

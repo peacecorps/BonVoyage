@@ -1,5 +1,7 @@
+/* jshint node: true */
+'use strict';
+
 var mongoose = require("mongoose");
-var moment = require('moment');
 var DateOnly = require('mongoose-dateonly')(mongoose);
 
 var request_schema = mongoose.Schema({

@@ -1,0 +1,14 @@
+{
+	// Enable options in order to produce more warnings
+	"bitwise": true,
+	"curly": true,
+	"futurehostile": true,
+	"predef": ["require"],
+	"nonbsp": true,
+	"undef": true,
+	"unused": true,
+	"strict": true,
+	"nonew": true,
+	"nocomma": true,
+	"latedef": true
+}

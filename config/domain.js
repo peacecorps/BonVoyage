@@ -1,1 +1,4 @@
-module.exports = “projectdelta.io”;
+/* jshint node: true */
+'use strict';
+
+module.exports = 'projectdelta.io';

@@ -1,3 +1,6 @@
+/* jshint node: true */
+'use strict';
+
 var LocalStrategy = require('passport-local').Strategy;
 var helpers = require('../routes/helpers');
 
@@ -38,7 +41,7 @@ module.exports = function(passport) {
         passReqToCallback : true // allows us to pass back the entire request to the callback
     },
     function(req, email, password, done) {
-        email = email.toLowerCase()
+        email = email.toLowerCase();
         // asynchronous
         // User.findOne wont fire unless data is sent back
         process.nextTick(function() {
@@ -46,8 +49,9 @@ module.exports = function(passport) {
             // we are checking to see if the user trying to login already exists
             User.findOne({ 'email' :  email }, function(err, user) {
                 // if there are any errors, return the error
-                if (err)
+                if (err) {
                     return done(err);
+                }
 
                 // check to see if theres already a user with that email
                 if (user) {
@@ -72,8 +76,9 @@ module.exports = function(passport) {
 
                     // save the user
                     newUser.save(function(err) {
-                        if (err)
+                        if (err) {
                             return done(err);
+                        }
 
                         var sendFrom = 'Peace Corps <team@projectdelta.io>';
                         var sendTo = email;
@@ -109,8 +114,9 @@ module.exports = function(passport) {
             // we are checking to see if the user trying to login already exists
             User.findOne({ 'email' :  email }, function(err, user) {
                 // if there are any errors, return the error before anything else
-                if (err)
+                if (err) {
                     return done(err);
+                }
 
                 // if no user is found, return the message
                 if (!user) {
@@ -137,5 +143,5 @@ module.exports = function(passport) {
 
         }));
 
-}
+};
 
