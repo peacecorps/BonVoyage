@@ -47,9 +47,9 @@ router.handleRequestId = function (req, res, next, requestId) {
 					}
 				}
 
-				if (req.request === undefined) {
-					next(new Error('Request not found.'));
-				}
+if (req.request === undefined) {
+	next(new Error('Request not found.'));
+}
 			}
 		});
 	});
