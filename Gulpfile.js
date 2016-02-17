@@ -18,7 +18,8 @@
 		.pipe(jshint())
 		.pipe(jshint.reporter('default'))
 		.pipe(jscs())
-		.pipe(jscs.reporter());
+		.pipe(jscs.reporter())
+		.pipe(jscs.reporter('fail'));
 
 		// .pipe(stylish.combineWithHintResults())
 		// .pipe(jshint.reporter('jshint-stylish'));
