@@ -44,76 +44,73 @@ module.exports = function (passport) {
 		passReqToCallback: true,
 	},
     function (req, email, password, done) {
-	email = email.toLowerCase();
+		email = email.toLowerCase();
 
-	// asynchronous
-	// User.findOne wont fire unless data is sent back
-	process.nextTick(function () {
-		// find a user whose email is the same as the forms email
-		// we are checking to see if the user trying to login already exists
-		User.findOne({ email:  email }, function (err, user) {
-			// if there are any errors, return the error
-			if (err) {
-				return done(err);
-			}
+		// asynchronous
+		// User.findOne wont fire unless data is sent back
+		process.nextTick(function () {
+			// find a user whose email is the same as the forms email
+			// we are checking to see if the user trying to login already exists
+			User.findOne({ email:  email }, function (err, user) {
+				// if there are any errors, return the error
+				if (err) {
+					return done(err);
+				}
 
-			// check to see if theres already a user with that email
-			if (user) {
-				req.session.submission = req.body;
-				return done(null, false, req.flash('registerFlash',
-                        {
-							text: 'That email is already taken.',
-							class: 'danger',
-						}));
-			} else if (password != req.body.password2) {
-				req.session.submission = req.body;
-				return done(null, false, req.flash('registerFlash',
-                        {
-							text: 'Those passwords do not match.',
-							class: 'danger',
-						}));
-			} else {
+				// check to see if theres already a user with that email
+				if (user) {
+					req.session.submission = req.body;
+					return done(null, false, req.flash('registerFlash',
+							{
+								text: 'That email is already taken.',
+								class: 'danger',
+							}));
+				} else if (password != req.body.password2) {
+					req.session.submission = req.body;
+					return done(null, false, req.flash('registerFlash',
+							{
+								text: 'Those passwords do not match.',
+								class: 'danger',
+							}));
+				} else {
 
-				// if there is no user with that email
-				// create the user
-				var newUser = new User();
+					// if there is no user with that email
+					// create the user
+					var newUser = new User();
 
-				// set the user's local credentials
+					// set the user's local credentials
 
-				newUser.email    = email;
+					newUser.email    = email;
 
-				// This password will be hashed, and in the process
-				// overwrite the plain text password we just stored into newUser.hash
-				newUser.hash = password;
-				newUser.name = req.body.name;
-				newUser.phone = req.body.phone;
-				newUser.access = Access.VOLUNTEER;
+					// This password will be hashed, and in the process
+					// overwrite the plain text password we just stored into newUser.hash
+					newUser.hash = password;
+					newUser.name = req.body.name;
+					newUser.phone = req.body.phone;
+					newUser.access = Access.VOLUNTEER;
 
-				// save the user
-				newUser.save(function (err) {
-					if (err) {
-						return done(err);
-					}
+					// save the user
+					newUser.save(function (err) {
+						if (err) {
+							return done(err);
+						}
 
-					var sendFrom = 'Peace Corps <team@projectdelta.io>';
-					var sendTo = email;
-					var subject = 'Peace Corps BonVoyage Registration Confirmation';
-					var text = 'Hi ' + req.body.name +
-						',\n\nThank you for registering for BonVoyage. ' +
-						'You can now access your account at http://peacecorps.projectdelta.io';
+						var sendFrom = 'Peace Corps <team@projectdelta.io>';
+						var sendTo = email;
+						var subject = 'Peace Corps BonVoyage Registration Confirmation';
+						var map = {
+							name: req.body.name.split(' ')[0],
+						};
 
-					helpers.sendEmail(sendFrom, sendTo, subject, text,
-                            console.log('registration email sent!'));
+						helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+							'welcome', map);
 
-					return done(null, newUser);
-				});
-			}
-
+						return done(null, newUser);
+					});
+				}
+			});
 		});
-
-	});
-
-    }));
+	}));
 
 	// =========================================================================
 	// LOCAL LOGIN  ============================================================

@@ -5,6 +5,8 @@ var User = require('../models/user');
 var Request = require('../models/request');
 var Access = require('../config/access');
 var DateOnly = require('dateonly');
+var jade = require('jade');
+var path = require('path');
 
 // Attempt to load credentials for email and SMS
 var dropEmail = false;
@@ -30,6 +32,7 @@ try {
 if (credentials && credentials.mailgun && domain) {
 	var mailgunAPIKey = credentials.mailgun;
 	var mailgun = require('mailgun-js')({ apiKey: mailgunAPIKey, domain: domain });
+	var mailcomposer = require('mailcomposer');
 } else {
 	dropEmail = true;
 }
@@ -171,6 +174,47 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 			}
 		});
 	}
+};
+
+module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
+	template, map, callback) {
+
+	var html = jade.renderFile(path.join(__dirname, '../email', template + '.jade'), map);
+
+	var data = {
+		from: sendFrom,
+		to: sendTo,
+		subject: subject,
+		html: html,
+	};
+
+	var mail = mailcomposer(data);
+
+	mail.build(function (buildError, message) {
+		if (buildError) {
+			console.log(buildError);
+		}
+
+		var dataToSend = {
+			to: sendTo,
+			message: message.toString('ascii'),
+		};
+
+		mailgun.messages().sendMime(dataToSend, function (sendError, body) {
+			if (sendError) {
+				console.log(sendError);
+			}
+
+			if (body) {
+				console.log('Email data:' + body);
+			}
+
+			if (callback) {
+				callback();
+			}
+		});
+	});
+
 };
 
 module.exports.sendSMS = function (sendTo, sendFrom, body, callback) {
