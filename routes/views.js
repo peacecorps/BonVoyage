@@ -213,17 +213,17 @@ router.renderUsers = function (req, res) {
 };
 
 router.renderProfile = function (req, res) {
-	var profileEmail = req.query.email;
+	var userId = req.params.userId;
 
-	if (profileEmail === undefined) {
-		profileEmail = req.user.email;
+	if (userId === undefined) {
+		userId = req.user._id;
 	}
 
 	// Verify that the user has the right access to view this profile
 	if ((req.user.access == Access.VOLUNTEER &&
-		req.user.email == profileEmail) ||
+		req.user._id == userId) ||
 		(req.user.access > Access.VOLUNTEER)) {
-		helpers.getUsers({ user: { email: profileEmail } }, function (err, users) {
+		helpers.getUsers({ user: { _id: userId } }, function (err, users) {
 			if (err) {
 				console.error(err);
 			} else {
@@ -241,13 +241,11 @@ router.renderProfile = function (req, res) {
 						title: 'Profile',
 						links: navLinks,
 						messages: req.flash('profileFlash'),
-						user: user,
+						userToShow: user,
 					});
 				} else {
 					req.flash('dashboardFlash', {
-						text: 'The profile for a user with the email \'' +
-							req.query.email +
-							'\' could not be found.',
+						text: 'The profile for the requested user could not be found.',
 						class: 'danger',
 					});
 					res.redirect('/dashboard');

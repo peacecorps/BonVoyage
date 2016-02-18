@@ -85,7 +85,7 @@ $(function() {
         if(hasProfileDataChanged(changedData)) {
             $.ajax({
                 method: 'POST',
-                url: '/profile',
+                url: '/profile/' + $('input#userId').val(),
                 contentType: "application/x-www-form-urlencoded",
                 data: {
                     old: defaultProfileData(),

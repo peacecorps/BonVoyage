@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 var DateOnly = require('mongoose-dateonly')(mongoose);
 
 var requestSchema = mongoose.Schema({
-	email: String,
+	userId: mongoose.Schema.Types.ObjectId,
 	status: {
 		isPending: Boolean,
 		isApproved: Boolean,

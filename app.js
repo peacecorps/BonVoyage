@@ -97,7 +97,7 @@ app.get('/dashboard/submit', isLoggedIn,
 app.get('/requests/:requestId', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
 app.get('/users', isLoggedIn, views.renderUsers);
-app.get('/profile', isLoggedIn,
+app.get('/profile/:userId?', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderProfile);
 
 // API
@@ -115,7 +115,7 @@ app.post('/api/requests/:requestId/delete', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postDelete);
 app.post('/api/requests/:requestId/comments', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postComments);
-app.post('/profile', isLoggedIn,
+app.post('/profile/:userId?', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.modifyProfile);
 
 app.post('/api/register', passport.authenticate('local-signup', {

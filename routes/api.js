@@ -107,12 +107,12 @@ router.getUsers = function (req, res) {
  */
 
 router.postRequests = function (req, res) {
-	var email = req.user.email;
+	var userId = req.user.email;
 
 	// Supervisors will select a user to submit a request for on the form
 	if (req.user.access >= Access.SUPERVISOR) {
-		email = req.body.email;
-		if (email === undefined) {
+		userId = req.body.userId;
+		if (userId === undefined) {
 			req.session.submission = req.body;
 			req.flash('submissionFlash', {
 				text: 'You must select a requestee to submit this request for.',
@@ -126,7 +126,7 @@ router.postRequests = function (req, res) {
 	// Verify that the user exists
 	helpers.getUsers({
 		user: {
-			email: email,
+			_id: userId,
 		},
 	}, function (err, users) {
 		if (users.length > 0) {
@@ -170,10 +170,10 @@ router.postRequests = function (req, res) {
 
 			if (legs.length > 0) {
 				var newRequest = new Request({
-					email: email,
+					userId: userId,
 					status: {
 						isPending: true,
-						isApproved: false,
+						isd: false,
 					},
 					legs: legs,
 				});
@@ -234,26 +234,28 @@ router.postApprove = function (req, res) {
 			return res.send(500, { error: err });
 		}
 
-		var sendFrom = 'Peace Corps <team@projectdelta.io>';
-		var sendTo = doc.email;
-		var subject = 'Peace Corps BonVoyage Request Approved';
-		var map = {
-			name: req.user.name.split(' ')[0],
-			button: 'http://localhost:3000',
-		};
+		User.find({ _id: doc.userId }, function (err, user) {
+			var sendFrom = 'Peace Corps <team@projectdelta.io>';
+			var sendTo = user.email;
+			var subject = 'Peace Corps BonVoyage Request Approved';
+			var map = {
+				name: req.user.name.split(' ')[0],
+				button: 'http://localhost:3000',
+			};
 
-		helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-			'approve', map);
+			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+				'approve', map);
 
-		req.flash('dashboardFlash', {
-			text: 'The request has been successfully approved.',
-			class: 'success',
-			link: {
-				url: '/requests/' + id,
-				text: 'View Request.',
-			},
+			req.flash('dashboardFlash', {
+				text: 'The request has been successfully approved.',
+				class: 'success',
+				link: {
+					url: '/requests/' + id,
+					text: 'View Request.',
+				},
+			});
+			res.end(JSON.stringify({ redirect: '/dashboard' }));
 		});
-		res.end(JSON.stringify({ redirect: '/dashboard' }));
 	});
 };
 
@@ -269,32 +271,34 @@ router.postDeny = function (req, res) {
 			return res.send(500, { error: err });
 		}
 
-		var sendFrom = 'Peace Corps <team@projectdelta.io>';
-		var sendTo = doc.email;
-		var subject = 'Peace Corps BonVoyage Request Denied';
-		var map = {
-			name: req.user.name.split(' ')[0],
-			button: 'http://localhost:3000',
-		};
+		User.find({ _id: doc.userId }, function (err, user) {
+			var sendFrom = 'Peace Corps <team@projectdelta.io>';
+			var sendTo = user.email;
+			var subject = 'Peace Corps BonVoyage Request Denied';
+			var map = {
+				name: req.user.name.split(' ')[0],
+				button: 'http://localhost:3000',
+			};
 
-		helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-			'deny', map);
+			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+				'deny', map);
 
-		req.flash('dashboardFlash', {
-			text: 'The request has been successfully denied.',
-			class: 'success',
-			link: {
-				url: '/requests/' + id,
-				text: 'View Request.',
-			},
+			req.flash('dashboardFlash', {
+				text: 'The request has been successfully denied.',
+				class: 'success',
+				link: {
+					url: '/requests/' + id,
+					text: 'View Request.',
+				},
+			});
+			res.end(JSON.stringify({ redirect: '/dashboard' }));
 		});
-		res.end(JSON.stringify({ redirect: '/dashboard' }));
 	});
 };
 
 router.postDelete = function (req, res) {
 	var id = req.params.requestId;
-	Request.findOneAndRemove({ _id:id, email: req.user.email }, function (err) {
+	Request.findOneAndRemove({ _id: id, userId: req.user._id }, function (err) {
 		if (err) {
 			return res.send(500, { error: err });
 		}
@@ -467,14 +471,14 @@ router.logout = function (req, res) {
 };
 
 router.modifyAccess = function (req, res) {
-	var email = req.body.email;
+	var userId = req.body.userId;
 	var access = req.body.access;
 	if (access >= Access.VOLUNTEER &&
 		access <= Access.ADMIN &&
 		(req.user.access == Access.ADMIN ||
 		access < req.user.access)) {
 		User.update({
-			email: email,
+			_id: userId,
 		}, {
 			$set: {
 				access: access,
@@ -498,12 +502,19 @@ router.modifyAccess = function (req, res) {
 
 router.modifyProfile = function (req, res) {
 	// Update the user object
+	var userId = req.params.userId;
+	if (userId === undefined) {
+		userId = req.user._id;
+	}
+
+	console.log(userId);
 	console.log(req.body);
-	User.update({ email: req.body.old.email }, req.body.new, function (err) {
+
+	User.update({ _id: userId }, req.body.new, function (err) {
 		if (err) {
 			req.flash('profileFlash', {
 				text: 'An occurred while attempting to update ' +
-					(req.body.old.email == req.user.email ? 'your' :
+					(req.user._id == userId ? 'your' :
 						req.body.new.name + '\'s') +
 					' profile.',
 			});
@@ -511,9 +522,9 @@ router.modifyProfile = function (req, res) {
 		}
 
 		req.flash('profileFlash', {
-			text: (req.body.old.email == req.user.email ?
+			text: (req.user._id == userId ?
 				'Your profile has been updated.' :
-				req.body.new.name + '\'s profile has been updated.'),
+				(req.body.new.name || req.body.old.name) + '\'s profile has been updated.'),
 			class: 'success',
 		});
 		res.redirect('/profile');
@@ -524,8 +535,8 @@ router.modifyProfile = function (req, res) {
  * DELETE Requests
  */
 router.deleteUser = function (req, res) {
-	var email = req.body.email;
-	Request.find({ email: email }).remove(function (err) {
+	var userId = req.body.userId;
+	Request.find({ userId: userId }).remove(function (err) {
 		if (err) {
 			console.error(err);
 			req.flash('usersFlash', {
@@ -534,7 +545,7 @@ router.deleteUser = function (req, res) {
 			});
 			res.end(JSON.stringify({ redirect: '/users' }));
 		} else {
-			User.find({ email: email }).remove(function (err) {
+			User.find({ _id: userId }).remove(function (err) {
 				if (err) {
 					console.error(err);
 					req.flash('usersFlash', {

@@ -83,9 +83,9 @@ module.exports.getEndDate = function (request) {
 
 module.exports.getRequests = function (req, res, pending, cb) {
 	if (req.user) {
-		var matchEmail = {};
+		var matchUser = {};
 		if (req.user.access < Access.SUPERVISOR) {
-			matchEmail.email = req.user.email;
+			matchUser.userId = req.user._id;
 		}
 
 		var matchCountry = {};
@@ -95,14 +95,14 @@ module.exports.getRequests = function (req, res, pending, cb) {
 
 		Request.aggregate([
 			{
-				$match: matchEmail,
+				$match: matchUser,
 			},
 			{
 				// JOIN with the user data belonging to each request
 				$lookup: {
 					from: 'users',
-					localField: 'email',
-					foreignField: 'email',
+					localField: 'userId',
+					foreignField: '_id',
 					as: 'user',
 				},
 			},
@@ -189,33 +189,40 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 		html: html,
 	};
 
-	var mail = mailcomposer(data);
-
-	mail.build(function (buildError, message) {
-		if (buildError) {
-			console.log(buildError);
+	if (dropEmail) {
+		console.error('Email dropped. Email data:');
+		console.error(data);
+		if (callback) {
+			callback();
 		}
+	} else {
+		var mail = mailcomposer(data);
 
-		var dataToSend = {
-			to: sendTo,
-			message: message.toString('ascii'),
-		};
-
-		mailgun.messages().sendMime(dataToSend, function (sendError, body) {
-			if (sendError) {
-				console.log(sendError);
+		mail.build(function (buildError, message) {
+			if (buildError) {
+				console.log(buildError);
 			}
 
-			if (body) {
-				console.log('Email data:' + body);
-			}
+			var dataToSend = {
+				to: sendTo,
+				message: message.toString('ascii'),
+			};
 
-			if (callback) {
-				callback();
-			}
+			mailgun.messages().sendMime(dataToSend, function (sendError, body) {
+				if (sendError) {
+					console.log(sendError);
+				}
+
+				if (body) {
+					console.log('Email data:' + body);
+				}
+
+				if (callback) {
+					callback();
+				}
+			});
 		});
-	});
-
+	}
 };
 
 module.exports.sendSMS = function (sendTo, sendFrom, body, callback) {

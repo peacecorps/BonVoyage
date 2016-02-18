@@ -11,27 +11,29 @@ block content
 			.jumbotron
 				
 				//- Country Flag
-				img#countryFlag(src='/image/flags/' + user.countryCode + '.svg')
+				img#countryFlag(src='/image/flags/' + userToShow.countryCode + '.svg')
 				
 				//- Header name
-				h2#headerName= user.name
+				h2#headerName= userToShow.name
 				
 				//- Form Fields
 				form#profile
 				
 					include flash
 					
+					input.hidden#userId(value=userToShow._id)
+					
 					label(for='name') Name
-					input.form-control#name(value=(user.name ? user.name : ''), data-default=(user.name ? user.name : ''), placeholder='John Doe')
+					input.form-control#name(value=(userToShow.name ? userToShow.name : ''), data-default=(userToShow.name ? userToShow.name : ''), placeholder='John Doe')
 					
 					label(for='name') Email
-					input.form-control#email(value=(user.email ? user.email : ''), data-default=(user.email ? user.email : ''), placeholder='johndoe@peacecorps.gov')
+					input.form-control#email(value=(userToShow.email ? userToShow.email : ''), data-default=(userToShow.email ? userToShow.email : ''), placeholder='johndoe@peacecorps.gov')
 					
 					label(for='name') Phone Number
-					input.form-control#phone(value=(user.phone ? user.phone : ''), data-default=(user.phone ? user.phone : ''), placeholder='(123) 456 7890')
+					input.form-control#phone(value=(userToShow.phone ? userToShow.phone : ''), data-default=(userToShow.phone ? userToShow.phone : ''), placeholder='(123) 456 7890')
 					
 					label(for='name') Country
-					select.form-control#country(value=user.countryCode, data-default=user.countryCode)
+					select.form-control#country(value=userToShow.countryCode, data-default=userToShow.countryCode)
 					
 					input.btn.btn-success.disabled(type='submit', value='Update Profile')
 				

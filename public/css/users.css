@@ -8,6 +8,11 @@
   #htmlwrapper #users .text .light {
     color: #aaa; }
 
+#htmlwrapper #users .name {
+  cursor: pointer; }
+  #htmlwrapper #users .name:hover {
+    text-decoration: underline; }
+
 #htmlwrapper #users .actions button {
   width: 100%; }
 

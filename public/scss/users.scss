@@ -12,6 +12,12 @@
 				color: #aaa;
 			}
 		}
+		.name {
+			cursor: pointer;
+			&:hover {
+				text-decoration: underline;
+			}
+		}
 		.actions {
 			button {
 				width: 100%;

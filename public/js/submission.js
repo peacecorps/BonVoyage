@@ -189,7 +189,7 @@ function submissionDataExists() {
 $(function() {
     $select = $('.select-country').selectize();
     $select_requestee = $('.selectRequestee').selectize({
-        valueField: 'email',
+        valueField: '_id',
         labelField: 'name',
         searchField: ['name'],
         sortField: 'name'
@@ -201,20 +201,19 @@ $(function() {
             method: "GET",
             url: "/api/users?maxAccess=VOLUNTEER",
             dataType: "json",
-            success: function(json, status, request) {
+            success: function(json) {
                 console.log(json);
                 $select_requestee[0].selectize.addOption(json);
                 $select_requestee[0].selectize.refreshOptions(false);
                 if(submissionDataExists()) {
                     // A failure just occurred during submission: we need to replace the previously submitted data
-                    // Set the email, if they are a supervisor
-                    if (isSubmitAsOtherUserShowing() && submissionData.email != undefined) {
-                        $select_requestee[0].selectize.setValue(submissionData.email);
+                    if (isSubmitAsOtherUserShowing() && submissionData.email !== undefined) {
+                        $select_requestee[0].selectize.setValue(submissionData._id);
                     }
                 }
             }
-        })
-    };
+        });
+    }
 
     // Load the JSON file of the countries
     $.ajax({
@@ -266,22 +265,20 @@ $(function() {
         for (var i = 1; i <= count; i++) {
             legs.push(getLeg(i));
         }
-        var email = undefined;
+        var userId;
         if (isSubmitAsOtherUserShowing()) {
-            email = $select_requestee[0].selectize.getValue();
+            userId = $select_requestee[0].selectize.getValue();
         }
         $.ajax({
             method: "POST",
             contentType: "application/x-www-form-urlencoded",
             data: {
-                email: email,
+                userId: userId,
                 legs: legs
             },
             dataType: 'json',
             url: '/api/requests',
-            success: function(response, textStatus, jqXHR) {
-                // if (err) console.log(err);
-                // console.log(response);
+            success: function(response) {
                 if (response && response.redirect) {
                     // response.redirect contains the string URL to redirect to
                     window.location.href = response.redirect;

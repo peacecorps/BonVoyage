@@ -65,7 +65,7 @@ function generateLeg() {
 	};
 }
 
-function generateRequest(email) {
+function generateRequest(user) {
 	var isPending = randBool(0.3);
 	var isApproved = (isPending ? undefined : randBool(0.7));
 	var legs = [];
@@ -74,7 +74,7 @@ function generateRequest(email) {
 	}
 
 	return new Request({
-		email: email,
+		userId: user._id,
 		status: {
 			isPending: isPending,
 			isApproved: isApproved,
@@ -117,9 +117,7 @@ User.find({ access: Access.VOLUNTEER }, function (err, users) {
 	var requests = [];
 	for (var i = 0; i < REQUESTS_TO_GENERATE; i++) {
 		var randUser = users[randIndex(users.length)];
-		var randomEmail = randUser.email;
-		console.log(randomEmail);
-		requests.push(generateRequest(randomEmail));
+		requests.push(generateRequest(randUser));
 	}
 
 	console.log(sprintf('About to save %d requests.', requests.length));

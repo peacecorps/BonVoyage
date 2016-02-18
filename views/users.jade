@@ -17,7 +17,8 @@ block content
             .row
               .text
                 .col-xs-12.col-sm-3.col-md-4
-                  span.name= userToShow.name 
+                  span.id(style="display: none;")= userToShow._id
+                  span.name(href='/profile/' + userToShow._id)= userToShow.name
                   span.light.hidden-sm.hidden-md  --- 
                   span.light.hidden-sm.hidden-md.email= userToShow.email
               .actions
@@ -57,4 +58,3 @@ block content
 
 block scripts
   script(src='/js/users.js')
-
