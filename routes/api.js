@@ -496,10 +496,33 @@ router.modifyAccess = function (req, res) {
 	}
 };
 
+router.modifyProfile = function (req, res) {
+	// Update the user object
+	console.log(req.body);
+	User.update({ email: req.body.old.email }, req.body.new, function (err) {
+		if (err) {
+			req.flash('profileFlash', {
+				text: 'An occurred while attempting to update ' +
+					(req.body.old.email == req.user.email ? 'your' :
+						req.body.new.name + '\'s') +
+					' profile.',
+			});
+			console.error(err);
+		}
+
+		req.flash('profileFlash', {
+			text: (req.body.old.email == req.user.email ?
+				'Your profile has been updated.' :
+				req.body.new.name + '\'s profile has been updated.'),
+			class: 'success',
+		});
+		res.redirect('/profile');
+	});
+};
+
 /*
  * DELETE Requests
  */
-
 router.deleteUser = function (req, res) {
 	var email = req.body.email;
 	Request.find({ email: email }).remove(function (err) {

@@ -1,0 +1,20 @@
+#htmlwrapper #countryFlag {
+  margin: auto;
+  width: 300px;
+  height: 300px;
+  border-radius: 150px;
+  display: block;
+  border: 2px solid black; }
+
+#htmlwrapper #headerName {
+  font-weight: 600;
+  margin-bottom: 30px; }
+
+#htmlwrapper form {
+  max-width: 300px;
+  margin: 0 auto; }
+  #htmlwrapper form input {
+    margin-bottom: 10px;
+    width: 100%; }
+  #htmlwrapper form .btn {
+    margin-top: 10px; }

@@ -141,7 +141,7 @@ module.exports.getUsers = function (options, cb) {
 		q.access = { $lte: options.maxAccess };
 	}
 
-	User.find(q, 'access name email phone _id', function (err, users) {
+	User.find(q, 'access name email phone _id countryCode', function (err, users) {
 		if (err) {
 			cb(err);
 		} else {

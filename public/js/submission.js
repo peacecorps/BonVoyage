@@ -31,7 +31,7 @@ function addLeg(leg) {
         <select class='form-control select-country' placeholder='United States'></select> \
         <div class='warnings'></div> \
         <label class='info'>Travel contact</label> \
-        <input class='form-control contact' type='text' placeholder='+1 123-456-7890  and/or  johndoe@peacecorps.org' value='" + (leg && leg.contact ? leg.contact : '') + "'></input> \
+        <input class='form-control contact' type='text' placeholder='+1 123-456-7890  and/or  johndoe@peacecorps.gov' value='" + (leg && leg.contact ? leg.contact : '') + "'></input> \
         <label class='info'>Hotel/Hostel Information</label> \
         <input class='form-control hotel' type='text' placeholder='San Francisco Hotel: +1 123-456-7890' value='" + (leg && leg.hotel ? leg.hotel : '') + "'></input> \
         <label class='info'>Travel companions</label> \
@@ -47,7 +47,7 @@ function addLeg(leg) {
 
 function handleTripLegChanges() {
     // Update trip leg numbers to reflect deleted legs
-    c = 1
+    c = 1;
     $('.leg').each(function(_, leg) {
         $(leg).removeClass().addClass('leg shadow-box leg' + c);
         $(leg).find('h2').text("Trip Leg #" + c);

@@ -1,0 +1,40 @@
+extends layout
+
+block styles
+	link(href='/css/selectize.css', rel='stylesheet')
+	link(href='/css/selectize.bootstrap3.css', rel='stylesheet')
+	link(rel='stylesheet', href='/css/profile.css')
+
+block content
+	.row
+		.col-xs-12.col-md-offset-1.col-md-10
+			.jumbotron
+				
+				//- Country Flag
+				img#countryFlag(src='/image/flags/' + user.countryCode + '.svg')
+				
+				//- Header name
+				h2#headerName= user.name
+				
+				//- Form Fields
+				form#profile
+				
+					include flash
+					
+					label(for='name') Name
+					input.form-control#name(value=(user.name ? user.name : ''), data-default=(user.name ? user.name : ''), placeholder='John Doe')
+					
+					label(for='name') Email
+					input.form-control#email(value=(user.email ? user.email : ''), data-default=(user.email ? user.email : ''), placeholder='johndoe@peacecorps.gov')
+					
+					label(for='name') Phone Number
+					input.form-control#phone(value=(user.phone ? user.phone : ''), data-default=(user.phone ? user.phone : ''), placeholder='(123) 456 7890')
+					
+					label(for='name') Country
+					select.form-control#country(value=user.countryCode, data-default=user.countryCode)
+					
+					input.btn.btn-success.disabled(type='submit', value='Update Profile')
+				
+block scripts
+	script(src='/js/selectize.min.js')
+	script(src='/js/profile.js')

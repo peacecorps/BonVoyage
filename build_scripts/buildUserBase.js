@@ -18,18 +18,21 @@ var userbase = [
 		email: 'colink@umd.edu',
 		hash: 'colin',
 		access: 2,
+		countryCode: 'US',
 	},
 	{
 		name: 'Sean Bae',
 		email: 's@seanbae.net',
 		hash: 'sean',
 		access: 2,
+		countryCode: 'US',
 	},
 	{
 		name: 'Hiroshi Furuya',
 		email: 'tairabox@gmail.com',
 		hash: 'hiroshi',
 		access: 2,
+		countryCode: 'US',
 	},
 	{
 		name: 'Patrick Choquette',
@@ -40,7 +43,7 @@ var userbase = [
 	},
 	{
 		name: 'Jane Smith',
-		email: 'jane@peacecorps.gov',
+		email: 'jane@test.com',
 		hash: 'jane',
 		access: 1,
 		countryCode: 'BW',

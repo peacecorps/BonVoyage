@@ -15,6 +15,7 @@ var session = require('express-session');
 var configDB = require('./config/database.js');
 var flash    = require('connect-flash');
 var Access = require('./config/access');
+var secrets = require('./config/secrets');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -30,7 +31,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(flash());
 
 // required for passport
-app.use(session({ secret: 'bonjour' })); // session secret
+app.use(session({ secret: secrets.sessionSecret }));
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
@@ -96,6 +97,8 @@ app.get('/dashboard/submit', isLoggedIn,
 app.get('/requests/:requestId', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
 app.get('/users', isLoggedIn, views.renderUsers);
+app.get('/profile', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), views.renderProfile);
 
 // API
 app.get('/api/requests', isLoggedIn,
@@ -112,6 +115,8 @@ app.post('/api/requests/:requestId/delete', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postDelete);
 app.post('/api/requests/:requestId/comments', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postComments);
+app.post('/profile', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.modifyProfile);
 
 app.post('/api/register', passport.authenticate('local-signup', {
 	successRedirect: '/dashboard',

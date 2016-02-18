@@ -212,4 +212,55 @@ router.renderUsers = function (req, res) {
 	}
 };
 
+router.renderProfile = function (req, res) {
+	var profileEmail = req.query.email;
+
+	if (profileEmail === undefined) {
+		profileEmail = req.user.email;
+	}
+
+	// Verify that the user has the right access to view this profile
+	if ((req.user.access == Access.VOLUNTEER &&
+		req.user.email == profileEmail) ||
+		(req.user.access > Access.VOLUNTEER)) {
+		helpers.getUsers({ user: { email: profileEmail } }, function (err, users) {
+			if (err) {
+				console.error(err);
+			} else {
+				if (users.length > 0) {
+					var user = users[0];
+					var navLinks = [
+						{ text: 'Dashboard', href: '/dashboard' },
+						{ text: 'Submit a Request', href: '/dashboard/submit' },
+					];
+					if (req.user.access > Access.VOLUNTEER) {
+						navLinks.push({ text: 'Users', href: '/users' });
+					}
+
+					res.render('profile.jade', {
+						title: 'Profile',
+						links: navLinks,
+						messages: req.flash('profileFlash'),
+						user: user,
+					});
+				} else {
+					req.flash('dashboardFlash', {
+						text: 'The profile for a user with the email \'' +
+							req.query.email +
+							'\' could not be found.',
+						class: 'danger',
+					});
+					res.redirect('/dashboard');
+				}
+			}
+		});
+	} else {
+		req.flash('dashboardFlash', {
+			text: 'You do not have access to view this profile.',
+			class: 'danger',
+		});
+		res.redirect('/dashboard');
+	}
+};
+
 module.exports = router;

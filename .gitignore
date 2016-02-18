@@ -48,4 +48,5 @@ npm-debug.log
 config/credentials.js
 # Placeholder, until renamed to credentials.js
 config/email.js 
-
+# Secrets
+config/secrets.js
