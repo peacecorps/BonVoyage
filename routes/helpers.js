@@ -179,7 +179,8 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 	template, map, callback) {
 
-	var html = jade.renderFile(path.join(__dirname, '../email', template + '.jade'), map);
+	var html = jade.renderFile(path.join(__dirname, '../email',
+		template + '.jade'), map);
 
 	var data = {
 		from: sendFrom,

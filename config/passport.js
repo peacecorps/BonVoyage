@@ -100,6 +100,7 @@ module.exports = function (passport) {
 						var subject = 'Peace Corps BonVoyage Registration Confirmation';
 						var map = {
 							name: req.body.name.split(' ')[0],
+							button: 'http://localhost:3000',
 						};
 
 						helpers.sendTemplateEmail(sendFrom, sendTo, subject,

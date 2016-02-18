@@ -239,6 +239,7 @@ router.postApprove = function (req, res) {
 		var subject = 'Peace Corps BonVoyage Request Approved';
 		var map = {
 			name: req.user.name.split(' ')[0],
+			button: 'http://localhost:3000',
 		};
 
 		helpers.sendTemplateEmail(sendFrom, sendTo, subject,
@@ -273,6 +274,7 @@ router.postDeny = function (req, res) {
 		var subject = 'Peace Corps BonVoyage Request Denied';
 		var map = {
 			name: req.user.name.split(' ')[0],
+			button: 'http://localhost:3000',
 		};
 
 		helpers.sendTemplateEmail(sendFrom, sendTo, subject,
@@ -362,14 +364,13 @@ router.reset = function (req, res) {
 				var sendFrom = 'Peace Corps <team@projectdelta.io>';
 				var sendTo = email;
 				var subject = 'Peace Corps BonVoyage Password Reset Request';
-				var text = 'Hi ' + user.name + ',\n\nWe have received a ' +
-					'request to reset your password. Please visit the ' +
-					'following URL to reset your password.\n\n' +
-					'http://localhost:3000/reset/' + token;
+				var map = {
+					name: user.name.split(' ')[0],
+					button: 'http://localhost:3000/reset/' + token,
+				};
 
-				// send email
-				helpers.sendEmail(sendFrom, sendTo, subject, text,
-					console.log('email sent!'));
+				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+					'password', map);
 			});
 		}
 
