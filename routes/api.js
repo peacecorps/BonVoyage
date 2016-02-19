@@ -234,7 +234,7 @@ router.postApprove = function (req, res) {
 			return res.send(500, { error: err });
 		}
 
-		User.find({ _id: doc.userId }, function (err, user) {
+		User.findOne({ _id: doc.userId }, function (err, user) {
 			var sendFrom = 'Peace Corps <team@projectdelta.io>';
 			var sendTo = user.email;
 			var subject = 'Peace Corps BonVoyage Request Approved';
@@ -271,7 +271,7 @@ router.postDeny = function (req, res) {
 			return res.send(500, { error: err });
 		}
 
-		User.find({ _id: doc.userId }, function (err, user) {
+		User.findOne({ _id: doc.userId }, function (err, user) {
 			var sendFrom = 'Peace Corps <team@projectdelta.io>';
 			var sendTo = user.email;
 			var subject = 'Peace Corps BonVoyage Request Denied';
