@@ -107,7 +107,7 @@ router.getUsers = function (req, res) {
  */
 
 router.postRequests = function (req, res) {
-	var userId = req.user.email;
+	var userId = req.user._id;
 
 	// Supervisors will select a user to submit a request for on the form
 	if (req.user.access >= Access.SUPERVISOR) {
