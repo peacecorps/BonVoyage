@@ -88,6 +88,7 @@ module.exports = function (passport) {
 					newUser.name = req.body.name;
 					newUser.phone = req.body.phone;
 					newUser.access = Access.VOLUNTEER;
+					newUser.countryCode = 'US';
 
 					// save the user
 					newUser.save(function (err) {
