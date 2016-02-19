@@ -80,7 +80,7 @@ module.exports = function (passport) {
 
 					// set the user's local credentials
 
-					newUser.email    = email;
+					newUser.email = email;
 
 					// This password will be hashed, and in the process
 					// overwrite the plain text password we just stored into newUser.hash
