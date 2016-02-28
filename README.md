@@ -26,6 +26,8 @@ Project Delta: [projectdelta.io](https://projectdelta.io/)
 - Hiroshi Furuya
 - Sean Bae
 
+# Tech Stack Overview
+This project is built on top of [Node.JS](https://nodejs.org/) and uses the [Express.JS](http://expressjs.com/) web application framework. The leave request data is stored in a NoSQL database, [MongoDB](https://www.mongodb.org), and we use [Mongoose](http://mongoosejs.com/) to manage our database schemas. We use [Jade](http://jade-lang.com/) as an HTML pre-processor and [SASS](http://jade-lang.com/) as a CSS pre-processor. [Gulp](http://gulpjs.com/) automates the process of linting and pre-processing. Our service sends emails via [Mailgun](http://www.mailgun.com/) and SMS messages via [Twilio](https://www.twilio.com/). The website is hosted on [Heroku](https://www.heroku.com).
 
 # Set up
 Below is a tutorial on how to set up this web site to run locally.
