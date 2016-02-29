@@ -1,5 +1,9 @@
 /* global FastClick */
 /* global document */
+/* global window */
+/* global format_dateonly */
+/* global setTimeout */
+/* global DateOnly */
 
 $(function () {
 	'use strict';
@@ -82,13 +86,13 @@ $(function () {
 			},
 			{
 				data: 'status',
-				render: function (data, type, row) {
+				render: function (data) {
 					return (data.isPending ? 'Pending' : (data.isApproved ? 'Approved' : 'Denied'));
 				},
 			},
 			{
 				data: 'legs',
-				render: function (data, type, row) {
+				render: function (data) {
 					var countries = '';
 					var separator = '';
 					for (var i = 0; i < data.length; i++) {
@@ -103,13 +107,13 @@ $(function () {
 				visible: false,
 			},
 					],
-		rowCallback: function (row, data, index) {
+		rowCallback: function (row, data) {
 
 			// Add Bootstrap coloration
-			if (data.status.isPending == true) {
+			if (data.status.isPending === true) {
 				$(row).addClass('warning');
 			} else {
-				if (data.status.isApproved == true) {
+				if (data.status.isApproved === true) {
 					$(row).addClass('success');
 				} else {
 					$(row).addClass('danger');
@@ -118,22 +122,19 @@ $(function () {
 
 			// Add click handler
 			(function (data) {
-				$(row).click(function (event) {
+				$(row).click(function () {
 					// Pass the search query and filter options on to the approval page
 					// so that the next/prev buttons can be set
 					// var query_data = {
 					// 	q: $('#searchBar input[type=text]').val(),
 					// 	filters: searchOptions
 					// }
-					window.location.href = '/requests/' + data._id; //+ "?" + $.param(query_data);
+					//+ "?" + $.param(query_data);
+					window.location.href = '/requests/' + data._id;
 				});
 			})(data);
 		},
 	});
-
-	function updateSearch() {
-		console.log(searchOptions);
-	}
 
 	$('.dropdown-menu a').on('click', function (event) {
 		var $target = $(event.currentTarget),
@@ -145,7 +146,9 @@ $(function () {
 			var type = split_val[0];
 			var value = split_val[1];
 			searchOptions[type][value] = !searchOptions[type][value];
-			setTimeout(function () { $inp.prop('checked', searchOptions[type][value]);}, 0);
+			setTimeout(function () {
+				$inp.prop('checked', searchOptions[type][value]);
+			}, 0);
 		}
 
 		$(event.target).blur();
@@ -158,7 +161,7 @@ $(function () {
 
 	/* Custom filtering function which will search data in column four between two values */
 	$.fn.dataTable.ext.search.push(
-		function (settings, data, dataIndex) {
+		function (settings, data) {
 			var approval_status = data[4];
 
 			if (

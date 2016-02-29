@@ -1,33 +1,38 @@
+@import 'datatables_custom';
 
 #htmlwrapper {
-	#users {
-		.panel-heading {
-			font-weight: 600;
-			font-size: 16px;
-		}
-		.text {
-			font-size: 14px;
-			line-height: 43px;
-			.light {
-				color: #aaa;
-			}
-		}
-		.name {
-			cursor: pointer;
-			&:hover {
-				text-decoration: underline;
-			}
-		}
-		.actions {
-			button {
-				width: 100%;
-			}
-			.btn-group {
-				width: 100%;
-				button {
-					width: 50%;
-				}
-			}
-		}
-	}
+
 }
+//
+// #htmlwrapper {
+// 	#users {
+// 		.panel-heading {
+// 			font-weight: 600;
+// 			font-size: 16px;
+// 		}
+// 		.text {
+// 			font-size: 14px;
+// 			line-height: 43px;
+// 			.light {
+// 				color: #aaa;
+// 			}
+// 		}
+// 		.name {
+// 			cursor: pointer;
+// 			&:hover {
+// 				text-decoration: underline;
+// 			}
+// 		}
+// 		.actions {
+// 			button {
+// 				width: 100%;
+// 			}
+// 			.btn-group {
+// 				width: 100%;
+// 				button {
+// 					width: 50%;
+// 				}
+// 			}
+// 		}
+// 	}
+// }

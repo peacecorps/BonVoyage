@@ -7,6 +7,10 @@ var Access = require('../config/access');
 var DateOnly = require('dateonly');
 var jade = require('jade');
 var path = require('path');
+var fs = require('fs');
+var countryFilePath = 'public/data/countryList.json';
+var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
+var countriesDictionary = JSON.parse(countryListFile);
 
 // Attempt to load credentials for email and SMS
 var dropEmail = false;
@@ -141,10 +145,16 @@ module.exports.getUsers = function (options, cb) {
 		q.access = { $lte: options.maxAccess };
 	}
 
-	User.find(q, 'access name email phone _id countryCode', function (err, users) {
+	// Note: using lean() so that users is a JS obj, instead of a Mongoose obj
+	User.find(q, 'access name email phone _id countryCode').lean().exec(
+		function (err, users) {
 		if (err) {
 			cb(err);
 		} else {
+			for (var i = 0; i < users.length; i++) {
+				users[i].country = countriesDictionary[users[i].countryCode];
+			}
+
 			cb(null, users);
 		}
 	});

@@ -1,7 +1,8 @@
 extends layout
 
 block styles
-  link(rel='stylesheet', href='/css/users.css')
+    link(rel='stylesheet', href='/css/datatables.css')
+    link(rel='stylesheet', href='/css/users.css')
 
 block content
   .row
@@ -12,49 +13,89 @@ block content
 
         include flash
 
-        mixin useritem(userToShow)
-          li.list-group-item&attributes({ 'data-access': userToShow.access })
-            .row
-              .text
-                .col-xs-12.col-sm-3.col-md-4
-                  span.id(style="display: none;")= userToShow._id
-                  span.name(href='/profile/' + userToShow._id)= userToShow.name
-                  span.light.hidden-sm.hidden-md  --- 
-                  span.light.hidden-sm.hidden-md.email= userToShow.email
-              .actions
-                .col-xs-8.col-sm-6.col-md-5
-                  .btn-group
-                    button.promote.btn.btn-info(class=(userToShow.access == 2 || userToShow.access >= user.access ? 'disabled' : ''))
-                        span.glyphicon.glyphicon-arrow-up(aria-hidden='true')
-                        span  PROMOTE
-                    button.demote.btn.btn-primary(class=(userToShow.access == 0 || (user.access != 2 && userToShow.access >= user.access) ? 'disabled' : ''))
-                        span.glyphicon.glyphicon-arrow-down(aria-hidden='true')
-                        span  DEMOTE
-                .col-xs-4.col-sm-3.col-md-3
-                  button.btn.btn-danger.delete
-                    span.glyphicon.glyphicon-remove(aria-hidden='true')
-                    span  DELETE
+        .row#searchBar
+          .col-xs-12.col-sm-8.col-sm-offset-2.col-md-6.col-md-offset-3
+            input.form-control(type='text', placeholder='Search...')
+            //- .input-group
+            //-   .input-group-btn
+                //- button.btn.btn-default.dropdown-toggle.btn-override(type='button', data-toggle='dropdown') Filter 
+                //-   span.caret
+                //- ul.dropdown-menu
+                //-   li.dropdown-header Approval Status
+                //-   li
+                //-     a.small(href='#', data-value='show.approved', tabindex='-1')
+                //-       input(type='checkbox' checked)
+                //-       |  Approved
+                //-   li
+                //-     a.small(href='#', data-value='show.denied', tabindex='-1')
+                //-       input(type='checkbox' checked)
+                //-       |  Denied
+                //-   li
+                //-     a.small(href='#', data-value='show.pending', tabindex='-1')
+                //-       input(type='checkbox' checked)
+                //-       |  Pending
+                //-   li.divider(role='separator')
+                //-   li.dropdown-header Limit Search To...
+                //-   li
+                //-     a.small(href='#', data-value='limit.on_leave', tabindex='-1')
+                //-       input(type='checkbox')
+                //-       |  On-leave
+                
 
-        #users
-          //- Admins will not show unless the user is an admin
-          if admins.length > 0
-            .panel.panel-default
-              .panel-heading Administrators
-              ul.list-group
-                for user in admins
-                  +useritem(user)
+        #usersTable
+            table.users-table.table.table-striped.table-hover.table-bordered
+              thead
+                tr
+                  th Name
+                  th Email
+                  th Country
+                  th Access
+              tbody
 
-          .panel.panel-default
-            .panel-heading Supervisors
-            ul.list-group
-              for user in supervisors
-                +useritem(user)
-
-          .panel.panel-default
-            .panel-heading Volunteers
-            ul.list-group
-              for user in volunteers
-                +useritem(user)
+        //- mixin useritem(userToShow)
+        //-   li.list-group-item&attributes({ 'data-access': userToShow.access })
+        //-     .row
+        //-       .text
+        //-         .col-xs-12.col-sm-3.col-md-4
+        //-           span.id(style="display: none;")= userToShow._id
+        //-           span.name(href='/profile/' + userToShow._id)= userToShow.name
+        //-           span.light.hidden-sm.hidden-md  --- 
+        //-           span.light.hidden-sm.hidden-md.email= userToShow.email
+        //-       .actions
+        //-         .col-xs-8.col-sm-6.col-md-5
+        //-           .btn-group
+        //-             button.promote.btn.btn-info(class=(userToShow.access == 2 || userToShow.access >= user.access ? 'disabled' : ''))
+        //-                 span.glyphicon.glyphicon-arrow-up(aria-hidden='true')
+        //-                 span  PROMOTE
+        //-             button.demote.btn.btn-primary(class=(userToShow.access == 0 || (user.access != 2 && userToShow.access >= user.access) ? 'disabled' : ''))
+        //-                 span.glyphicon.glyphicon-arrow-down(aria-hidden='true')
+        //-                 span  DEMOTE
+        //-         .col-xs-4.col-sm-3.col-md-3
+        //-           button.btn.btn-danger.delete
+        //-             span.glyphicon.glyphicon-remove(aria-hidden='true')
+        //-             span  DELETE
+        //- 
+        //- #users
+        //-   //- Admins will not show unless the user is an admin
+        //-   if admins.length > 0
+        //-     .panel.panel-default
+        //-       .panel-heading Administrators
+        //-       ul.list-group
+        //-         for user in admins
+        //-           +useritem(user)
+        //- 
+        //-   .panel.panel-default
+        //-     .panel-heading Supervisors
+        //-     ul.list-group
+        //-       for user in supervisors
+        //-         +useritem(user)
+        //- 
+        //-   .panel.panel-default
+        //-     .panel-heading Volunteers
+        //-     ul.list-group
+        //-       for user in volunteers
+        //-         +useritem(user)
 
 block scripts
-  script(src='/js/users.js')
+    script(src='/js/datatables.js')
+    script(src='/js/users.js')

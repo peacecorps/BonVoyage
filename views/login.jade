@@ -1,14 +1,13 @@
 extends layout
 
 block styles
-  // Login page style
-  link(href='/css/login.css', rel='stylesheet')
+// Login page style
+link(href='/css/login.css', rel='stylesheet')
 
 block content
   .login-container
     form.form-signin(action='/api/login', method='post')
-      h2.form-signin-heading
-        p Login
+      h2.form-signin-heading Login
 
       include flash
 
@@ -17,11 +16,29 @@ block content
       label.sr-only(for='inputPassword') Password
       input#inputPassword.form-control(type='password', placeholder='Password', required='', name = 'password', value=submission.password)
       //- .checkbox
-      //-   label
-      //-     input(type='checkbox', value='remember-me')
-      //-     p#remember Remember me
+      //-	 label
+      //-		 input(type='checkbox', value='remember-me')
+      //-		 p#remember Remember me
       button#submitInfo.submit-btn.btn.btn-lg.btn-default.btn-block(type='submit') Sign in
       a(href = '/reset')
         p#forgot-text Forgot your password?
 
+    if env == 'dev' 
+      .wrapper(style='margin:auto;margin-top:40px;max-width:300px;')
+        h2 Development Quick Logins
+          
+        form(action='/api/login', method='post', style='margin-top:10px;')
 
+          input.hidden(type='email', name = 'email', value='john@test.com')
+          input.hidden(type='password', name = 'password', value='john')
+          button.btn.btn-lg.btn-default.btn-block(type='submit') Volunteer Sign in
+        form(action='/api/login', method='post', style='margin-top:10px;')
+
+          input.hidden(type='email', name = 'email', value='pchoquette@peacecorps.gov')
+          input.hidden(type='password', name = 'password', value='patrick')
+          button.btn.btn-lg.btn-default.btn-block(type='submit') Supervisor Sign in
+        form(action='/api/login', method='post', style='margin-top:10px;')
+
+          input.hidden(type='email', name = 'email', value='colink@umd.edu')
+          input.hidden(type='password', name = 'password', value='colin')
+          button.btn.btn-lg.btn-default.btn-block(type='submit') Admin Sign in

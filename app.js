@@ -39,6 +39,7 @@ app.use(flash()); // use connect-flash for flash messages stored in session
 // Pass the access level to our Jade templates
 app.use(function (req, res, next) {
 	res.locals.user = req.user;
+	res.locals.env = process.env.NODE_ENV || 'dev';
 	next();
 });
 
