@@ -14,6 +14,7 @@ var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
 var countriesDictionary = JSON.parse(countryListFile);
 var helpers = require('./helpers');
 var DateOnly = require('dateonly');
+var Converter = require('csvtojson').Converter;
 
 /*
  * Handle Parameters
@@ -529,6 +530,72 @@ router.modifyProfile = function (req, res) {
 		});
 		res.redirect('/profile');
 	});
+};
+
+router.postUsers = function (req, res) {
+	// TODO
+};
+
+router.validateUsers = function (req, res) {
+	var file = req.file;
+	if (file !== undefined && file.path) {
+		console.log(file);
+		var converter = new Converter({
+			noheader: true,
+		});
+		converter.fromFile(file.path, function (err, json) {
+			if (err) {
+				throw err;
+			} else {
+				console.log(json);
+
+				// Now that we have converted the CSV to JSON, we need to validate it
+				User.find({}, 'email', function (err, results) {
+					if (err) { throw err; }
+
+					var emails = results.map(function (elem) {return elem.email;});
+
+					console.log(emails);
+					var newUsers = [];
+					for (var i = 0; i < json.length; i++) {
+						var user = json[i];
+						var isNameValid = user.field1 && user.field1 !== '';
+						var isEmailValid = user.field2 && user.field2 !== '' &&
+							emails.indexOf(user.field2) == -1;
+						var isCountryValid = user.field3 && user.field3 !== '';
+						newUsers.push({
+							name: {
+								value: user.field1,
+								valid: isNameValid,
+							},
+							email: {
+								value: user.field2,
+								valid: isEmailValid,
+							},
+							access: {
+								value: 0,
+								valid: true,
+							},
+							country: {
+								value: 'TBD',
+								valid: true,
+							},
+							countryCode: {
+								value: user.field3,
+								valid: isCountryValid,
+							},
+							valid: isNameValid && isEmailValid && isCountryValid,
+						});
+						emails.push(user.field2);
+					}
+
+					res.end(JSON.stringify(newUsers));
+				});
+			}
+		});
+	} else {
+		res.end(JSON.stringify(null));
+	}
 };
 
 /*

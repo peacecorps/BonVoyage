@@ -88,6 +88,7 @@ router.renderSubform = function (req, res) {
 	];
 	if (req.user.access >= Access.SUPERVISOR) {
 		links.push({ text: 'Users', href: '/users' });
+		links.push({ text: 'Add Users', href: '/users/add' });
 	}
 
 	res.render('submissionForm.jade', {
@@ -138,6 +139,7 @@ router.renderApproval = function (req, res) {
 	];
 	if (req.user.access >= Access.SUPERVISOR) {
 		links.push({ text: 'Users', href: '/users' });
+		links.push({ text: 'Add Users', href: '/users/add' });
 	}
 
 	res.render('approval.jade', {
@@ -157,6 +159,7 @@ router.renderDashboard = function (req, res) {
 	];
 	if (req.user.access >= Access.SUPERVISOR) {
 		links.push({ text: 'Users', href: '/users' });
+		links.push({ text: 'Add Users', href: '/users/add' });
 	}
 
 	res.render('dashboard.jade', {
@@ -200,6 +203,7 @@ router.renderUsers = function (req, res) {
 					{ text: 'Dashboard', href: '/dashboard' },
 					{ text: 'Submit a Request', href: '/dashboard/submit' },
 					{ text: 'Users', href: '/users', active: true },
+					{ text: 'Add Users', href: '/users/add' },
 				],
 				messages: req.flash('usersFlash'),
 				admins: admins,
@@ -208,6 +212,7 @@ router.renderUsers = function (req, res) {
 			});
 		});
 	} else {
+		req.flash({ text: 'You do not have access to this page.', class: 'danger' });
 		res.redirect('/dashboard');
 	}
 };
@@ -235,6 +240,7 @@ router.renderProfile = function (req, res) {
 					];
 					if (req.user.access > Access.VOLUNTEER) {
 						navLinks.push({ text: 'Users', href: '/users' });
+						navLinks.push({ text: 'Add Users', href: '/users/add' });
 					}
 
 					res.render('profile.jade', {
@@ -257,6 +263,26 @@ router.renderProfile = function (req, res) {
 			text: 'You do not have access to view this profile.',
 			class: 'danger',
 		});
+		res.redirect('/dashboard');
+	}
+};
+
+router.renderAddUsers = function (req, res) {
+	if (req.user.access >= Access.SUPERVISOR) {
+		var links = [
+			{ text: 'Dashboard', href: '/dashboard' },
+			{ text: 'Submit a Request', href: '/dashboard/submit' },
+			{ text: 'Users', href: '/users' },
+			{ text: 'Add Users', href: '/users/add', active: true },
+		];
+
+		res.render('addUsers.jade', {
+			title: 'Add Users',
+			links: links,
+			messages: req.flash('addUsersFlash'),
+		});
+	} else {
+		req.flash({ text: 'You do not have access to this page.', class: 'danger' });
 		res.redirect('/dashboard');
 	}
 };

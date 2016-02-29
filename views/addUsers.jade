@@ -1,0 +1,33 @@
+extends layout
+
+block styles
+    link(rel='stylesheet', href='/css/datatables.css')
+    link(rel='stylesheet', href='/css/addUsers.css')
+
+block content
+  .row
+    .col-xs-12.col-md-offset-1.col-md-10
+
+      .jumbotron
+        h2.dash_text= title
+
+        include flash
+
+        button#userUploader.btn.btn-lg.btn-default.btn-block Upload (.csv)
+
+        #addUsersTable
+            table.users-table.table.table-striped.table-hover.table-bordered
+              thead
+                tr
+                  th Name
+                  th Email
+                  th Country Code
+                  th Access
+              tbody
+              
+        button#createUsers.btn.btn-lg.btn-success.btn-block.disabled Create New Users
+
+block scripts
+    script(src='/js/datatables.js')
+    script(src='/js/SimpleAjaxUploader.min.js')
+    script(src='/js/addUsers.js')

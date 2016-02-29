@@ -16,6 +16,21 @@ var configDB = require('./config/database.js');
 var flash    = require('connect-flash');
 var Access = require('./config/access');
 var secrets = require('./config/secrets');
+var multer = require('multer');
+var upload = multer({
+	dest: 'uploads/users/',
+	limits: {
+		// 1MB is default file size already
+	},
+	fileFilter: function (req, filename, cb) {
+		if (filename && filename.originalname &&
+			filename.originalname.match(/\.csv$/g) !== null) {
+			cb(null, true);
+		} else {
+			cb(null, false);
+		}
+	},
+});
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -98,6 +113,8 @@ app.get('/dashboard/submit', isLoggedIn,
 app.get('/requests/:requestId', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
 app.get('/users', isLoggedIn, views.renderUsers);
+app.get('/users/add', isLoggedIn,
+needsAccess(Access.SUPERVISOR), views.renderAddUsers);
 app.get('/profile/:userId?', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderProfile);
 
@@ -136,6 +153,10 @@ app.post('/api/requests', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postRequests);
 app.post('/api/access', isLoggedIn,
 	needsAccess(Access.SUPERVISOR), api.modifyAccess);
+app.post('/api/users', isLoggedIn,
+	needsAccess(Access.SUPERVISOR), api.postUsers);
+app.post('/api/users/validate', isLoggedIn,
+	needsAccess(Access.SUPERVISOR), upload.single('users'), api.validateUsers);
 
 app.delete('/api/users', isLoggedIn,
 	needsAccess(Access.SUPERVISOR), api.deleteUser);

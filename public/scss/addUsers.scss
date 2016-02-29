@@ -1,0 +1,12 @@
+@import 'datatables_custom';
+
+#htmlwrapper {
+  #userUploader, #createUsers {
+    margin: auto;
+    max-width: 300px;
+    margin-bottom: 10px;
+  }
+  .invalid {
+    color: red;
+  }
+}

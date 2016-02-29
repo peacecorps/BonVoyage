@@ -47,6 +47,9 @@ npm-debug.log
 # Mailgun/Twilio credentials
 config/credentials.js
 # Placeholder, until renamed to credentials.js
-config/email.js 
+config/email.js
 # Secrets
 config/secrets.js
+
+# User Data Uploads
+uploads
