@@ -532,8 +532,102 @@ router.modifyProfile = function (req, res) {
 	});
 };
 
+function validateUsers(users, loggedInUser, cb) {
+	User.find({}, 'email', function (err, results) {
+		if (err) {
+			cb(err);
+		} else {
+			var emails = results.map(function (elem) {return elem.email;});
+
+			var newUsers = [];
+			for (var i = 0; i < users.length; i++) {
+				var user = users[i];
+				var isNameValid = user.name.value && user.name.value !== '';
+				var isEmailValid = user.email.value && user.email.value !== '' &&
+					emails.indexOf(user.email.value) == -1;
+				var countryValue = (user.countryCode.value &&
+					user.countryCode.value !== '' ? user.countryCode.value :
+					loggedInUser.country);
+				var isCountryValid = countryValue && countryValue !== '' &&
+					countriesDictionary[countryValue] !== undefined;
+				var accessValue = (user.access.value && user.access.value !== '' ?
+					user.access.value : Access.VOLUNTEER);
+				var isAccessValid = (accessValue >= Access.VOLUNTEER &&
+					accessValue <= Access.ADMIN && (accessValue < loggedInUser.access ||
+					loggedInUser.access === Access.ADMIN));
+				newUsers.push({
+					name: {
+						value: user.name.value,
+						valid: isNameValid,
+					},
+					email: {
+						value: user.email.value,
+						valid: isEmailValid,
+					},
+					country: {
+						value: (isCountryValid ? countriesDictionary[countryValue] : ''),
+						valid: isCountryValid,
+					},
+					countryCode: {
+						value: countryValue,
+						valid: isCountryValid,
+					},
+					access: {
+						value: accessValue,
+						valid: isAccessValid,
+					},
+					valid: isNameValid && isEmailValid && isCountryValid && isAccessValid,
+				});
+				emails.push(user.email.value);
+			}
+
+			cb(null, newUsers);
+		}
+	});
+}
+
 router.postUsers = function (req, res) {
-	// TODO
+	// Now that we have converted the CSV to JSON, we need to validate it
+	validateUsers(req.body, req.user, function (err, validatedUsers) {
+		if (err) { throw err; }
+
+		var allValid = validatedUsers.every(function (user) {
+			return user && user.valid;
+		});
+
+		if (allValid) {
+			// Add each of the users to the db
+			validatedUsers.map(function (user) {
+				var userData = {
+						name: user.name.value,
+						email: user.email.value,
+						access: user.access.value,
+						countryCode: user.countryCode.value,
+						hash: '',
+						phone: '',
+					};
+				console.log(userData);
+				var newUser = new User(userData);
+				console.log(newUser);
+				newUser.save(function (err) {
+						if (err) {throw err;}
+					});
+			});
+
+			req.flash('usersFlash', {
+				text: validatedUsers.length + ' user(s) have been added to the database.',
+				class: 'success',
+			});
+			res.end(JSON.stringify({ redirect: '/users' }));
+		} else {
+			req.flash('addUsersFlash', {
+				text: 'Some of the uploaded users are invalid. ' +
+					'Please fix the issues in the table below before creating any users.',
+				class: 'danger',
+			});
+			res.end(JSON.stringify({ redirect: '/users/add' }));
+		}
+	});
 };
 
 router.validateUsers = function (req, res) {
@@ -548,46 +642,19 @@ router.validateUsers = function (req, res) {
 				throw err;
 			} else {
 				console.log(json);
+				var formattedJSON = [];
+				for (var i = 0; i < json.length; i++) {
+					formattedJSON.push({
+						name: { value: json[i].field1 },
+						email: { value: json[i].field2 },
+						countryCode: { value: json[i].field3 },
+						access: { value: json[i].field4 },
+					});
+				}
 
 				// Now that we have converted the CSV to JSON, we need to validate it
-				User.find({}, 'email', function (err, results) {
+				validateUsers(formattedJSON, req.user, function (err, newUsers) {
 					if (err) { throw err; }
-
-					var emails = results.map(function (elem) {return elem.email;});
-
-					console.log(emails);
-					var newUsers = [];
-					for (var i = 0; i < json.length; i++) {
-						var user = json[i];
-						var isNameValid = user.field1 && user.field1 !== '';
-						var isEmailValid = user.field2 && user.field2 !== '' &&
-							emails.indexOf(user.field2) == -1;
-						var isCountryValid = user.field3 && user.field3 !== '';
-						newUsers.push({
-							name: {
-								value: user.field1,
-								valid: isNameValid,
-							},
-							email: {
-								value: user.field2,
-								valid: isEmailValid,
-							},
-							access: {
-								value: 0,
-								valid: true,
-							},
-							country: {
-								value: 'TBD',
-								valid: true,
-							},
-							countryCode: {
-								value: user.field3,
-								valid: isCountryValid,
-							},
-							valid: isNameValid && isEmailValid && isCountryValid,
-						});
-						emails.push(user.field2);
-					}
 
 					res.end(JSON.stringify(newUsers));
 				});

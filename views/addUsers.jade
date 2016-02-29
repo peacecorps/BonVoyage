@@ -13,7 +13,16 @@ block content
 
         include flash
 
-        button#userUploader.btn.btn-lg.btn-default.btn-block Upload (.csv)
+        //- button#userUploader.btn.btn-lg.btn-default.btn-block Upload (.csv)
+        #uploader
+          #icon
+            span#upload.glyphicon.glyphicon-cloud-upload
+            span#loading.hidden.glyphicon.glyphicon-refresh.glyphicon-refresh-animate
+            span#success.hidden.glyphicon.glyphicon-ok-circle
+            span#error.hidden.glyphicon.glyphicon-remove-circle
+          #blurb
+            p#title.larger Upload a file.
+            p#subtitle .csv files only, <1MB
 
         #addUsersTable
             table.users-table.table.table-striped.table-hover.table-bordered
@@ -23,8 +32,10 @@ block content
                   th Email
                   th Country Code
                   th Access
+                  th Valid
               tbody
-              
+        
+        button#clearTable.btn.btn-lg.btn-danger.btn-block.disabled Clear Table      
         button#createUsers.btn.btn-lg.btn-success.btn-block.disabled Create New Users
 
 block scripts

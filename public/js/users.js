@@ -36,12 +36,12 @@ $(function () {
 		columns: [
 			{
 				data: 'name',
-				// render: function (data) {
-				// 	return data
-				// },
 			},
 			{
 				data: 'email',
+			},
+			{
+				data: 'country',
 			},
 			{
 				data: 'access',
@@ -51,9 +51,6 @@ $(function () {
 					else if(data === 2) { return "Admin"; }
 					else { return "None"; }
 				},
-			},
-			{
-				data: 'country',
 			},
 			{
 				data: 'countryCode',

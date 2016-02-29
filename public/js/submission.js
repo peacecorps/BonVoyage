@@ -271,7 +271,7 @@ $(function() {
         }
         $.ajax({
             method: "POST",
-            contentType: "application/x-www-form-urlencoded",
+            contentType: "application/json",
             data: {
                 userId: userId,
                 legs: legs
