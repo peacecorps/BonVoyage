@@ -158,8 +158,7 @@ app.post('/api/users', isLoggedIn,
 app.post('/api/users/validate', isLoggedIn,
 	needsAccess(Access.SUPERVISOR), upload.single('users'), api.validateUsers);
 
-app.delete('/api/users', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.deleteUser);
+app.delete('/api/users', isLoggedIn, api.deleteUser);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

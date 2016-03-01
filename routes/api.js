@@ -670,33 +670,37 @@ router.validateUsers = function (req, res) {
  */
 router.deleteUser = function (req, res) {
 	var userId = req.body.userId;
-	Request.find({ userId: userId }).remove(function (err) {
-		if (err) {
-			console.error(err);
-			req.flash('usersFlash', {
-				text: 'An error has occurred while attempting to delete the user.',
-				class: 'danger',
-			});
-			res.end(JSON.stringify({ redirect: '/users' }));
-		} else {
-			User.find({ _id: userId }).remove(function (err) {
-				if (err) {
-					console.error(err);
-					req.flash('usersFlash', {
-						text: 'An error has occurred while attempting to delete the user.',
-						class: 'danger',
-					});
-				} else {
-					req.flash('usersFlash', {
-						text: 'The user has been deleted.',
-						class: 'success',
-					});
-				}
-
+	if (userId == req.user._id || req.user.access == Access.ADMIN) {
+		Request.find({ userId: userId }).remove(function (err) {
+			if (err) {
+				console.error(err);
+				req.flash('usersFlash', {
+					text: 'An error has occurred while attempting to delete the user.',
+					class: 'danger',
+				});
 				res.end(JSON.stringify({ redirect: '/users' }));
-			});
-		}
-	});
+			} else {
+				User.find({ _id: userId }).remove(function (err) {
+					if (err) {
+						console.error(err);
+						req.flash('usersFlash', {
+							text: 'An error has occurred while attempting to delete the user.',
+							class: 'danger',
+						});
+					} else {
+						req.flash('usersFlash', {
+							text: 'The user has been deleted.',
+							class: 'success',
+						});
+					}
+
+					res.end(JSON.stringify({ redirect: '/users' }));
+				});
+			}
+		});
+	} else {
+		res.status(401).send('Unauthorized');
+	}
 };
 
 module.exports = router;

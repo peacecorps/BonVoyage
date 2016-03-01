@@ -1,4 +1,5 @@
 /* globals window */
+/* globals confirm */
 
 $(function() {
     'use strict';
@@ -99,5 +100,33 @@ $(function() {
                 }
             });
         }
+    });
+
+    $('#deleteAccount').on('click', function() {
+      var id = $('#userId').val();
+      var loggedInUserId = $('#loggedInUserId').val();
+      var name = $('#headerName').text();
+      var text;
+      if(id === loggedInUserId) {
+        text = 'Are you sure you want to delete your own account?';
+      } else {
+        text = 'Are you sure that you want to delete ' + name + '\'s account?';
+      }
+      if(confirm(text)) {
+  			$.ajax({
+  				method: 'DELETE',
+          contentType: "application/x-www-form-urlencoded",
+  				data: {
+            userId: id,
+          },
+  				url: '/api/users',
+  				dataType: 'json',
+  				success: function(response) {
+  					if (response && response.redirect) {
+              window.location.href = response.redirect;
+  					}
+  				}
+  			});
+  		}
     });
 });

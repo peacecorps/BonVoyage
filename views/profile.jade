@@ -22,6 +22,7 @@ block content
 					include flash
 					
 					input.hidden#userId(value=userToShow._id)
+					input.hidden#loggedInUserId(value=user._id)
 					
 					label(for='name') Name
 					input.form-control#name(value=(userToShow.name ? userToShow.name : ''), data-default=(userToShow.name ? userToShow.name : ''), placeholder='John Doe')
@@ -35,7 +36,10 @@ block content
 					label(for='name') Country
 					select.form-control#country(value=userToShow.countryCode, data-default=userToShow.countryCode)
 					
-					input.btn.btn-success.disabled(type='submit', value='Update Profile')
+					button.btn.btn-success.disabled(type='submit') Update Profile
+
+					if user.access == 2 || '' + user._id == '' + userToShow._id
+						button#deleteAccount.btn.btn-danger Delete Account
 				
 block scripts
 	script(src='/js/selectize.min.js')

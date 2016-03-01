@@ -14,12 +14,13 @@
     form {
         max-width: 300px;
         margin: 0 auto;
-        input {
+        input, button {
             margin-bottom: 10px;
             width: 100%;
         }
         .btn {
             margin-top: 10px;
+            margin-bottom: 0px;
         }
     }
 }

@@ -13,8 +13,9 @@
 #htmlwrapper form {
   max-width: 300px;
   margin: 0 auto; }
-  #htmlwrapper form input {
+  #htmlwrapper form input, #htmlwrapper form button {
     margin-bottom: 10px;
     width: 100%; }
   #htmlwrapper form .btn {
-    margin-top: 10px; }
+    margin-top: 10px;
+    margin-bottom: 0px; }
