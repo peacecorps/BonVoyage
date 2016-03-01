@@ -10,50 +10,50 @@
     color: #B33;
   }
 
-#uploader {
-  border: 4px dotted #444;
-  max-width: 400px;
-  width: 100%;
-  height: 150px;
-  margin: auto;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  &.hover {
-    background-color: #ddd;
-  }
-  #icon {
-    text-align: center;
-    span {
-      font-size: 50px;
-      margin-top: 15px;
-      margin-bottom: 10px;
+  #uploader {
+    border: 4px dotted #444;
+    max-width: 400px;
+    width: 100%;
+    height: 150px;
+    margin: auto;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    &.hover {
+      background-color: #ddd;
     }
-    .glyphicon-refresh-animate {
-      -animation: spin 1.5s infinite linear;
-      -webkit-animation: spin2 1.5s infinite linear;
-    }
+    #icon {
+      text-align: center;
+      span {
+        font-size: 50px;
+        margin-top: 15px;
+        margin-bottom: 10px;
+      }
+      .glyphicon-refresh-animate {
+        -animation: spin 1.5s infinite linear;
+        -webkit-animation: spin2 1.5s infinite linear;
+      }
 
-    @-webkit-keyframes spin2 {
-      from { -webkit-transform: rotate(0deg);}
-      to { -webkit-transform: rotate(360deg);}
-    }
+      @-webkit-keyframes spin2 {
+        from { -webkit-transform: rotate(0deg);}
+        to { -webkit-transform: rotate(360deg);}
+      }
 
-    @keyframes spin {
-      from { transform: scale(1) rotate(0deg);}
-      to { transform: scale(1) rotate(360deg);}
+      @keyframes spin {
+        from { transform: scale(1) rotate(0deg);}
+        to { transform: scale(1) rotate(360deg);}
+      }
+    }
+    #blurb {
+      text-align: center;
+      font-size: 15px;
+      font-weight: 300;
+      #title {
+        font-size: 22px;
+        margin-bottom: 0;
+      }
+      #subtitle {
+        font-size: 14px;
+      }
     }
   }
-  #blurb {
-    text-align: center;
-    font-size: 15px;
-    font-weight: 300;
-    #title {
-      font-size: 22px;
-      margin-bottom: 0;
-    }
-    #subtitle {
-      font-size: 14px;
-    }
-  }
-}
 }

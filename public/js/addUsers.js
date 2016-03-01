@@ -12,6 +12,9 @@ $(function () {
 
 	// Configure the past and present DataTables indivudally
 	var table = $table().DataTable({
+		responsive: {
+        details: false,
+    },
 		data: [],
 		order: [[4, 'asc'],[0, 'asc']],
 		dom:
@@ -119,6 +122,7 @@ $(function () {
 
 				// Insert the response data into the table
 				table.rows.add(response).draw();
+				table.responsive.recalc();
 				// Optionally show the submission button
 				var allAreValid = response.every(function(user) { return user && user.valid; });
 				if(response.length > 0) {
@@ -179,5 +183,9 @@ $(function () {
 		}
 
 		event.preventDefault();
+	});
+
+	$(window).on('resize', function() {
+		table.responsive.recalc();
 	});
 });

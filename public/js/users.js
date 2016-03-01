@@ -15,6 +15,9 @@ $(function () {
 
 	// Configure the past and present DataTables indivudally
 	var table = $table().DataTable({
+		responsive: {
+        details: false,
+    },
 		ajax: {
 			url: '/api/users',
 			dataSrc: '',
@@ -70,6 +73,10 @@ $(function () {
 	$('#searchBar input[type=text]').keyup(function () {
 		var q = $(this).val();
 		table.search(q).draw();
+	});
+
+	$(window).on('resize', function() {
+		table.responsive.recalc();
 	});
 });
 
