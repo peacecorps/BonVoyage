@@ -12,7 +12,7 @@ $white-color-hover: #e7e7e7 + #101010;
 $success-color: #3c763d;
 $success-color-hover: #3c763d;
 $info-color: #31708F;
-$info-color-hover: #276685;
+$info-color-hover: $info-color - #222;
 $alert-color: #8A6D3B;
 $alert-color-hover: #6C4F1D;
 $danger-color: #a94442;

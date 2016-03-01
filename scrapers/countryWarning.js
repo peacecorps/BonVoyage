@@ -132,6 +132,9 @@ request('http://travel.state.gov/content/passports/en/alertswarnings.html',
 				startDate: rawData[COLUMNS.DATE],
 				link: link,
 				text: undefined,
+				colorClass: (rawData[COLUMNS.TYPE] === 'Alert' ? 'alert-danger' :
+					'alert-warning'),
+				source: 'US State Department',
 			};
 			getWarningText(warning, function () {
 				rowsToParse--;

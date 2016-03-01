@@ -1,7 +1,6 @@
 
 var count = 0;
 var arrCountries = [];
-var public_spreadsheet_url = 'https://docs.google.com/spreadsheets/d/1eQgsc94okiGh40EPfH6uwyq4a0aK45OwF5cFYkTlRlA/pubhtml';
 
 function insertAtIndex(i, id, data) {
     if(i === 1) {
@@ -66,15 +65,10 @@ function clearWarnings($warnings) {
 }
 
 function addWarning(warning, $warnings) {
-    var map = {
-        warning: "danger",
-        alert: "warning"
-    }
-
     $($warnings).append(
         $(
-            "<div class='warning alert alert-" + map[warning.type.toLowerCase()] + "' role='alert'> \
-                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>US State Department:</b> " + warning.textOverview + " <b><a href='" + warning.link + "'>More Information</a></b></span> \
+            "<div class='warning alert " + warning.colorClass + "' role='alert'> \
+                <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>" + warning.source + " - " + warning.type + ": </b> " + warning.textOverview + " <b><a href='" + warning.link + "'>More Information</a></b></span> \
             </div>"
         )
     );
@@ -104,7 +98,7 @@ function initialize(n) {
 
     // Add remove leg buttons
     $('.remove-leg').off('click');
-    $('.remove-leg').on('click', function(e) {
+    $('.remove-leg').on('click', function() {
         $(this).closest($('.leg')).remove();
         count--;
         handleTripLegChanges();
@@ -114,51 +108,19 @@ function initialize(n) {
     selectize.on('item_add', function(country_code, $item) {
         // Get a selector for the warnings div, specific to the leg where the country was selected
         $warnings = $($item).closest($('.leg')).find('.warnings');
+        // Clear all warnings
         clearWarnings($warnings);
 
-        (function(country_code, $warnings) {
-            Tabletop.init({
-                key: public_spreadsheet_url,
-                callback: function(data, tabletop) {
-                    for (var i = 0; i < data.length; i++) {
-                        var type = data[i]['Type'];
-                        var msg = data[i]['Message'];
-                        var link = data[i]['Link'];
-
-                        if (link) {
-                            link = " <b><a href='" + data[i]['Link'] + "'>More Information</a></b>"
-                        } else {
-                            link = "";
-                        }
-
-                        if (data[i]['Message'] || link) {
-                            $warnings.append($(
-                                "<div class='warning alert alert-" + (type ? type.toLowerCase() : 'info') + "' role='alert'> \
-                                    <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>Peace Corps:</b> " + (data[i]['Message'] ? data[i]['Message'] : 'No details provided.') + link + "</span> \
-                                </div>"
-                            ));
-                        }
-                    }
-
-                    getWarnings(function(warnings) {
-                        // Clear all warnings
-                        // Get the warnings for the selected country
-                        country_warnings = warnings[country_code];
-                        if (country_warnings) {
-                            for(var i = 0; i < country_warnings.length; i++) {
-                                // Add a warning for each country
-                                addWarning(country_warnings[i], $warnings);
-                            }
-                        }
-                    });
-                },
-                simpleSheet: true,
-                query: "country = " + country_code
-            });
-        })(country_code, $warnings);
-
-
-
+        getWarnings(function(warnings) {
+            // Get the warnings for the selected country
+            country_warnings = warnings[country_code];
+            if (country_warnings) {
+                for(var i = 0; i < country_warnings.length; i++) {
+                    // Add a warning for each country
+                    addWarning(country_warnings[i], $warnings);
+                }
+            }
+        });
     });
 }
 

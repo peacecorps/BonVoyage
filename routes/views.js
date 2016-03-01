@@ -7,6 +7,7 @@ var Access = require('../config/access');
 var fs = require('fs');
 var helpers = require('./helpers');
 var warnings;
+var pcWarnings;
 
 router.index = function (req, res) {
 	res.redirect('/login');
@@ -105,9 +106,25 @@ router.renderApproval = function (req, res) {
 		warnings = JSON.parse(fs.readFileSync('public/data/warnings.json', 'utf8'));
 	}
 
+	if (!pcWarnings) {
+		pcWarnings = JSON.parse(
+			fs.readFileSync('public/data/pcWarnings.json', 'utf8')
+		);
+	}
+
 	// Merge warnings to requests
 	for (var i = 0; i < req.request.legs.length; i++) {
-		req.request.legs[i].warnings = warnings[req.request.legs[i].countryCode];
+		var cc = req.request.legs[i].countryCode;
+		var allWarnings = [];
+		if (warnings[cc]) {
+			allWarnings = warnings[cc];
+		}
+
+		if (pcWarnings[cc]) {
+			allWarnings = allWarnings.concat(pcWarnings[cc]);
+		}
+
+		req.request.legs[i].warnings = allWarnings;
 	}
 
 	if (req.request.status.isPending === false) {

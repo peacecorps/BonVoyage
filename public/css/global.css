@@ -148,12 +148,15 @@
 #htmlwrapper .alert .glyphicon {
   padding-right: 5px; }
 
+#htmlwrapper .alert a {
+  cursor: pointer; }
+
 #htmlwrapper .alert-info {
   border-color: #31708F; }
   #htmlwrapper .alert-info a {
     color: #31708F; }
     #htmlwrapper .alert-info a:hover {
-      color: #276685; }
+      color: #0f4e6d; }
 
 #htmlwrapper .alert-success {
   border-color: #3c763d; }

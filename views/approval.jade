@@ -52,10 +52,10 @@ block content
 									b Description: 
 								span= (leg.description ? leg.description : "No description on file.")
 							each warning in leg.warnings
-								.warning.alert.alert-danger(role='alert')
+								.warning.alert(role='alert', class=warning.colorClass)
 									span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
 									span
-										b #{warning.type}: 
+										b #{warning.source} - #{warning.type}: 
 									span= warning.textOverview + " "
 									span
 										b

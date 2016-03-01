@@ -208,6 +208,10 @@
 		padding-right: 5px;
 	}
 
+	.alert a {
+		cursor: pointer;
+	}
+
 	.alert-info {
 		border-color: $info-color;
 		a {

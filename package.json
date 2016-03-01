@@ -17,6 +17,7 @@
     "express": "~4.12.4",
     "express-passport-logout": "^0.1.0",
     "express-session": "^1.12.1",
+    "google-spreadsheet": "^1.1.4",
     "gulp": "^3.9.0",
     "gulp-sass": "^2.1.1",
     "jade": "~1.9.2",
