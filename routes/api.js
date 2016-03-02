@@ -258,7 +258,8 @@ router.postApprove = function (req, res) {
 				'approve', map);
 
 			if (user.phone) {
-				helpers.sendSMS(user.phone, 'Your BonVoyage leave request is now approved!');
+				helpers.sendSMS(user.phone, 'Your BonVoyage ' +
+					'leave request is now approved!');
 			}
 		});
 	});
@@ -299,7 +300,7 @@ router.postDeny = function (req, res) {
 				'deny', map);
 
 			if (user.phone) {
-				helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' + 
+				helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' +
 					'Please reach out to the your supervisor if you have any questions.');
 			}
 		});
@@ -364,7 +365,11 @@ router.reset = function (req, res) {
 			res.end(JSON.stringify({ redirect: '/login' }));
 		} else {
 			// remove the existing password reset tokens
-			Token.find({ email: email, token_type: false }).remove(function (err) {
+			Token.find({ email: email, tokenType: false }).remove(function (err) {
+				if (err) {
+					console.log(err);
+				}
+
 				var token = randtoken.generate(64);
 
 				Token.create({ token: token, email: email }, function (err) {

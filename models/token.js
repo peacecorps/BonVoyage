@@ -17,7 +17,7 @@ var tokenSchema = mongoose.Schema({
 		required: true,
 		default: Date.now,
 	},
-	token_type: {
+	tokenType: {
 		// false: password reset
 		// true: registration
 		type: Boolean,
