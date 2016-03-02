@@ -4,6 +4,7 @@
 var User = require('../models/user');
 var Request = require('../models/request');
 var Access = require('../config/access');
+var phoneNumber = require('../config/phone');
 var DateOnly = require('dateonly');
 var jade = require('jade');
 var path = require('path');
@@ -235,10 +236,10 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 	}
 };
 
-module.exports.sendSMS = function (sendTo, sendFrom, body, callback) {
+module.exports.sendSMS = function (sendTo, body, callback) {
 	var data = {
 		to: sendTo,
-		from: sendFrom,
+		from: phoneNumber,
 		body: body,
 	};
 
@@ -249,7 +250,7 @@ module.exports.sendSMS = function (sendTo, sendFrom, body, callback) {
 			callback();
 		}
 	} else {
-		twilioClient.sms.message.create(data, function (err, message) {
+		twilioClient.messages.create(data, function (err, message) {
 			if (err) {
 				console.log('Unable to send SMS');
 			} else {

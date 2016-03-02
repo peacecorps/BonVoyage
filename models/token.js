@@ -17,6 +17,13 @@ var tokenSchema = mongoose.Schema({
 		required: true,
 		default: Date.now,
 	},
+	token_type: {
+		// false: password reset
+		// true: registration
+		type: Boolean,
+		required: true,
+		default: false,
+	},
 });
 
 module.exports = mongoose.model('token', tokenSchema);

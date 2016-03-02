@@ -244,9 +244,6 @@ router.postApprove = function (req, res) {
 				button: 'http://localhost:3000',
 			};
 
-			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-				'approve', map);
-
 			req.flash('dashboardFlash', {
 				text: 'The request has been successfully approved.',
 				class: 'success',
@@ -256,6 +253,13 @@ router.postApprove = function (req, res) {
 				},
 			});
 			res.end(JSON.stringify({ redirect: '/dashboard' }));
+
+			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+				'approve', map);
+
+			if (user.phone) {
+				helpers.sendSMS(user.phone, 'Your BonVoyage leave request is now approved!');
+			}
 		});
 	});
 };
@@ -281,9 +285,6 @@ router.postDeny = function (req, res) {
 				button: 'http://localhost:3000',
 			};
 
-			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-				'deny', map);
-
 			req.flash('dashboardFlash', {
 				text: 'The request has been successfully denied.',
 				class: 'success',
@@ -293,6 +294,14 @@ router.postDeny = function (req, res) {
 				},
 			});
 			res.end(JSON.stringify({ redirect: '/dashboard' }));
+
+			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+				'deny', map);
+
+			if (user.phone) {
+				helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' + 
+					'Please reach out to the your supervisor if you have any questions.');
+			}
 		});
 	});
 };
@@ -354,31 +363,32 @@ router.reset = function (req, res) {
 			});
 			res.end(JSON.stringify({ redirect: '/login' }));
 		} else {
-			// TODO: existing token must be removed
-			var token = randtoken.generate(64);
+			// remove the existing password reset tokens
+			Token.find({ email: email, token_type: false }).remove(function (err) {
+				var token = randtoken.generate(64);
 
-			Token.create({ token: token, email: email }, function (err) {
-				if (err) {
-					req.flash('loginFlash', {
-						text: 'Failed to generate an email reset token.',
-						class: 'danger',
-					});
-					res.end(JSON.stringify({ redirect: '/login' }));
-				}
+				Token.create({ token: token, email: email }, function (err) {
+					if (err) {
+						req.flash('loginFlash', {
+							text: 'Failed to generate an email reset token.',
+							class: 'danger',
+						});
+						res.end(JSON.stringify({ redirect: '/login' }));
+					}
 
-				var sendFrom = 'Peace Corps <team@projectdelta.io>';
-				var sendTo = email;
-				var subject = 'Peace Corps BonVoyage Password Reset Request';
-				var map = {
-					name: user.name.split(' ')[0],
-					button: 'http://localhost:3000/reset/' + token,
-				};
+					var sendFrom = 'Peace Corps <team@projectdelta.io>';
+					var sendTo = email;
+					var subject = 'Peace Corps BonVoyage Password Reset Request';
+					var map = {
+						name: user.name.split(' ')[0],
+						button: 'http://localhost:3000/reset/' + token,
+					};
 
-				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-					'password', map);
+					helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+						'password', map);
+				});
 			});
 		}
-
 	});
 
 	req.flash('loginFlash', {
