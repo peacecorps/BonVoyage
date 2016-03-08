@@ -231,9 +231,10 @@ $(function() {
         if (isSubmitAsOtherUserShowing()) {
             userId = $select_requestee[0].selectize.getValue();
         }
+
         $.ajax({
             method: "POST",
-            contentType: "application/json",
+            contentType: "application/x-www-form-urlencoded",
             data: {
                 userId: userId,
                 legs: legs

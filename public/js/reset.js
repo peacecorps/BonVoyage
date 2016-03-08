@@ -8,7 +8,7 @@ $(function() {
 		var data = $('#inputEmail').val();
 		$.ajax({
 			method: 'POST',
-            contentType: "application/x-www-form-urlencoded",
+			contentType: "application/x-www-form-urlencoded",
 			data: {
 				email: data
 			},
