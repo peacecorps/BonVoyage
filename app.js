@@ -140,7 +140,7 @@ app.post('/profile/:userId?', isLoggedIn,
 
 app.post('/api/register', passport.authenticate('local-signup', {
 	successRedirect: '/dashboard',
-	failureRedirect: '/register',
+	failureRedirect: '/login',
 	failureFlash: true,
 }));
 app.post('/api/login', passport.authenticate('local-login', {

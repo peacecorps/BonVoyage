@@ -255,7 +255,7 @@ router.postApprove = function (req, res) {
 			res.end(JSON.stringify({ redirect: '/dashboard' }));
 
 			// asynchronous
-			process.nextTick(function() {
+			process.nextTick(function () {
 				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 				'approve', map);
 
@@ -299,7 +299,7 @@ router.postDeny = function (req, res) {
 			});
 			res.end(JSON.stringify({ redirect: '/dashboard' }));
 
-			process.nextTick(function() {
+			process.nextTick(function () {
 				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 				'deny', map);
 
@@ -626,7 +626,9 @@ router.postUsers = function (req, res) {
 
 				var token = randtoken.generate(64);
 
-				Token.create({ token: token, email: user.email.value.toLowerCase(),
+				Token.create({ token: token, name: user.name.value,
+					email: user.email.value.toLowerCase(),
+					country: user.countryCode.value,
 					tokenType: true, }, function (err) {
 					if (err) {
 						req.flash('addUsersFlash', {

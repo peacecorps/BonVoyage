@@ -15,8 +15,10 @@ var tokenSchema = mongoose.Schema({
 		type: String,
 		required: true,
 	},
-	countrycode: {
+	country: {
 		type: String,
+		required: true,
+		default: 'US',
 	},
 	timestamp: {
 		type: Date,

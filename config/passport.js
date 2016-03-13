@@ -50,80 +50,87 @@ module.exports = function (passport) {
 		// asynchronous
 		// User.findOne wont fire unless data is sent back
 		process.nextTick(function () {
-			Token.find({ token: req.body.token, email: email, tokenType: true })
-			.remove(function (err) {
-				if (err) {
-					// token invalid
-					return done(null, false, req.flash('registerFlash',
+			Token.findOne({ token: req.body.token, email: email, tokenType: true },
+				function (err, token) {
+					if (err) {
+						console.log(err);
+					}
+
+					// invalid token
+					if (token) {
+						// find a user whose email is the same as the forms email
+						// we are checking to see if the user trying to login already exists
+						User.findOne({ email: email }, function (err, user) {
+							// if there are any errors, return the error
+							if (err) {
+								return done(err);
+							}
+
+							// check to see if theres already a user with that email
+							if (user) {
+								req.session.submission = req.body;
+								return done(null, false, req.flash('registerFlash',
+										{
+											text: 'That email is already taken.',
+											class: 'danger',
+										}));
+							} else if (password != req.body.password2) {
+								req.session.submission = req.body;
+								return done(null, false, req.flash('registerFlash',
+										{
+											text: 'Those passwords do not match.',
+											class: 'danger',
+										}));
+							} else {
+								// if there is no user with that email
+								// create the user
+								var newUser = new User();
+
+								// set the user's local credentials
+								newUser.email = email;
+
+								// This password will be hashed, and in the process
+								// overwrite the plain text password we just stored into newUser.hash
+								newUser.hash = password;
+								newUser.name = token.name;
+								newUser.phone = req.body.phone;
+								newUser.access = Access.VOLUNTEER;
+								newUser.countryCode = token.country;
+
+								// save the user
+								newUser.save(function (err) {
+									if (err) {
+										return done(err);
+									}
+
+									var sendFrom = 'Peace Corps <team@projectdelta.io>';
+									var sendTo = email;
+									var subject = 'Peace Corps BonVoyage Registration Confirmation';
+									var map = {
+										name: token.name.split(' ')[0],
+										button: 'http://localhost:3000',
+									};
+
+									// asynchronous
+									process.nextTick(function () {
+										helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+										'welcome', map);
+									});
+
+									return done(null, newUser);
+								});
+
+								token.remove();
+							}
+						});
+					} else {
+						return done(null, false, req.flash('registerFlash',
 							{
 								text: 'Registration Token is invalid.',
 								class: 'danger',
 							}));
-				} else {
-					// find a user whose email is the same as the forms email
-					// we are checking to see if the user trying to login already exists
-					User.findOne({ email: email }, function (err, user) {
-						// if there are any errors, return the error
-						if (err) {
-							return done(err);
-						}
-
-						// check to see if theres already a user with that email
-						if (user) {
-							req.session.submission = req.body;
-							return done(null, false, req.flash('registerFlash',
-									{
-										text: 'That email is already taken.',
-										class: 'danger',
-									}));
-						} else if (password != req.body.password2) {
-							req.session.submission = req.body;
-							return done(null, false, req.flash('registerFlash',
-									{
-										text: 'Those passwords do not match.',
-										class: 'danger',
-									}));
-						} else {
-
-							// if there is no user with that email
-							// create the user
-							var newUser = new User();
-
-							// set the user's local credentials
-
-							newUser.email = email;
-
-							// This password will be hashed, and in the process
-							// overwrite the plain text password we just stored into newUser.hash
-							newUser.hash = password;
-							newUser.name = req.body.name;
-							newUser.phone = req.body.phone;
-							newUser.access = Access.VOLUNTEER;
-							newUser.countryCode = req.body.country;
-
-							// save the user
-							newUser.save(function (err) {
-								if (err) {
-									return done(err);
-								}
-
-								var sendFrom = 'Peace Corps <team@projectdelta.io>';
-								var sendTo = email;
-								var subject = 'Peace Corps BonVoyage Registration Confirmation';
-								var map = {
-									name: req.body.name.split(' ')[0],
-									button: 'http://localhost:3000',
-								};
-
-								helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-									'welcome', map);
-
-								return done(null, newUser);
-							});
-						}
-					});
-				}
-			});
+					}
+				});
 		});
 	}));
 
