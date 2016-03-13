@@ -1,6 +1,5 @@
 var enableBtn = function() {
 	document.getElementById("submitInfo").disabled = false;
-	console.log('this is a test?');
 }
 
 $(function() {

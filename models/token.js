@@ -8,9 +8,15 @@ var tokenSchema = mongoose.Schema({
 		type: String,
 		required: true,
 	},
+	name: {
+		type: String,
+	},
 	email: {
 		type: String,
 		required: true,
+	},
+	countrycode: {
+		type: String,
 	},
 	timestamp: {
 		type: Date,

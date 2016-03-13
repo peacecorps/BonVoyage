@@ -613,20 +613,51 @@ router.postUsers = function (req, res) {
 		if (allValid) {
 			// Add each of the users to the db
 			validatedUsers.map(function (user) {
-				var userData = {
-						name: user.name.value,
-						email: user.email.value,
-						access: user.access.value,
-						countryCode: user.countryCode.value,
-						hash: '',
-						phone: '',
+
+				// create registration token for each user, then send email
+
+				var token = randtoken.generate(64);
+
+				Token.create({ token: token, email: user.email.value.toLowerCase(),
+					tokenType: true, }, function (err) {
+					if (err) {
+						req.flash('addUsersFlash', {
+							text: 'Some of the uploaded users are invalid. ' +
+								'Please fix the issues in the table below before creating any users.',
+							class: 'danger',
+						});
+						res.end(JSON.stringify({ redirect: '/users/add' }));
+					}
+
+					var sendFrom = 'Peace Corps <team@projectdelta.io>';
+					var sendTo = user.email.value.toLowerCase();
+					var subject = 'Peace Corps BonVoyage Registration';
+					var map = {
+						name: user.name.value.split(' ')[0],
+						button: 'http://localhost:3000/register/' + token,
 					};
-				console.log(userData);
-				var newUser = new User(userData);
-				console.log(newUser);
-				newUser.save(function (err) {
-						if (err) {throw err;}
+
+					// asynchronous
+					process.nextTick(function () {
+						helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+						'register', map);
 					});
+				});
+
+				// var userData = {
+				// 		name: user.name.value,
+				// 		email: user.email.value,
+				// 		access: user.access.value,
+				// 		countryCode: user.countryCode.value,
+				// 		hash: '',
+				// 		phone: '',
+				// 	};
+				// console.log(userData);
+				// var newUser = new User(userData);
+				// console.log(newUser);
+				// newUser.save(function (err) {
+				// 		if (err) {throw err;}
+				// 	});
 			});
 
 			req.flash('usersFlash', {
