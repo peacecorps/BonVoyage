@@ -653,25 +653,10 @@ router.postUsers = function (req, res) {
 						'register', map);
 					});
 				});
-
-				// var userData = {
-				// 		name: user.name.value,
-				// 		email: user.email.value,
-				// 		access: user.access.value,
-				// 		countryCode: user.countryCode.value,
-				// 		hash: '',
-				// 		phone: '',
-				// 	};
-				// console.log(userData);
-				// var newUser = new User(userData);
-				// console.log(newUser);
-				// newUser.save(function (err) {
-				// 		if (err) {throw err;}
-				// 	});
 			});
 
 			req.flash('usersFlash', {
-				text: validatedUsers.length + ' user(s) have been added to the database.',
+				text: 'Registration invitation(s) have been sent to ' + validatedUsers.length + ' user(s).',
 				class: 'success',
 			});
 			res.end(JSON.stringify({ redirect: '/users' }));
