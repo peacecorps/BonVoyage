@@ -656,7 +656,8 @@ router.postUsers = function (req, res) {
 			});
 
 			req.flash('usersFlash', {
-				text: 'Registration invitation(s) have been sent to ' + validatedUsers.length + ' user(s).',
+				text: 'Registration invitation(s) have been sent to ' +
+				validatedUsers.length + ' user(s).',
 				class: 'success',
 			});
 			res.end(JSON.stringify({ redirect: '/users' }));
