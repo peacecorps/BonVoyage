@@ -1,4 +1,5 @@
 /* jshint node: true */
+/* jshint loopfunc:true */
 'use strict';
 
 var express = require('express');
@@ -132,6 +133,7 @@ router.postRequests = function (req, res) {
 	}, function (err, users) {
 		if (users.length > 0) {
 			var legs = [];
+			var countries = [];
 			for (var i = 0; i < req.body.legs.length; i++) {
 				var leg = req.body.legs[i];
 				var start = new DateOnly(leg.startDate);
@@ -167,7 +169,11 @@ router.postRequests = function (req, res) {
 					companions: leg.companions,
 					description: leg.description,
 				});
+
+				countries.push(leg.country);
 			}
+
+			console.log(countries);
 
 			if (legs.length > 0) {
 				var newRequest = new Request({
@@ -178,6 +184,8 @@ router.postRequests = function (req, res) {
 					},
 					legs: legs,
 				});
+
+				console.log(users);
 
 				newRequest.save(function (err, obj) {
 					if (err) {
@@ -191,6 +199,31 @@ router.postRequests = function (req, res) {
 							redirect: '/dashboard/submit',
 						}));
 					} else {
+						// asynchronous
+						// send SMS notification to a staff
+						process.nextTick(function () {
+							for (var i = 0; i < countries.length; i++) {
+								User.find({ access: Access.SUPERVISOR,
+								countryCode: countries[i], },
+								function (err, docs) {
+									for (var j = 0; j < docs.length; j++) {
+										var msg = 'A request by ' +
+											users[0].name + ' is waiting ' +
+											'for your approval on BonVoyage.' +
+											' http://localhost:3000/login';
+
+										if (docs[j].phone) {
+											helpers.sendSMS(docs[j].phone,
+											msg);
+										} else {
+											console.log(docs[j].name +
+											' does not have a phone number');
+										}
+									}
+								});
+							}
+						});
+
 						req.flash('dashboardFlash', {
 							text: 'Request successfully saved.',
 							class: 'success',
@@ -244,16 +277,6 @@ router.postApprove = function (req, res) {
 				button: 'http://localhost:3000',
 			};
 
-			req.flash('dashboardFlash', {
-				text: 'The request has been successfully approved.',
-				class: 'success',
-				link: {
-					url: '/requests/' + id,
-					text: 'View Request.',
-				},
-			});
-			res.end(JSON.stringify({ redirect: '/dashboard' }));
-
 			// asynchronous
 			process.nextTick(function () {
 				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
@@ -264,6 +287,16 @@ router.postApprove = function (req, res) {
 						'leave request is now approved!');
 				}
 			});
+
+			req.flash('dashboardFlash', {
+				text: 'The request has been successfully approved.',
+				class: 'success',
+				link: {
+					url: '/requests/' + id,
+					text: 'View Request.',
+				},
+			});
+			res.end(JSON.stringify({ redirect: '/dashboard' }));
 		});
 	});
 };
@@ -289,16 +322,6 @@ router.postDeny = function (req, res) {
 				button: 'http://localhost:3000',
 			};
 
-			req.flash('dashboardFlash', {
-				text: 'The request has been successfully denied.',
-				class: 'success',
-				link: {
-					url: '/requests/' + id,
-					text: 'View Request.',
-				},
-			});
-			res.end(JSON.stringify({ redirect: '/dashboard' }));
-
 			process.nextTick(function () {
 				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 				'deny', map);
@@ -308,6 +331,16 @@ router.postDeny = function (req, res) {
 						'Please reach out to the your supervisor if you have any questions.');
 				}
 			});
+
+			req.flash('dashboardFlash', {
+				text: 'The request has been successfully denied.',
+				class: 'success',
+				link: {
+					url: '/requests/' + id,
+					text: 'View Request.',
+				},
+			});
+			res.end(JSON.stringify({ redirect: '/dashboard' }));
 		});
 	});
 };
