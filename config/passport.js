@@ -69,14 +69,14 @@ module.exports = function (passport) {
 							// check to see if theres already a user with that email
 							if (user) {
 								req.session.submission = req.body;
-								return done(null, false, req.flash('registerFlash',
+								return done(null, false, req.flash('loginFlash',
 										{
 											text: 'That email is already taken.',
 											class: 'danger',
 										}));
 							} else if (password != req.body.password2) {
 								req.session.submission = req.body;
-								return done(null, false, req.flash('registerFlash',
+								return done(null, false, req.flash('loginFlash',
 										{
 											text: 'Those passwords do not match.',
 											class: 'danger',
@@ -124,7 +124,7 @@ module.exports = function (passport) {
 							}
 						});
 					} else {
-						return done(null, false, req.flash('registerFlash',
+						return done(null, false, req.flash('loginFlash',
 							{
 								text: 'Registration Token is invalid.',
 								class: 'danger',
