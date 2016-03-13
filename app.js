@@ -105,7 +105,7 @@ app.param('requestId', api.handleRequestId);
 // Render Views
 app.get('/', views.index);
 app.get('/login', isNotLoggedIn, views.renderLogin);
-app.get('/register/:token', views.renderRegister);
+app.get('/register/:token', isNotLoggedIn, views.renderRegister);
 app.get('/reset', isNotLoggedIn, views.renderReset);
 app.get('/reset/:token', views.renderValidReset);
 app.get('/dashboard', isLoggedIn,

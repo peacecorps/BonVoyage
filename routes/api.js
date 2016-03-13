@@ -401,7 +401,8 @@ router.reset = function (req, res) {
 				class: 'danger',
 			});
 			res.end(JSON.stringify({ redirect: '/login' }));
-		} else {
+		}
+		if (user) {
 			// remove the existing password reset tokens
 			Token.find({ email: email, tokenType: false }).remove(function (err) {
 				if (err) {
