@@ -11,8 +11,8 @@ block content
 
         include flash
 
-        label.sr-only(for='signupName') Full Name
-        input#signupName.form-control(type='text', placeholder='Full Name', required='', autofocus='', name='name', value=submission.name)
+        label.sr-only(for='signupToken') Registration Token
+        input#signupToken.form-control.hidden(type='text', placeholder='Token Value', required='', autofocus='', name='token', value=submission.token)
         label.sr-only(for='signupEmail') Email address
         input#signupEmail.form-control(type='email', placeholder='Enter Email Address', required='', autofocus='', name='email', value=submission.email)
         label.sr-only(for='signupPhone') Phone Number
@@ -30,6 +30,7 @@ block scripts
     script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js')
     // Include all complied plugins
     script(src='/js/bootstrap.min.js')
+    script(src='/js/register.js')
 
 
 

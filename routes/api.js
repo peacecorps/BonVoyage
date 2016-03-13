@@ -254,13 +254,16 @@ router.postApprove = function (req, res) {
 			});
 			res.end(JSON.stringify({ redirect: '/dashboard' }));
 
-			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+			// asynchronous
+			process.nextTick(function () {
+				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 				'approve', map);
 
-			if (user.phone) {
-				helpers.sendSMS(user.phone, 'Your BonVoyage ' +
-					'leave request is now approved!');
-			}
+				if (user.phone) {
+					helpers.sendSMS(user.phone, 'Your BonVoyage ' +
+						'leave request is now approved!');
+				}
+			});
 		});
 	});
 };
@@ -296,13 +299,15 @@ router.postDeny = function (req, res) {
 			});
 			res.end(JSON.stringify({ redirect: '/dashboard' }));
 
-			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+			process.nextTick(function () {
+				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 				'deny', map);
 
-			if (user.phone) {
-				helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' +
-					'Please reach out to the your supervisor if you have any questions.');
-			}
+				if (user.phone) {
+					helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' +
+						'Please reach out to the your supervisor if you have any questions.');
+				}
+			});
 		});
 	});
 };
@@ -389,8 +394,11 @@ router.reset = function (req, res) {
 						button: 'http://localhost:3000/reset/' + token,
 					};
 
-					helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+					// asynchronous
+					process.nextTick(function () {
+						helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 						'password', map);
+					});
 				});
 			});
 		}
@@ -613,24 +621,43 @@ router.postUsers = function (req, res) {
 		if (allValid) {
 			// Add each of the users to the db
 			validatedUsers.map(function (user) {
-				var userData = {
-						name: user.name.value,
-						email: user.email.value,
-						access: user.access.value,
-						countryCode: user.countryCode.value,
-						hash: '',
-						phone: '',
+
+				// create registration token for each user, then send email
+
+				var token = randtoken.generate(64);
+
+				Token.create({ token: token, name: user.name.value,
+					email: user.email.value.toLowerCase(),
+					country: user.countryCode.value,
+					tokenType: true, }, function (err) {
+					if (err) {
+						req.flash('addUsersFlash', {
+							text: 'Some of the uploaded users are invalid. ' +
+								'Please fix the issues in the table below before creating any users.',
+							class: 'danger',
+						});
+						res.end(JSON.stringify({ redirect: '/users/add' }));
+					}
+
+					var sendFrom = 'Peace Corps <team@projectdelta.io>';
+					var sendTo = user.email.value.toLowerCase();
+					var subject = 'Peace Corps BonVoyage Registration';
+					var map = {
+						name: user.name.value.split(' ')[0],
+						button: 'http://localhost:3000/register/' + token,
 					};
-				console.log(userData);
-				var newUser = new User(userData);
-				console.log(newUser);
-				newUser.save(function (err) {
-						if (err) {throw err;}
+
+					// asynchronous
+					process.nextTick(function () {
+						helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+						'register', map);
 					});
+				});
 			});
 
 			req.flash('usersFlash', {
-				text: validatedUsers.length + ' user(s) have been added to the database.',
+				text: 'Registration invitation(s) have been sent to ' +
+				validatedUsers.length + ' user(s).',
 				class: 'success',
 			});
 			res.end(JSON.stringify({ redirect: '/users' }));

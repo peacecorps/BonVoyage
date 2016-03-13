@@ -25,7 +25,6 @@ router.renderLogin = function (req, res) {
 		messages: req.flash('loginFlash'),
 		links: [
 			{ text: 'Login', href: '/login', active: true },
-			{ text: 'Register', href: '/register' },
 		],
 		hideLogout: true,
 		submission: sub,
@@ -44,7 +43,6 @@ router.renderRegister = function (req, res) {
 		messages: req.flash('registerFlash'),
 		links: [
 			{ text: 'Login', href: '/login' },
-			{ text: 'Register', href: '/register', active: true },
 		],
 		hideLogout: true,
 		submission: sub,
@@ -57,7 +55,6 @@ router.renderReset = function (req, res) {
 		messages: req.flash('resetFlash'),
 		links: [
 			{ text: 'Login', href: '/login' },
-			{ text: 'Register', href: '/register', active: true },
 		],
 		hideLogout: true,
 	});
@@ -70,7 +67,6 @@ router.renderValidReset = function (req, res) {
 		messages: req.flash('resetFlash'),
 		links: [
 			{ text: 'Login', href: '/login' },
-			{ text: 'Register', href: '/register', active: true },
 		],
 		hideLogout: true,
 	});
