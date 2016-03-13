@@ -254,13 +254,16 @@ router.postApprove = function (req, res) {
 			});
 			res.end(JSON.stringify({ redirect: '/dashboard' }));
 
-			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+			// asynchronous
+			process.nextTick(function() {
+				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 				'approve', map);
 
-			if (user.phone) {
-				helpers.sendSMS(user.phone, 'Your BonVoyage ' +
-					'leave request is now approved!');
-			}
+				if (user.phone) {
+					helpers.sendSMS(user.phone, 'Your BonVoyage ' +
+						'leave request is now approved!');
+				}
+			});
 		});
 	});
 };
@@ -296,13 +299,15 @@ router.postDeny = function (req, res) {
 			});
 			res.end(JSON.stringify({ redirect: '/dashboard' }));
 
-			helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+			process.nextTick(function() {
+				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 				'deny', map);
 
-			if (user.phone) {
-				helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' +
-					'Please reach out to the your supervisor if you have any questions.');
-			}
+				if (user.phone) {
+					helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' +
+						'Please reach out to the your supervisor if you have any questions.');
+				}
+			});
 		});
 	});
 };
@@ -389,8 +394,11 @@ router.reset = function (req, res) {
 						button: 'http://localhost:3000/reset/' + token,
 					};
 
-					helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+					// asynchronous
+					process.nextTick(function () {
+						helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 						'password', map);
+					});
 				});
 			});
 		}
