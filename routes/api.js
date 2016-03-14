@@ -400,8 +400,10 @@ router.reset = function (req, res) {
 				'on our record.',
 				class: 'danger',
 			});
+
 			res.end(JSON.stringify({ redirect: '/login' }));
 		}
+
 		if (user) {
 			// remove the existing password reset tokens
 			Token.find({ email: email, tokenType: false }).remove(function (err) {
