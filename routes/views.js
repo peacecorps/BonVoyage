@@ -83,7 +83,7 @@ router.renderSubform = function (req, res) {
 		{ text: 'Dashboard', href: '/dashboard' },
 		{ text: 'Submit a Request', href: '/dashboard/submit', active: true },
 	];
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		links.push({ text: 'Users', href: '/users' });
 		links.push({ text: 'Add Users', href: '/users/add' });
 	}
@@ -92,7 +92,7 @@ router.renderSubform = function (req, res) {
 		title: 'Submission Form',
 		links: links,
 		messages: req.flash('submissionFlash'),
-		shouldSelectRequestee: req.user.access >= Access.SUPERVISOR,
+		shouldSelectRequestee: req.user.access >= Access.STAFF,
 		submission: sub,
 	});
 };
@@ -150,7 +150,7 @@ router.renderApproval = function (req, res) {
 		{ text: 'Dashboard', href: '/dashboard' },
 		{ text: 'Submit a Request', href: '/dashboard/submit' },
 	];
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		links.push({ text: 'Users', href: '/users' });
 		links.push({ text: 'Add Users', href: '/users/add' });
 	}
@@ -170,7 +170,7 @@ router.renderDashboard = function (req, res) {
 		{ text: 'Dashboard', href: '/dashboard', active: true },
 		{ text: 'Submit a Request', href: '/dashboard/submit' },
 	];
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		links.push({ text: 'Users', href: '/users' });
 		links.push({ text: 'Add Users', href: '/users/add' });
 	}
@@ -183,7 +183,7 @@ router.renderDashboard = function (req, res) {
 };
 
 router.renderUsers = function (req, res) {
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		helpers.getUsers({
 			maxAccess: req.user.access,
 		}, function (err, users) {
@@ -193,7 +193,7 @@ router.renderUsers = function (req, res) {
 
 			// Split users based on their access level
 			var admins = [];
-			var supervisors = [];
+			var staff = [];
 			var volunteers = [];
 			for (var i = 0; i < users.length; i++) {
 				var user = users[i];
@@ -201,8 +201,8 @@ router.renderUsers = function (req, res) {
 					case Access.ADMIN:
 						admins.push(user);
 						break;
-					case Access.SUPERVISOR:
-						supervisors.push(user);
+					case Access.STAFF:
+						staff.push(user);
 						break;
 					case Access.VOLUNTEER:
 						volunteers.push(user);
@@ -220,7 +220,7 @@ router.renderUsers = function (req, res) {
 				],
 				messages: req.flash('usersFlash'),
 				admins: admins,
-				supervisors: supervisors,
+				staff: staff,
 				volunteers: volunteers,
 			});
 		});
@@ -281,7 +281,7 @@ router.renderProfile = function (req, res) {
 };
 
 router.renderAddUsers = function (req, res) {
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		var links = [
 			{ text: 'Dashboard', href: '/dashboard' },
 			{ text: 'Submit a Request', href: '/dashboard/submit' },

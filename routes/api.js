@@ -111,8 +111,8 @@ router.getUsers = function (req, res) {
 router.postRequests = function (req, res) {
 	var userId = req.user._id;
 
-	// Supervisors will select a user to submit a request for on the form
-	if (req.user.access >= Access.SUPERVISOR) {
+	// Staff will select a user to submit a request for on the form
+	if (req.user.access >= Access.STAFF) {
 		userId = req.body.userId;
 		if (userId === undefined) {
 			req.session.submission = req.body;
@@ -203,7 +203,7 @@ router.postRequests = function (req, res) {
 						// send SMS notification to a staff
 						process.nextTick(function () {
 							for (var i = 0; i < countries.length; i++) {
-								User.find({ access: Access.SUPERVISOR,
+								User.find({ access: Access.STAFF,
 								countryCode: countries[i], },
 								function (err, docs) {
 									for (var j = 0; j < docs.length; j++) {
@@ -328,7 +328,8 @@ router.postDeny = function (req, res) {
 
 				if (user.phone) {
 					helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' +
-						'Please reach out to the your supervisor if you have any questions.');
+						'Please reach out to a Peace Corps staff member ' +
+						'if you have any questions.');
 				}
 			});
 
