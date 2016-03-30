@@ -25,13 +25,17 @@ router.handleRequestId = function (req, res, next, requestId) {
 	// Look up requestId to determine if it is pending or not
 	Request.findOne({ _id: requestId }, 'status', function (err, request) {
 		if (err) {
-			next(err);
+			return next(err);
+		}
+
+		if (request === null) {
+			return next(new Error('The request could not be found.'));
 		}
 
 		helpers.getRequests(req, res, request.status.isPending,
 			function (err, requests) {
 			if (err) {
-				next(err);
+				return next(err);
 			} else {
 				// Lookup the id in this list of requests
 				for (var i = 0; i < requests.length; i++) {
@@ -45,12 +49,12 @@ router.handleRequestId = function (req, res, next, requestId) {
 							req.prevRequestId = requests[i - 1]._id;
 						}
 
-						next();
+						return next();
 					}
 				}
 
 				if (req.request === undefined) {
-					next(new Error('Request not found.'));
+					return next(new Error('Request not found.'));
 				}
 			}
 		});
@@ -356,10 +360,6 @@ router.postDelete = function (req, res) {
 		req.flash('dashboardFlash', {
 			text: 'The request has been successfully deleted.',
 			class: 'success',
-			link: {
-				url: '/requests/' + id,
-				text: 'View Request.',
-			},
 		});
 		res.end(JSON.stringify({ redirect: '/dashboard' }));
 	});
