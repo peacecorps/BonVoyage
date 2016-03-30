@@ -328,7 +328,8 @@ router.postDeny = function (req, res) {
 
 				if (user.phone) {
 					helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' +
-						'Please reach out to a Peace Corps staff member if you have any questions.');
+						'Please reach out to a Peace Corps staff member ' +
+						'if you have any questions.');
 				}
 			});
 
