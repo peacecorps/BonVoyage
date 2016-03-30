@@ -13,7 +13,7 @@ block content
 				
 				#request
 					if user
-						h2 Contact 
+						h2 Volunteer Contact 
 						.shadow-box
 							p
 								span 
@@ -34,7 +34,7 @@ block content
 								span.date(data-unformatted="#{leg.startDate}")
 								span  - 
 								span.date(data-unformatted="#{leg.endDate}")
-								span : #{leg.country}
+								span : #{leg.city}, #{leg.country}
 							p
 								span
 									b Hotel/Hostel info: 
@@ -60,6 +60,11 @@ block content
 									span
 										b
 											a(href=warning.link) More Information
+						br
+						p
+							span
+								b Counterpart Approval: 
+							span= (request.counterpartApproved == true ? "Approved." : "Not yet approved.")
 					h2 Comments #{(request.comments.length > 0 ? "(" + request.comments.length + ")" : "")}
 					.shadow-box
 						table#comments
