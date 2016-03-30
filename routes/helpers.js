@@ -89,12 +89,12 @@ module.exports.getEndDate = function (request) {
 module.exports.getRequests = function (req, res, pending, cb) {
 	if (req.user) {
 		var matchUser = {};
-		if (req.user.access < Access.SUPERVISOR) {
+		if (req.user.access < Access.STAFF) {
 			matchUser.userId = req.user._id;
 		}
 
 		var matchCountry = {};
-		if (req.user.access == Access.SUPERVISOR) {
+		if (req.user.access == Access.STAFF) {
 			matchCountry['user.countryCode'] = req.user.countryCode;
 		}
 

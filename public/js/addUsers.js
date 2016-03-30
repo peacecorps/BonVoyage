@@ -53,7 +53,7 @@ $(function () {
 				data: 'access',
 				render: function(data) {
 					if(data.value === 0) { return "Volunteer"; }
-					else if(data.value === 1) { return "Supervisor"; }
+					else if(data.value === 1) { return "Staff"; }
 					else if(data.value === 2) { return "Admin"; }
 					else { return "None"; }
 				},

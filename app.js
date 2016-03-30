@@ -116,7 +116,7 @@ app.get('/requests/:requestId', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
 app.get('/users', isLoggedIn, views.renderUsers);
 app.get('/users/add', isLoggedIn,
-needsAccess(Access.SUPERVISOR), views.renderAddUsers);
+needsAccess(Access.STAFF), views.renderAddUsers);
 app.get('/profile/:userId?', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderProfile);
 
@@ -125,12 +125,12 @@ app.get('/api/requests', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.getRequests);
 
 app.get('/api/users', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.getUsers);
+	needsAccess(Access.STAFF), api.getUsers);
 
 app.post('/api/requests/:requestId/approve', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.postApprove);
+	needsAccess(Access.STAFF), api.postApprove);
 app.post('/api/requests/:requestId/deny', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.postDeny);
+	needsAccess(Access.STAFF), api.postDeny);
 app.post('/api/requests/:requestId/delete', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postDelete);
 app.post('/api/requests/:requestId/comments', isLoggedIn,
@@ -154,11 +154,11 @@ app.post('/api/reset/:token', api.resetValidator);
 app.post('/api/requests', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postRequests);
 app.post('/api/access', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.modifyAccess);
+	needsAccess(Access.STAFF), api.modifyAccess);
 app.post('/api/users', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.postUsers);
+	needsAccess(Access.STAFF), api.postUsers);
 app.post('/api/users/validate', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), upload.single('users'), api.validateUsers);
+	needsAccess(Access.STAFF), upload.single('users'), api.validateUsers);
 
 app.delete('/api/users', isLoggedIn, api.deleteUser);
 
