@@ -350,21 +350,6 @@ router.postDeny = function (req, res) {
 	});
 };
 
-router.postDelete = function (req, res) {
-	var id = req.params.requestId;
-	Request.findOneAndRemove({ _id: id, userId: req.user._id }, function (err) {
-		if (err) {
-			return res.send(500, { error: err });
-		}
-
-		req.flash('dashboardFlash', {
-			text: 'The request has been successfully deleted.',
-			class: 'success',
-		});
-		res.end(JSON.stringify({ redirect: '/dashboard' }));
-	});
-};
-
 router.postComments = function (req, res) {
 	var id = req.params.requestId;
 	Request.findByIdAndUpdate(id, { $push: {
@@ -780,6 +765,26 @@ router.deleteUser = function (req, res) {
 	} else {
 		res.status(401).send('Unauthorized');
 	}
+};
+
+router.deleteRequest = function (req, res) {
+	var id = req.params.requestId;
+	var q = { _id: id };
+	if (req.user.access != Access.ADMIN) {
+		q.userId = req.user._id;
+	}
+
+	Request.findOneAndRemove(q, function (err) {
+		if (err) {
+			return res.send(500, { error: err });
+		}
+
+		req.flash('dashboardFlash', {
+			text: 'The request has been successfully deleted.',
+			class: 'success',
+		});
+		res.end(JSON.stringify({ redirect: '/dashboard' }));
+	});
 };
 
 module.exports = router;

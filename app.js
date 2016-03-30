@@ -116,7 +116,7 @@ app.get('/requests/:requestId', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
 app.get('/users', isLoggedIn, views.renderUsers);
 app.get('/users/add', isLoggedIn,
-needsAccess(Access.STAFF), views.renderAddUsers);
+	needsAccess(Access.STAFF), views.renderAddUsers);
 app.get('/profile/:userId?', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderProfile);
 
@@ -131,8 +131,6 @@ app.post('/api/requests/:requestId/approve', isLoggedIn,
 	needsAccess(Access.STAFF), api.postApprove);
 app.post('/api/requests/:requestId/deny', isLoggedIn,
 	needsAccess(Access.STAFF), api.postDeny);
-app.post('/api/requests/:requestId/delete', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.postDelete);
 app.post('/api/requests/:requestId/comments', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postComments);
 app.post('/profile/:userId?', isLoggedIn,
@@ -160,6 +158,8 @@ app.post('/api/users', isLoggedIn,
 app.post('/api/users/validate', isLoggedIn,
 	needsAccess(Access.STAFF), upload.single('users'), api.validateUsers);
 
+app.delete('/api/requests/:requestId/delete', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.deleteRequest);
 app.delete('/api/users', isLoggedIn, api.deleteUser);
 
 // catch 404 and forward to error handler

@@ -88,8 +88,8 @@ block content
 							button(class="btn btn-success" + (request.status.isPending == false && request.status.isApproved ? " disabled" : ""), id="request-approve-btn") Approve
 						.col-xs-6
 							button(class="btn btn-danger" + (request.status.isPending == false && !request.status.isApproved ? " disabled" : ""), id="request-deny-btn") Deny
-				// If the user is the owner of the request
-				if user && (user.email == request.user.email)
+				// If the user is the owner of the request (or an admin)
+				if user && (user.email == request.user.email || user.access >= 2)
 					#request_delete.row
 						.col-xs-12
 							button(class="btn btn-danger", id="request-delete-btn") Delete Request
