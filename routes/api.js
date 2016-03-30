@@ -161,11 +161,21 @@ router.postRequests = function (req, res) {
 					});
 					res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
 					return;
+				} else if (leg.city === '') {
+					req.session.submission = req.body;
+					req.flash('submissionFlash', {
+						text: 'The city that you entered for leg #' +
+							(i + 1) + ' is invalid',
+						class: 'danger',
+					});
+					res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
+					return;
 				}
 
 				legs.push({
 					startDate: start,
 					endDate: end,
+					city: leg.city,
 					country: countriesDictionary[leg.country],
 					countryCode: leg.country,
 					hotel: leg.hotel,
@@ -179,14 +189,26 @@ router.postRequests = function (req, res) {
 
 			console.log(countries);
 
+			if (req.body.counterpartApproved === 'false') {
+				req.session.submission = req.body;
+				req.flash('submissionFlash', {
+					text: 'You must have approval from your counterpart in order ' +
+					'to submit this leave request.',
+					class: 'danger',
+				});
+				res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
+				return;
+			}
+
 			if (legs.length > 0) {
 				var newRequest = new Request({
 					userId: userId,
 					status: {
 						isPending: true,
-						isd: false,
+						isApproved: false,
 					},
 					legs: legs,
+					counterpartApproved: true,
 				});
 
 				console.log(users);

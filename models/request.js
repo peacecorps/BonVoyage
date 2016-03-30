@@ -16,6 +16,7 @@ var requestSchema = mongoose.Schema({
 		{
 			startDate: DateOnly,
 			endDate: DateOnly,
+			city: String,
 			country: String,
 			countryCode: String,
 			hotel: String,
@@ -33,6 +34,8 @@ var requestSchema = mongoose.Schema({
 			timestamp: { type: Date, default: Date.now },
 		},
 	],
+
+	counterpartApproved: Boolean,
 });
 
 module.exports = mongoose.model('request', requestSchema);

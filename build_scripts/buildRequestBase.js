@@ -56,12 +56,13 @@ function generateLeg() {
 	return {
 		startDate: dates[0],
 		endDate: dates[1],
+		city: ipsum({ count: 1, units: 'words' }),
 		country: countriesDictionary[cc],
 		countryCode: cc,
 		hotel: ipsum(),
 		contact: ipsum(),
 		companions: ipsum(),
-		description: ipsum(),
+		description: ipsum({ count: randIndex(3), units: 'sentences' }),
 	};
 }
 
@@ -81,6 +82,7 @@ function generateRequest(user) {
 		},
 		legs: legs,
 		comments: [],
+		counterpartApproved: true,
 	});
 }
 

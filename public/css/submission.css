@@ -16,3 +16,7 @@
 
 #htmlwrapper .selectRequestee {
   margin-bottom: 10px; }
+
+#htmlwrapper .checkbox {
+  display: table;
+  margin: 10px auto; }

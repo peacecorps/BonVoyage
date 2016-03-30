@@ -5,6 +5,7 @@ block styles
   link(href='/css/default.date.css', rel='stylesheet')
   link(href='/css/selectize.css', rel='stylesheet')
   link(href='/css/selectize.bootstrap3.css', rel='stylesheet')
+  link(rel='stylesheet', href='/css/awesome-bootstrap-checkbox.css')
   link(rel='stylesheet', href='/css/submission.css')
 
 block content
@@ -23,6 +24,13 @@ block content
 
         #request-submit
 
+          .checkbox
+            input(type="checkbox", id="approvalCheckbox") 
+            label(for="approvalCheckbox") 
+              | I attest that I (#{user.name}) have received approval 
+              | from my supervisor on site for this leave. 
+              span.required *
+
           //- Travel legs are inserted in submission.js
           button.btn.btn-default#request-add-leg-btn Add Another Trip Leg
           button.btn.btn-success#request-submit-btn Submit All Trip Legs
@@ -32,10 +40,6 @@ block scripts
     var submissionData = !{JSON.stringify(submission)};
   script(src='/js/picker.js')
   script(src='/js/picker.date.js')
-  script(src='/js/tabletop.js')
   script(src='/js/moment.js')
   script(src='/js/selectize.min.js')
   script(src='/js/submission.js')
-
-
-

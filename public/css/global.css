@@ -185,3 +185,6 @@
   -webkit-transform: scale(0.99);
   transform-origin: 0 0;
   -webkit-transform-origin: 0 0; }
+
+#htmlwrapper span.required {
+  color: #E00; }
