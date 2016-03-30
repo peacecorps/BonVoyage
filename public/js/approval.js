@@ -67,7 +67,7 @@ $(function() {
     $('#request-delete-btn').click(function() {
     	var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/delete'
         $.ajax({
-            method: "POST",
+            method: "DELETE",
             contentType: "application/x-www-form-urlencoded",
             url: url,
             success: function(response, textStatus, jqXHR) {
