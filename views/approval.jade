@@ -93,6 +93,12 @@ block content
 							button(class="btn btn-success" + (request.status.isPending == false && request.status.isApproved ? " disabled" : ""), id="request-approve-btn") Approve
 						.col-xs-6
 							button(class="btn btn-danger" + (request.status.isPending == false && !request.status.isApproved ? " disabled" : ""), id="request-deny-btn") Deny
+				// If the user is the owner of the request (or a staff)
+				if user && (user.email == request.user.email || user.access >= 1)
+					#request_edit.row
+						.col-xs-12
+							a(href="/requests/#{request._id}/edit")
+								button(class="btn btn-warning", id="request-edit-btn") Edit Request
 				// If the user is the owner of the request (or an admin)
 				if user && (user.email == request.user.email || user.access >= 2)
 					#request_delete.row

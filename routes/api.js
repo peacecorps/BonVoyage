@@ -112,7 +112,9 @@ router.getUsers = function (req, res) {
  * POST Requests
  */
 
-router.postRequests = function (req, res) {
+// Verify that the request is valid while converting it
+// over into the proper form to save as a new request
+function validateRequestSubmission(req, res, failureRedirect, cb) {
 	var userId = req.user._id;
 
 	// Staff will select a user to submit a request for on the form
@@ -124,8 +126,8 @@ router.postRequests = function (req, res) {
 				text: 'You must select a requestee to submit this request for.',
 				class: 'danger',
 			});
-			res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-			return;
+			res.end(JSON.stringify({ redirect: failureRedirect }));
+			return cb(null);
 		}
 	}
 
@@ -150,8 +152,8 @@ router.postRequests = function (req, res) {
 							(i + 1) + ' comes after the end date.',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-					return;
+					res.end(JSON.stringify({ redirect: failureRedirect }));
+					return cb(null);
 				} else if (Object.keys(countriesDictionary).indexOf(leg.country) == -1) {
 					req.session.submission = req.body;
 					req.flash('submissionFlash', {
@@ -159,8 +161,8 @@ router.postRequests = function (req, res) {
 							(i + 1) + ' is not a valid country.',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-					return;
+					res.end(JSON.stringify({ redirect: failureRedirect }));
+					return cb(null);
 				} else if (leg.city === '') {
 					req.session.submission = req.body;
 					req.flash('submissionFlash', {
@@ -168,26 +170,26 @@ router.postRequests = function (req, res) {
 							(i + 1) + ' is invalid',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-					return;
+					res.end(JSON.stringify({ redirect: failureRedirect }));
+					return cb(null);
+				} else {
+					legs.push({
+						startDate: start,
+						endDate: end,
+						city: leg.city,
+						country: countriesDictionary[leg.country],
+						countryCode: leg.country,
+						hotel: leg.hotel,
+						contact: leg.contact,
+						companions: leg.companions,
+						description: leg.description,
+					});
+
+					if (countries.indexOf(leg.country) == -1) {
+						countries.push(leg.country);
+					}
 				}
-
-				legs.push({
-					startDate: start,
-					endDate: end,
-					city: leg.city,
-					country: countriesDictionary[leg.country],
-					countryCode: leg.country,
-					hotel: leg.hotel,
-					contact: leg.contact,
-					companions: leg.companions,
-					description: leg.description,
-				});
-
-				countries.push(leg.country);
 			}
-
-			console.log(countries);
 
 			if (req.body.counterpartApproved === 'false') {
 				req.session.submission = req.body;
@@ -196,70 +198,21 @@ router.postRequests = function (req, res) {
 					'to submit this leave request.',
 					class: 'danger',
 				});
-				res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-				return;
-			}
-
-			if (legs.length > 0) {
-				var newRequest = new Request({
-					userId: userId,
-					status: {
-						isPending: true,
-						isApproved: false,
+				res.end(JSON.stringify({ redirect: failureRedirect }));
+				return cb(null);
+			} else if (legs.length > 0) {
+				cb({
+					requestData: {
+						userId: userId,
+						status: {
+							isPending: true,
+							isApproved: false,
+						},
+						legs: legs,
+						counterpartApproved: true,
 					},
-					legs: legs,
-					counterpartApproved: true,
-				});
-
-				console.log(users);
-
-				newRequest.save(function (err, obj) {
-					if (err) {
-						req.session.submission = req.body;
-						req.flash('submissionFlash', {
-							text: 'An error has occurred while trying to ' +
-								'save this request. Please try again.',
-							class: 'danger',
-						});
-						res.end(JSON.stringify({
-							redirect: '/dashboard/submit',
-						}));
-					} else {
-						// asynchronous
-						// send SMS notification to a staff
-						process.nextTick(function () {
-							for (var i = 0; i < countries.length; i++) {
-								User.find({ access: Access.STAFF,
-								countryCode: countries[i], },
-								function (err, docs) {
-									for (var j = 0; j < docs.length; j++) {
-										var msg = 'A request by ' +
-											users[0].name + ' is waiting ' +
-											'for your approval on BonVoyage.' +
-											' http://localhost:3000/login';
-
-										if (docs[j].phone) {
-											helpers.sendSMS(docs[j].phone,
-											msg);
-										} else {
-											console.log(docs[j].name +
-											' does not have a phone number');
-										}
-									}
-								});
-							}
-						});
-
-						req.flash('dashboardFlash', {
-							text: 'Request successfully saved.',
-							class: 'success',
-							link: {
-								url: '/requests/' + obj._id,
-								text: 'View Request.',
-							},
-						});
-						res.end(JSON.stringify({ redirect: '/dashboard' }));
-					}
+					countries: countries,
+					users: users,
 				});
 			} else {
 				req.session.submission = req.body;
@@ -268,7 +221,8 @@ router.postRequests = function (req, res) {
 						'this request. Please try again.',
 					class: 'danger',
 				});
-				res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
+				res.end(JSON.stringify({ redirect: failureRedirect }));
+				return cb(null);
 			}
 		} else {
 			req.session.submission = req.body;
@@ -276,8 +230,106 @@ router.postRequests = function (req, res) {
 				text: 'The user that you selected could not be found.',
 				class: 'danger',
 			});
-			res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-			return;
+			res.end(JSON.stringify({ redirect: failureRedirect }));
+			return cb(null);
+		}
+	});
+}
+
+router.postUpdatedRequest = function (req, res) {
+	var failureRedirect = '/requests/' + req.request._id + '/edit';
+	var successRedirect = '/requests/' + req.request._id;
+	validateRequestSubmission(req, res, failureRedirect, function (data) {
+		if (data !== null) {
+			console.log('in post update request');
+			console.log(data);
+			console.log(req.request);
+
+			// Calculate the difference between data and the existing data (req.request)
+			// Submit a comment with these changes
+
+			// Update the database with the edited request
+			Request.update({ _id: req.request._id }, data.requestData, function (err) {
+				if (err) {
+					req.session.submission = req.body;
+					req.flash('submissionFlash', {
+						text: 'An error has occurred while trying to ' +
+							'update this request. Please try again.',
+						class: 'danger',
+					});
+					res.end(JSON.stringify({ redirect: failureRedirect, }));
+				}
+			});
+
+			req.flash('approvalFlash', {
+				text: 'This leave request has successfully been updated.',
+				class: 'success',
+			});
+			res.end(JSON.stringify({ redirect: successRedirect }));
+		}
+	});
+
+	// if (req.request) {
+	// 	// If a requestId was provided, but no request was found, return an error
+	// 	// Calculate the diff between the two and submit a comment about it
+	// 	// If a requestId was found, we will update it
+	// }
+};
+
+router.postRequest = function (req, res) {
+	validateRequestSubmission(req, res, '/dashboard/submit', function (data) {
+		if (data !== null) {
+			var newRequest = new Request(data.requestData);
+
+			newRequest.save(function (err, obj) {
+				if (err) {
+					req.session.submission = req.body;
+					req.flash('submissionFlash', {
+						text: 'An error has occurred while trying to ' +
+							'save this request. Please try again.',
+						class: 'danger',
+					});
+					res.end(JSON.stringify({
+						redirect: '/dashboard/submit',
+					}));
+				} else {
+					// asynchronous
+					// send SMS notification to a staff
+					process.nextTick(function () {
+						for (var i = 0; i < data.countries.length; i++) {
+							User.find({
+								access: Access.STAFF,
+								countryCode: data.countries[i],
+							},
+							function (err, docs) {
+								for (var j = 0; j < docs.length; j++) {
+									var msg = 'A request by ' +
+										data.users[0].name + ' is waiting ' +
+										'for your approval on BonVoyage.' +
+										' http://localhost:3000/login';
+
+									if (docs[j].phone) {
+										helpers.sendSMS(docs[j].phone, msg);
+									} else {
+										console.log(docs[j].name +
+										' does not have a phone number');
+									}
+								}
+							});
+						}
+					});
+
+					req.flash('dashboardFlash', {
+						text: 'Request successfully saved.',
+						class: 'success',
+						link: {
+							url: '/requests/' + obj._id,
+							text: 'View Request.',
+						},
+					});
+					res.end(JSON.stringify({ redirect: '/dashboard' }));
+				}
+			});
 		}
 	});
 };
