@@ -9,8 +9,10 @@
 
 $(function() {
   "use strict";
-  var count = 0;
+  var count = 0; // 1 indexed count (decreases when legs are removed)
+  var addedLegCount = -1; // 0 indexed count (doesn't decrease when legs are removed)
   var arrCountries = [];
+  var users = null;
 
   function insertAtIndex(i, id, data) {
       if(i === 1) {
@@ -101,7 +103,7 @@ $(function() {
   }
 
   function addLeg(leg) {
-      count++;
+      count++; addedLegCount++;
       var m = new moment();
       m.add(1, 'month');
       var defaultStart = new DateOnly(m);
@@ -113,6 +115,7 @@ $(function() {
       var html =
       "<div class='leg shadow-box'> \
           <h2> Trip Leg #" + count + " </h2> \
+          <input class='addedLegCount hidden' value='" + addedLegCount + "'> \
           <label class='info'>Date leaving <span class='required'>*<span></label> \
           <input class='form-control datepicker date-leaving' type='text' placeholder='Jan 1, 2000', value='" + (leg && leg.startDate ? leg.startDate : defaultStart.toString()) + "'> \
           <label class='info'>Date returning <span class='required'>*<span></label> \
@@ -149,7 +152,8 @@ $(function() {
           hotel: $(leg).find('.hotel').val(),
           contact: $(leg).find('.contact').val(),
           companions: $(leg).find('.companions').val(),
-          description: $(leg).find('.description').val()
+          description: $(leg).find('.description').val(),
+          addedLegCount: $(leg).find('.addedLegCount').val(),
       };
       return data;
   }
@@ -161,12 +165,29 @@ $(function() {
   function submissionDataExists() {
       return !$.isEmptyObject(submissionData);
   }
+
+  function updateVolunteerName(userId) {
+    if (users) {
+      var name = null;
+      for(var i = 0; i < users.length; i++) {
+        if (users[i]._id === userId) {
+          name = users[i].name;
+        }
+      }
+      if (name !== null) {
+        $('#submissionName').text(' (' + name + ') ');
+      }
+    }
+  }
   $('.select-country').selectize();
   var $select_requestee = $('.selectRequestee').selectize({
       valueField: '_id',
       labelField: 'name',
       searchField: ['name'],
-      sortField: 'name'
+      sortField: 'name',
+      onChange: function(value) {
+        updateVolunteerName(value);
+      }
   });
 
 
@@ -176,15 +197,17 @@ $(function() {
           url: "/api/users?maxAccess=VOLUNTEER",
           dataType: "json",
           success: function(json) {
-              console.log(json);
-              $select_requestee[0].selectize.addOption(json);
-              $select_requestee[0].selectize.refreshOptions(false);
-              if(submissionDataExists()) {
-                  // A failure just occurred during submission: we need to replace the previously submitted data
-                  if (isSubmitAsOtherUserShowing() && submissionData.email !== undefined) {
-                      $select_requestee[0].selectize.setValue(submissionData._id);
-                  }
-              }
+            users = json;
+            console.log(json);
+            $select_requestee[0].selectize.addOption(json);
+            $select_requestee[0].selectize.refreshOptions(false);
+            if(submissionDataExists()) {
+                // A failure just occurred during submission: we need to replace the previously submitted data
+                if (isSubmitAsOtherUserShowing() && submissionData.userId !== undefined) {
+                    $select_requestee[0].selectize.setValue(submissionData.userId);
+                }
+                updateVolunteerName(submissionData.userId);
+            }
           }
       });
   }

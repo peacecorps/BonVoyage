@@ -6,6 +6,7 @@ var Request = require('../models/request');
 var Access = require('../config/access');
 var phoneNumber = require('../config/phone');
 var DateOnly = require('dateonly');
+var moment = require('moment');
 var jade = require('jade');
 var path = require('path');
 var fs = require('fs');
@@ -234,6 +235,32 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 			});
 		});
 	}
+};
+
+module.exports.postComment = function (
+	requestId, name, userId, commentMessage, cb) {
+	Request.findByIdAndUpdate(requestId, {
+		$push: {
+			comments: {
+				$each:[
+					{
+						name: name,
+						userId: userId,
+						content: commentMessage,
+					},
+				],
+			},
+		},
+	}, function (err) {
+		cb(err);
+	});
+};
+
+module.exports.formatDateOnly = function (date) {
+	var dateonly = new DateOnly(parseInt(date + ''));
+	var formatteddate = moment(dateonly.toDate()).format('MMM DD, YYYY');
+	console.log(formatteddate);
+	return formatteddate;
 };
 
 module.exports.sendSMS = function (sendTo, body, callback) {

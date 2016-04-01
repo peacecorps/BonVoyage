@@ -120,7 +120,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 	// Staff will select a user to submit a request for on the form
 	if (req.user.access >= Access.STAFF) {
 		userId = req.body.userId;
-		if (userId === undefined) {
+		if (userId === undefined || userId === '') {
 			req.session.submission = req.body;
 			req.flash('submissionFlash', {
 				text: 'You must select a requestee to submit this request for.',
@@ -183,6 +183,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 						contact: leg.contact,
 						companions: leg.companions,
 						description: leg.description,
+						addedLegCount: leg.addedLegCount,
 					});
 
 					if (countries.indexOf(leg.country) == -1) {
@@ -242,38 +243,172 @@ router.postUpdatedRequest = function (req, res) {
 	validateRequestSubmission(req, res, failureRedirect, function (data) {
 		if (data !== null) {
 			console.log('in post update request');
-			console.log(data);
-			console.log(req.request);
+			console.log(JSON.stringify(data, null, 4));
+			console.log(JSON.stringify(req.request, null, 4));
 
 			// Calculate the difference between data and the existing data (req.request)
-			// Submit a comment with these changes
+			var changesMade = false;
+			var comment = req.user.name +
+				' updated this request with the following changes:\n';
 
-			// Update the database with the edited request
-			Request.update({ _id: req.request._id }, data.requestData, function (err) {
-				if (err) {
-					req.session.submission = req.body;
-					req.flash('submissionFlash', {
-						text: 'An error has occurred while trying to ' +
-							'update this request. Please try again.',
-						class: 'danger',
-					});
-					res.end(JSON.stringify({ redirect: failureRedirect, }));
+			// Detect changes in any of the legs
+			// List of indexes (addedLegCount) that were not removed
+			var originalLegIndexesFound = [];
+			var legBefore;
+			var legAfter;
+
+			// Look for added or modified legs
+			for (var i = 0; i < data.requestData.legs.length; i++) {
+				legAfter = data.requestData.legs[i];
+				var addedLegCount = legAfter.addedLegCount;
+				if (addedLegCount >= req.request.legs.length) {
+					// This leg was added
+					comment += '- Added a new trip leg to ' +
+						legAfter.country +
+						' from ' + helpers.formatDateOnly(legAfter.startDate) +
+						' to ' + helpers.formatDateOnly(legAfter.endDate) + '.\n';
+					changesMade = true;
+				} else {
+					// Compare the request before and after
+					legBefore = req.request.legs[addedLegCount];
+					var didModify = false;
+					var modifiedComment = '- Modifed the trip leg to ' +
+						legAfter.country +
+						' from ' + helpers.formatDateOnly(legAfter.startDate) +
+						' to ' + helpers.formatDateOnly(legAfter.endDate) + '.\n';
+					if (legBefore.startDate != legAfter.startDate) {
+						modifiedComment += '	Changed the start date from ' +
+							helpers.formatDateOnly(legBefore.startDate) + ' to ' +
+							helpers.formatDateOnly(legAfter.startDate) + '.\n';
+						didModify = true;
+					}
+
+					if (legBefore.endDate != legAfter.endDate) {
+						modifiedComment += '	Changed the end date from ' +
+							helpers.formatDateOnly(legBefore.endDate) + ' to ' +
+							helpers.formatDateOnly(legAfter.endDate) + '.\n';
+						didModify = true;
+					}
+
+					if (legBefore.city != legAfter.city) {
+						modifiedComment += '	Changed the city from ' +
+							legBefore.city + ' to ' +
+							legAfter.city + '.\n';
+						didModify = true;
+					}
+
+					if (legBefore.country != legAfter.country) {
+						modifiedComment += '	Changed the country from ' +
+							legBefore.country + ' to ' +
+							legAfter.country + '.\n';
+						didModify = true;
+					}
+
+					if (legBefore.hotel != legAfter.hotel) {
+						modifiedComment += '	Changed the hotel information from "' +
+							legBefore.hotel + '" to "' +
+							legAfter.hotel + '".\n';
+						didModify = true;
+					}
+
+					if (legBefore.contact != legAfter.contact) {
+						modifiedComment += '	Changed the contact information from "' +
+							legBefore.contact + '" to "' +
+							legAfter.contact + '".\n';
+						didModify = true;
+					}
+
+					if (legBefore.companions != legAfter.companions) {
+						modifiedComment += '	Changed the companions information from "' +
+							legBefore.companions + '" to "' +
+							legAfter.companions + '".\n';
+						didModify = true;
+					}
+
+					if (legBefore.description != legAfter.description) {
+						modifiedComment += '	Changed the description from "' +
+							legBefore.description + '" to "' +
+							legAfter.description + '".\n';
+						didModify = true;
+					}
+
+					if (didModify) {
+						comment += modifiedComment;
+						changesMade = true;
+					}
 				}
-			});
+			}
 
-			req.flash('approvalFlash', {
-				text: 'This leave request has successfully been updated.',
-				class: 'success',
-			});
-			res.end(JSON.stringify({ redirect: successRedirect }));
+			// Look for removed legs
+			for (i = 0; i < req.request.legs.length; i++) {
+				legBefore = req.request.legs[i];
+				if (!originalLegIndexesFound.indexOf(i)) {
+					// This leg was removed
+					comment += '- Removed the trip leg to ' +
+						legBefore.country +
+						' from ' + helpers.formatDateOnly(legBefore.startDate) +
+						' to ' + helpers.formatDateOnly(legBefore.endDate) + '.\n';
+					changesMade = true;
+				}
+			}
+
+			// Detect if the user submitted for changed
+			if (data.users.length > 0 && !data.users[0]._id.equals(req.request.userId)) {
+				comment += '- Changed Peace Corps Volunteer from ' +
+					req.request.user.name + ' to ' + data.users[0].name + '\n';
+				changesMade = true;
+			}
+
+			if (changesMade) {
+				console.log(comment);
+
+				// Submit a comment with these changes
+				helpers.postComment(req.request._id, 'Administrator', null, comment,
+				function (err) {
+					if (err) {
+						console.error({
+							error: err,
+						});
+						req.flash('approvalFlash', {
+							text: 'An error has occurred while trying to ' +
+								'update this request. Please try again.',
+							class: 'danger',
+						});
+						res.end(JSON.stringify({ redirect: failureRedirect }));
+					} else {
+						// Update the database with the edited request
+						Request.update({ _id: req.request._id }, data.requestData,
+							function (err) {
+							if (err) {
+								req.session.submission = req.body;
+								req.flash('submissionFlash', {
+									text: 'An error has occurred while trying to ' +
+										'update this request. Please try again.',
+									class: 'danger',
+								});
+								res.end(JSON.stringify({ redirect: failureRedirect, }));
+							}
+						});
+
+						req.flash('approvalFlash', {
+							text: 'This leave request has successfully been updated.',
+							class: 'success',
+						});
+						res.end(JSON.stringify({ redirect: successRedirect }));
+					}
+				});
+			} else {
+				// No changes have been made --
+				// we will jsut rediect them to the approval page
+
+				// req.flash('approvalFlash', {
+				// 	text: 'This leave request has successfully been updated.',
+				// 	class: 'success',
+				// });
+				res.end(JSON.stringify({ redirect: successRedirect }));
+			}
 		}
 	});
-
-	// if (req.request) {
-	// 	// If a requestId was provided, but no request was found, return an error
-	// 	// Calculate the diff between the two and submit a comment about it
-	// 	// If a requestId was found, we will update it
-	// }
 };
 
 router.postRequest = function (req, res) {
@@ -426,17 +561,8 @@ router.postDeny = function (req, res) {
 
 router.postComments = function (req, res) {
 	var id = req.params.requestId;
-	Request.findByIdAndUpdate(id, { $push: {
-		comments: {
-			$each:[
-				{
-					name:req.user.name,
-					email:req.user.email,
-					content:req.param('content'),
-				},
-			],
-		},
-	}, }, function (err) {
+	helpers.postComment(id, req.user.name, req.user._id, req.param('content'),
+	function (err) {
 		if (err) {
 			return res.send(500, { error: err });
 		}

@@ -27,7 +27,9 @@ block content
           .checkbox
             input(type="checkbox", id="approvalCheckbox") 
             label(for="approvalCheckbox") 
-              | I attest that I (#{user.name}) have received approval 
+              | I attest that I 
+              span#submissionName
+              | have received approval 
               | from my supervisor on site for this leave. 
               span.required *
 
