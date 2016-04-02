@@ -114,6 +114,8 @@ app.get('/dashboard/submit', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderSubform);
 app.get('/requests/:requestId', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
+app.get('/requests/:requestId/edit', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), views.renderEditRequest);
 app.get('/users', isLoggedIn, views.renderUsers);
 app.get('/users/add', isLoggedIn,
 	needsAccess(Access.STAFF), views.renderAddUsers);
@@ -150,7 +152,9 @@ app.post('/api/logout', api.logout);
 app.post('/api/reset', api.reset);
 app.post('/api/reset/:token', api.resetValidator);
 app.post('/api/requests', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.postRequests);
+	needsAccess(Access.VOLUNTEER), api.postRequest);
+app.post('/api/requests/:requestId', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.postUpdatedRequest);
 app.post('/api/access', isLoggedIn,
 	needsAccess(Access.STAFF), api.modifyAccess);
 app.post('/api/users', isLoggedIn,

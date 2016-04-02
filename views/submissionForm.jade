@@ -13,7 +13,7 @@ block content
     .col-xs-12.col-md-offset-1.col-md-10
 
       .jumbotron
-        h2 Submission Form
+        h2= title
         div(class='alerts')
         
         include flash
@@ -27,13 +27,15 @@ block content
           .checkbox
             input(type="checkbox", id="approvalCheckbox") 
             label(for="approvalCheckbox") 
-              | I attest that I (#{user.name}) have received approval 
+              | I attest that I 
+              span#submissionName
+              | have received approval 
               | from my supervisor at site for this leave. 
               span.required *
 
           //- Travel legs are inserted in submission.js
           button.btn.btn-default#request-add-leg-btn Add Another Trip Leg
-          button.btn.btn-success#request-submit-btn Submit All Trip Legs
+          button.btn.btn-success#request-submit-btn= text.submit
 
 block scripts
   script.

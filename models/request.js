@@ -29,7 +29,7 @@ var requestSchema = mongoose.Schema({
 	comments: [
 		{
 			name: String,
-			email: String,
+			userId: mongoose.Schema.Types.ObjectId,
 			content: String,
 			timestamp: { type: Date, default: Date.now },
 		},

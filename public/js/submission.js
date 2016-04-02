@@ -9,8 +9,10 @@
 
 $(function() {
   "use strict";
-  var count = 0;
+  var count = 0; // 1 indexed count (decreases when legs are removed)
+  var addedLegCount = -1; // 0 indexed count (doesn't decrease when legs are removed)
   var arrCountries = [];
+  var users = null;
 
   function insertAtIndex(i, id, data) {
       if(i === 1) {
@@ -101,21 +103,23 @@ $(function() {
   }
 
   function addLeg(leg) {
-      count++;
+      count++; addedLegCount++;
       var m = new moment();
       m.add(1, 'month');
-      var default_start = new DateOnly(m);
+      var defaultStart = new DateOnly(m);
       m.add(4, 'days');
-      var default_end = new DateOnly(m);
-      console.log(default_start);
-      console.log(default_end);
+      var defaultEnd = new DateOnly(m);
+      console.log(defaultStart);
+      console.log(defaultEnd);
+      console.log(leg);
       var html =
       "<div class='leg shadow-box'> \
           <h2> Trip Leg #" + count + " </h2> \
+          <input class='addedLegCount hidden' value='" + addedLegCount + "'> \
           <label class='info'>Date leaving <span class='required'>*<span></label> \
-          <input class='form-control datepicker date-leaving' type='text' placeholder='Jan 1, 2000', value='" + (leg && leg.start_date ? leg.start_date : default_start.toString()) + "'> \
+          <input class='form-control datepicker date-leaving' type='text' placeholder='Jan 1, 2000', value='" + (leg && leg.startDate ? leg.startDate : defaultStart.toString()) + "'> \
           <label class='info'>Date returning <span class='required'>*<span></label> \
-          <input class='form-control datepicker date-returning' type='text' placeholder='Dec 31, 2000', value='" + (leg && leg.end_date ? leg.end_date : default_end.toString()) + "'> \
+          <input class='form-control datepicker date-returning' type='text' placeholder='Dec 31, 2000', value='" + (leg && leg.endDate ? leg.endDate : defaultEnd.toString()) + "'> \
           <label class='info'>City <span class='required'>*<span></label> \
           <input class='form-control city' type='text' placeholder='Chicago' value='" + (leg && leg.city ? leg.city : '') + "'></input> \
           <label class='info'>Country <span class='required'>*<span></label> \
@@ -141,14 +145,15 @@ $(function() {
       var start = $(leg).find('.date-leaving').val();
       var end = $(leg).find('.date-returning').val();
       var data = {
-          start_date: (start ? (new DateOnly(start).toString()) : undefined),
-          end_date: (end ? (new DateOnly(end).toString()) : undefined),
+          startDate: (start ? (new DateOnly(start).toString()) : undefined),
+          endDate: (end ? (new DateOnly(end).toString()) : undefined),
           city: $(leg).find('.city').val(),
           country: $(leg).find('.selectized').selectize()[0].selectize.getValue(),
           hotel: $(leg).find('.hotel').val(),
           contact: $(leg).find('.contact').val(),
           companions: $(leg).find('.companions').val(),
-          description: $(leg).find('.description').val()
+          description: $(leg).find('.description').val(),
+          addedLegCount: $(leg).find('.addedLegCount').val(),
       };
       return data;
   }
@@ -160,12 +165,29 @@ $(function() {
   function submissionDataExists() {
       return !$.isEmptyObject(submissionData);
   }
+
+  function updateVolunteerName(userId) {
+    if (users) {
+      var name = null;
+      for(var i = 0; i < users.length; i++) {
+        if (users[i]._id === userId) {
+          name = users[i].name;
+        }
+      }
+      if (name !== null) {
+        $('#submissionName').text(' (' + name + ') ');
+      }
+    }
+  }
   $('.select-country').selectize();
   var $select_requestee = $('.selectRequestee').selectize({
       valueField: '_id',
       labelField: 'name',
       searchField: ['name'],
-      sortField: 'name'
+      sortField: 'name',
+      onChange: function(value) {
+        updateVolunteerName(value);
+      }
   });
 
 
@@ -175,15 +197,17 @@ $(function() {
           url: "/api/users?maxAccess=VOLUNTEER",
           dataType: "json",
           success: function(json) {
-              console.log(json);
-              $select_requestee[0].selectize.addOption(json);
-              $select_requestee[0].selectize.refreshOptions(false);
-              if(submissionDataExists()) {
-                  // A failure just occurred during submission: we need to replace the previously submitted data
-                  if (isSubmitAsOtherUserShowing() && submissionData.email !== undefined) {
-                      $select_requestee[0].selectize.setValue(submissionData._id);
-                  }
-              }
+            users = json;
+            console.log(json);
+            $select_requestee[0].selectize.addOption(json);
+            $select_requestee[0].selectize.refreshOptions(false);
+            if(submissionDataExists()) {
+                // A failure just occurred during submission: we need to replace the previously submitted data
+                if (isSubmitAsOtherUserShowing() && submissionData.userId !== undefined) {
+                    $select_requestee[0].selectize.setValue(submissionData.userId);
+                }
+                updateVolunteerName(submissionData.userId);
+            }
           }
       });
   }
@@ -245,7 +269,15 @@ $(function() {
           userId = $select_requestee[0].selectize.getValue();
       }
       var counterpartApproved = $('#approvalCheckbox').is(':checked');
-      
+
+      var url = '/api/requests';
+      var curr_url = window.location.href;
+      var regex = curr_url.match('^.*/requests/([0-9a-f]{24})/edit$');
+      if (regex !== null && regex.length > 1) {
+        url = '/api/requests/' + regex[1];
+        console.log(url);
+      }
+
       $.ajax({
           method: "POST",
           contentType: "application/x-www-form-urlencoded",
@@ -255,7 +287,7 @@ $(function() {
               counterpartApproved: counterpartApproved,
           },
           dataType: 'json',
-          url: '/api/requests',
+          url: url,
           success: function(response) {
               if (response && response.redirect) {
                   // response.redirect contains the string URL to redirect to

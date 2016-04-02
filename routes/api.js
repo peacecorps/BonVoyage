@@ -112,20 +112,22 @@ router.getUsers = function (req, res) {
  * POST Requests
  */
 
-router.postRequests = function (req, res) {
+// Verify that the request is valid while converting it
+// over into the proper form to save as a new request
+function validateRequestSubmission(req, res, failureRedirect, cb) {
 	var userId = req.user._id;
 
 	// Staff will select a user to submit a request for on the form
 	if (req.user.access >= Access.STAFF) {
 		userId = req.body.userId;
-		if (userId === undefined) {
+		if (userId === undefined || userId === '') {
 			req.session.submission = req.body;
 			req.flash('submissionFlash', {
 				text: 'You must select a requestee to submit this request for.',
 				class: 'danger',
 			});
-			res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-			return;
+			res.end(JSON.stringify({ redirect: failureRedirect }));
+			return cb(null);
 		}
 	}
 
@@ -150,8 +152,8 @@ router.postRequests = function (req, res) {
 							(i + 1) + ' comes after the end date.',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-					return;
+					res.end(JSON.stringify({ redirect: failureRedirect }));
+					return cb(null);
 				} else if (Object.keys(countriesDictionary).indexOf(leg.country) == -1) {
 					req.session.submission = req.body;
 					req.flash('submissionFlash', {
@@ -159,8 +161,8 @@ router.postRequests = function (req, res) {
 							(i + 1) + ' is not a valid country.',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-					return;
+					res.end(JSON.stringify({ redirect: failureRedirect }));
+					return cb(null);
 				} else if (leg.city === '') {
 					req.session.submission = req.body;
 					req.flash('submissionFlash', {
@@ -168,26 +170,27 @@ router.postRequests = function (req, res) {
 							(i + 1) + ' is invalid',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-					return;
+					res.end(JSON.stringify({ redirect: failureRedirect }));
+					return cb(null);
+				} else {
+					legs.push({
+						startDate: start,
+						endDate: end,
+						city: leg.city,
+						country: countriesDictionary[leg.country],
+						countryCode: leg.country,
+						hotel: leg.hotel,
+						contact: leg.contact,
+						companions: leg.companions,
+						description: leg.description,
+						addedLegCount: leg.addedLegCount,
+					});
+
+					if (countries.indexOf(leg.country) == -1) {
+						countries.push(leg.country);
+					}
 				}
-
-				legs.push({
-					startDate: start,
-					endDate: end,
-					city: leg.city,
-					country: countriesDictionary[leg.country],
-					countryCode: leg.country,
-					hotel: leg.hotel,
-					contact: leg.contact,
-					companions: leg.companions,
-					description: leg.description,
-				});
-
-				countries.push(leg.country);
 			}
-
-			console.log(countries);
 
 			if (req.body.counterpartApproved === 'false') {
 				req.session.submission = req.body;
@@ -196,70 +199,21 @@ router.postRequests = function (req, res) {
 					'to submit this leave request.',
 					class: 'danger',
 				});
-				res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-				return;
-			}
-
-			if (legs.length > 0) {
-				var newRequest = new Request({
-					userId: userId,
-					status: {
-						isPending: true,
-						isApproved: false,
+				res.end(JSON.stringify({ redirect: failureRedirect }));
+				return cb(null);
+			} else if (legs.length > 0) {
+				cb({
+					requestData: {
+						userId: userId,
+						status: {
+							isPending: true,
+							isApproved: false,
+						},
+						legs: legs,
+						counterpartApproved: true,
 					},
-					legs: legs,
-					counterpartApproved: true,
-				});
-
-				console.log(users);
-
-				newRequest.save(function (err, obj) {
-					if (err) {
-						req.session.submission = req.body;
-						req.flash('submissionFlash', {
-							text: 'An error has occurred while trying to ' +
-								'save this request. Please try again.',
-							class: 'danger',
-						});
-						res.end(JSON.stringify({
-							redirect: '/dashboard/submit',
-						}));
-					} else {
-						// asynchronous
-						// send SMS notification to a staff
-						process.nextTick(function () {
-							for (var i = 0; i < countries.length; i++) {
-								User.find({ access: Access.STAFF,
-								countryCode: countries[i], },
-								function (err, docs) {
-									for (var j = 0; j < docs.length; j++) {
-										var msg = 'A request by ' +
-											users[0].name + ' is waiting ' +
-											'for your approval on BonVoyage.' +
-											' http://localhost:3000/login';
-
-										if (docs[j].phone) {
-											helpers.sendSMS(docs[j].phone,
-											msg);
-										} else {
-											console.log(docs[j].name +
-											' does not have a phone number');
-										}
-									}
-								});
-							}
-						});
-
-						req.flash('dashboardFlash', {
-							text: 'Request successfully saved.',
-							class: 'success',
-							link: {
-								url: '/requests/' + obj._id,
-								text: 'View Request.',
-							},
-						});
-						res.end(JSON.stringify({ redirect: '/dashboard' }));
-					}
+					countries: countries,
+					users: users,
 				});
 			} else {
 				req.session.submission = req.body;
@@ -268,7 +222,8 @@ router.postRequests = function (req, res) {
 						'this request. Please try again.',
 					class: 'danger',
 				});
-				res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
+				res.end(JSON.stringify({ redirect: failureRedirect }));
+				return cb(null);
 			}
 		} else {
 			req.session.submission = req.body;
@@ -276,8 +231,240 @@ router.postRequests = function (req, res) {
 				text: 'The user that you selected could not be found.',
 				class: 'danger',
 			});
-			res.end(JSON.stringify({ redirect: '/dashboard/submit' }));
-			return;
+			res.end(JSON.stringify({ redirect: failureRedirect }));
+			return cb(null);
+		}
+	});
+}
+
+router.postUpdatedRequest = function (req, res) {
+	var failureRedirect = '/requests/' + req.request._id + '/edit';
+	var successRedirect = '/requests/' + req.request._id;
+	validateRequestSubmission(req, res, failureRedirect, function (data) {
+		if (data !== null) {
+			console.log('in post update request');
+			console.log(JSON.stringify(data, null, 4));
+			console.log(JSON.stringify(req.request, null, 4));
+
+			// Calculate the difference between data and the existing data (req.request)
+			var changesMade = false;
+			var comment = req.user.name +
+				' updated this request with the following changes:\n';
+
+			// Detect changes in any of the legs
+			// List of indexes (addedLegCount) that were not removed
+			var originalLegIndexesFound = [];
+			var legBefore;
+			var legAfter;
+
+			// Look for added or modified legs
+			for (var i = 0; i < data.requestData.legs.length; i++) {
+				legAfter = data.requestData.legs[i];
+				var addedLegCount = legAfter.addedLegCount;
+				if (addedLegCount >= req.request.legs.length) {
+					// This leg was added
+					comment += '- Added a new trip leg to ' +
+						legAfter.country +
+						' from ' + helpers.formatDateOnly(legAfter.startDate) +
+						' to ' + helpers.formatDateOnly(legAfter.endDate) + '.\n';
+					changesMade = true;
+				} else {
+					// Compare the request before and after
+					legBefore = req.request.legs[addedLegCount];
+					var didModify = false;
+					var modifiedComment = '- Modifed the trip leg to ' +
+						legAfter.country +
+						' from ' + helpers.formatDateOnly(legAfter.startDate) +
+						' to ' + helpers.formatDateOnly(legAfter.endDate) + '.\n';
+					if (legBefore.startDate != legAfter.startDate) {
+						modifiedComment += '	Changed the start date from ' +
+							helpers.formatDateOnly(legBefore.startDate) + ' to ' +
+							helpers.formatDateOnly(legAfter.startDate) + '.\n';
+						didModify = true;
+					}
+
+					if (legBefore.endDate != legAfter.endDate) {
+						modifiedComment += '	Changed the end date from ' +
+							helpers.formatDateOnly(legBefore.endDate) + ' to ' +
+							helpers.formatDateOnly(legAfter.endDate) + '.\n';
+						didModify = true;
+					}
+
+					if (legBefore.city != legAfter.city) {
+						modifiedComment += '	Changed the city from ' +
+							legBefore.city + ' to ' +
+							legAfter.city + '.\n';
+						didModify = true;
+					}
+
+					if (legBefore.country != legAfter.country) {
+						modifiedComment += '	Changed the country from ' +
+							legBefore.country + ' to ' +
+							legAfter.country + '.\n';
+						didModify = true;
+					}
+
+					if (legBefore.hotel != legAfter.hotel) {
+						modifiedComment += '	Changed the hotel information from "' +
+							legBefore.hotel + '" to "' +
+							legAfter.hotel + '".\n';
+						didModify = true;
+					}
+
+					if (legBefore.contact != legAfter.contact) {
+						modifiedComment += '	Changed the contact information from "' +
+							legBefore.contact + '" to "' +
+							legAfter.contact + '".\n';
+						didModify = true;
+					}
+
+					if (legBefore.companions != legAfter.companions) {
+						modifiedComment += '	Changed the companions information from "' +
+							legBefore.companions + '" to "' +
+							legAfter.companions + '".\n';
+						didModify = true;
+					}
+
+					if (legBefore.description != legAfter.description) {
+						modifiedComment += '	Changed the description from "' +
+							legBefore.description + '" to "' +
+							legAfter.description + '".\n';
+						didModify = true;
+					}
+
+					if (didModify) {
+						comment += modifiedComment;
+						changesMade = true;
+					}
+				}
+			}
+
+			// Look for removed legs
+			for (i = 0; i < req.request.legs.length; i++) {
+				legBefore = req.request.legs[i];
+				if (!originalLegIndexesFound.indexOf(i)) {
+					// This leg was removed
+					comment += '- Removed the trip leg to ' +
+						legBefore.country +
+						' from ' + helpers.formatDateOnly(legBefore.startDate) +
+						' to ' + helpers.formatDateOnly(legBefore.endDate) + '.\n';
+					changesMade = true;
+				}
+			}
+
+			// Detect if the user submitted for changed
+			if (data.users.length > 0 && !data.users[0]._id.equals(req.request.userId)) {
+				comment += '- Changed Peace Corps Volunteer from ' +
+					req.request.user.name + ' to ' + data.users[0].name + '\n';
+				changesMade = true;
+			}
+
+			if (changesMade) {
+				console.log(comment);
+
+				// Submit a comment with these changes
+				helpers.postComment(req.request._id, 'Administrator', null, comment,
+				function (err) {
+					if (err) {
+						console.error({
+							error: err,
+						});
+						req.flash('approvalFlash', {
+							text: 'An error has occurred while trying to ' +
+								'update this request. Please try again.',
+							class: 'danger',
+						});
+						res.end(JSON.stringify({ redirect: failureRedirect }));
+					} else {
+						// Update the database with the edited request
+						Request.update({ _id: req.request._id }, data.requestData,
+							function (err) {
+							if (err) {
+								req.session.submission = req.body;
+								req.flash('submissionFlash', {
+									text: 'An error has occurred while trying to ' +
+										'update this request. Please try again.',
+									class: 'danger',
+								});
+								res.end(JSON.stringify({ redirect: failureRedirect, }));
+							}
+						});
+
+						req.flash('approvalFlash', {
+							text: 'This leave request has successfully been updated.',
+							class: 'success',
+						});
+						res.end(JSON.stringify({ redirect: successRedirect }));
+					}
+				});
+			} else {
+				// No changes have been made --
+				// we will jsut rediect them to the approval page
+
+				// req.flash('approvalFlash', {
+				// 	text: 'This leave request has successfully been updated.',
+				// 	class: 'success',
+				// });
+				res.end(JSON.stringify({ redirect: successRedirect }));
+			}
+		}
+	});
+};
+
+router.postRequest = function (req, res) {
+	validateRequestSubmission(req, res, '/dashboard/submit', function (data) {
+		if (data !== null) {
+			var newRequest = new Request(data.requestData);
+
+			newRequest.save(function (err, obj) {
+				if (err) {
+					req.session.submission = req.body;
+					req.flash('submissionFlash', {
+						text: 'An error has occurred while trying to ' +
+							'save this request. Please try again.',
+						class: 'danger',
+					});
+					res.end(JSON.stringify({
+						redirect: '/dashboard/submit',
+					}));
+				} else {
+					// asynchronous
+					// send SMS notification to a staff
+					process.nextTick(function () {
+						for (var i = 0; i < data.countries.length; i++) {
+							User.find({
+								access: Access.STAFF,
+								countryCode: data.countries[i],
+							},
+							function (err, docs) {
+								for (var j = 0; j < docs.length; j++) {
+									var msg = 'A request by ' +
+										data.users[0].name + ' is waiting ' +
+										'for your approval on BonVoyage.' +
+										' http://localhost:3000/login';
+
+									if (docs[j].phone) {
+										helpers.sendSMS(docs[j].phone, msg);
+									} else {
+										console.log(docs[j].name +
+										' does not have a phone number');
+									}
+								}
+							});
+						}
+					});
+
+					req.flash('dashboardFlash', {
+						text: 'Request successfully saved.',
+						class: 'success',
+						link: {
+							url: '/requests/' + obj._id,
+							text: 'View Request.',
+						},
+					});
+					res.end(JSON.stringify({ redirect: '/dashboard' }));
+				}
+			});
 		}
 	});
 };
@@ -374,17 +561,8 @@ router.postDeny = function (req, res) {
 
 router.postComments = function (req, res) {
 	var id = req.params.requestId;
-	Request.findByIdAndUpdate(id, { $push: {
-		comments: {
-			$each:[
-				{
-					name:req.user.name,
-					email:req.user.email,
-					content:req.param('content'),
-				},
-			],
-		},
-	}, }, function (err) {
+	helpers.postComment(id, req.user.name, req.user._id, req.param('content'),
+	function (err) {
 		if (err) {
 			return res.send(500, { error: err });
 		}

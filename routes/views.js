@@ -79,6 +79,8 @@ router.renderSubform = function (req, res) {
 		req.session.submission = null;
 	}
 
+	console.log(sub);
+
 	var links = [
 		{ text: 'Dashboard', href: '/dashboard' },
 		{ text: 'Submit a Request', href: '/dashboard/submit', active: true },
@@ -94,6 +96,64 @@ router.renderSubform = function (req, res) {
 		messages: req.flash('submissionFlash'),
 		shouldSelectRequestee: req.user.access >= Access.STAFF,
 		submission: sub,
+		text: {
+			submit: 'Submit All Legs',
+		},
+	});
+};
+
+router.renderEditRequest = function (req, res) {
+	var sub = {};
+	if (req.session.submission) {
+		sub = req.session.submission;
+		req.session.submission = null;
+	} else if (req.request) {
+		console.log(req.request);
+		var legs = [];
+		for (var i = 0; i < req.request.legs.length; i++) {
+			// Convert the start and end dates into a format that
+			// will be accepted by JS Dates
+			var leg = req.request.legs[i];
+			var start = '' + leg.startDate;
+			var end = '' + leg.endDate;
+			leg.startDate = (parseInt(start.substring(4, 6)) + 1) + ' ' +
+				start.substring(6, 8) + ' ' +
+				start.substring(0, 4);
+			leg.endDate = (parseInt(end.substring(4, 6)) + 1) + ' ' +
+				end.substring(6, 8) + ' ' +
+				end.substring(0, 4);
+
+			// Rename the countryCode to country, to match front-end
+			leg.country = leg.countryCode;
+			delete leg.countryCode;
+			legs.push(leg);
+		}
+
+		sub = {
+			userId: req.request.userId,
+			legs: req.request.legs,
+			counterpartApproved: '' + req.request.counterpartApproved,
+		};
+	}
+
+	var links = [
+		{ text: 'Dashboard', href: '/dashboard' },
+		{ text: 'Submit a Request', href: '/dashboard/submit' },
+	];
+	if (req.user.access >= Access.STAFF) {
+		links.push({ text: 'Users', href: '/users' });
+		links.push({ text: 'Add Users', href: '/users/add' });
+	}
+
+	res.render('submissionForm.jade', {
+		title: 'Edit Request',
+		links: links,
+		messages: req.flash('submissionFlash'),
+		shouldSelectRequestee: req.user.access >= Access.STAFF,
+		submission: sub,
+		text: {
+			submit: 'Update Leave Request',
+		},
 	});
 };
 
