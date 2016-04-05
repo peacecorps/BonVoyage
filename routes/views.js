@@ -131,6 +131,7 @@ router.renderEditRequest = function (req, res) {
 
 		sub = {
 			userId: req.request.userId,
+			staffId: req.request.staffId,
 			legs: req.request.legs,
 			counterpartApproved: '' + req.request.counterpartApproved,
 		};
@@ -220,8 +221,6 @@ router.renderApproval = function (req, res) {
 		links: links,
 		messages: req.flash('approvalFlash'),
 		request: req.request,
-		nextRequestId: req.nextRequestId,
-		prevRequestId: req.prevRequestId,
 	});
 };
 
