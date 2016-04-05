@@ -12,10 +12,8 @@ var api = require('./routes/api');
 var app = express();
 var passport = require('passport');
 var session = require('express-session');
-var configDB = require('./config/database.js');
 var flash    = require('connect-flash');
 var Access = require('./config/access');
-var secrets = require('./config/secrets');
 var multer = require('multer');
 var upload = multer({
 	dest: 'uploads/users/',
@@ -48,7 +46,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(flash());
 
 // required for passport
-app.use(session({ secret: secrets.sessionSecret }));
+app.use(session({ secret: process.env.SESSION_SECRET }));
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
@@ -60,7 +58,7 @@ app.use(function (req, res, next) {
 	next();
 });
 
-mongoose.connect(configDB.url);
+mongoose.connect(process.env.DATABASE_URL);
 mongoose.connection.on('error', function (err) {
 	if (err) {
 		console.log(err);

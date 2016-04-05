@@ -23,7 +23,7 @@ block content
       a(href = '/reset')
         p#forgot-text Forgot your password?
 
-    if env == 'dev' 
+    if env !== 'production' 
       .wrapper(style='margin:auto;margin-top:40px;max-width:300px;')
         h2 Development Quick Logins
           
