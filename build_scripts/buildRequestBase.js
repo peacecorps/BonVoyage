@@ -1,6 +1,12 @@
 /* jshint node: true */
 'use strict';
 
+var loadEnvironment = require('../config/loadEnvironment');
+
+if (process.env.NODE_ENV !== 'production') {
+	loadEnvironment();
+}
+
 var mongoose = require('mongoose');
 var Access = require('../config/access');
 var ipsum = require('lorem-ipsum');
@@ -19,7 +25,7 @@ var Request = require('../models/request');
 var REQUESTS_TO_GENERATE = 100; // * Math.floor((50 * Math.random()));
 var DRY_RUN = false;
 
-mongoose.connect('mongodb://localhost:27017/bonvoyage');
+mongoose.connect(process.env.DATABASE_URL);
 mongoose.connection.on('error', function (err) {
 	if (err) {
 		console.log(err);

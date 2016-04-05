@@ -10,7 +10,7 @@ var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
 var countriesDictionary = JSON.parse(countryListFile);
 var allCountryCodes = Object.keys(countriesDictionary);
 
-var SPREADSHEET_KEY = '1eQgsc94okiGh40EPfH6uwyq4a0aK45OwF5cFYkTlRlA';
+var SPREADSHEET_KEY = process.env.PC_SPREADSHEET_KEY;
 var OUTPUT_FILE = '../public/data/pcWarnings.json';
 
 var sheet = new GoogleSpreadsheet(SPREADSHEET_KEY);

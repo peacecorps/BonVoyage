@@ -4,52 +4,36 @@
 var User = require('../models/user');
 var Request = require('../models/request');
 var Access = require('../config/access');
-var phoneNumber = require('../config/phone');
 var DateOnly = require('dateonly');
 var moment = require('moment');
 var jade = require('jade');
 var path = require('path');
 var fs = require('fs');
+var twilio = require('twilio');
+var mailgun = require('mailgun-js');
+var mailcomposer = require('mailcomposer');
 var countryFilePath = 'public/data/countryList.json';
 var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
 var countriesDictionary = JSON.parse(countryListFile);
 
 // Attempt to load credentials for email and SMS
-var dropEmail = false;
-var dropSMS = false;
+var dropEmail = true;
+var dropSMS = true;
 
-try {
-	var credentials = require('../config/credentials');
-} catch (exc) {
-	console.error('Credentials file not found. (../config/credentials).' +
-	' Email and SMS will be dropped silently.');
-	dropEmail = true;
-	dropSMS = true;
+if (process.env.MAILGUN_KEY !== undefined &&
+	process.env.BONVOYAGE_DOMAIN !== undefined) {
+	var mailgun = mailgun({
+		apiKey: process.env.MAILGUN_KEY,
+		domain: process.env.DOMAIN,
+	});
+	dropEmail = false;
 }
 
-try {
-	var domain = require('../config/domain');
-} catch (exc) {
-	console.error('Domain file not found. (../config/domain).' +
-		' Email will be dropped silently.');
-	dropEmail = true;
-}
-
-if (credentials && credentials.mailgun && domain) {
-	var mailgunAPIKey = credentials.mailgun;
-	var mailgun = require('mailgun-js')({ apiKey: mailgunAPIKey, domain: domain });
-	var mailcomposer = require('mailcomposer');
-} else {
-	dropEmail = true;
-}
-
-if (credentials && credentials.twilio) {
-	var twilio = require('twilio');
-	var twilioCfg = credentials.twilio;
-	var twilioClient = new twilio.RestClient(twilioCfg.accountSid,
-		twilioCfg.authToken);
-} else {
-	dropSMS = true;
+if (process.env.TWILIO_SID !== undefined &&
+	process.env.TWILIO_AUTH !== undefined) {
+	var twilioClient = new twilio.RestClient(process.env.TWILIO_SID,
+		process.env.TWILIO_AUTH);
+	dropSMS = false;
 }
 
 /*
@@ -266,7 +250,7 @@ module.exports.formatDateOnly = function (date) {
 module.exports.sendSMS = function (sendTo, body, callback) {
 	var data = {
 		to: sendTo,
-		from: phoneNumber,
+		from: process.env.BONVOYAGE_NUMBER,
 		body: body,
 	};
 

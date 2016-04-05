@@ -51,5 +51,8 @@ config/email.js
 # Secrets
 config/secrets.js
 
+# Environment variables
+config/environment.js
+
 # User Data Uploads
 uploads

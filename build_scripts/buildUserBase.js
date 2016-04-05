@@ -1,9 +1,15 @@
 /* jshint node: true */
 'use strict';
 
+var loadEnvironment = require('../config/loadEnvironment');
+
+if (process.env.NODE_ENV !== 'production') {
+	loadEnvironment();
+}
+
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/bonvoyage');
+mongoose.connect(process.env.DATABASE_URL);
 mongoose.connection.on('error', function (err) {
 	if (err) {
 		console.log(err);
