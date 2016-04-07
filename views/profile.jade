@@ -12,7 +12,7 @@ block content
 			.jumbotron
 				
 				//- Country Flag
-				img#countryFlag(src='/image/flags/' + userToShow.countryCode + '.svg')
+				img#countryFlag(src='/image/flags/' + userToShow.countryCode.toLowerCase() + '.svg')
 				
 				//- Header name
 				h2#headerName= userToShow.name
