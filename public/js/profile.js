@@ -10,7 +10,6 @@ $(function() {
         utilsScript: '/js/utils.js',
     });
 
-    // console.log(phoneCache);
     phone.intlTelInput('setNumber', phoneCache);
 
     var $select = $('select#country').selectize({
