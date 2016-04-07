@@ -3,6 +3,7 @@ extends layout
 block styles
 	link(href='/css/selectize.css', rel='stylesheet')
 	link(href='/css/selectize.bootstrap3.css', rel='stylesheet')
+	link(href='/css/intlTelInput.css', rel='stylesheet')
 	link(rel='stylesheet', href='/css/profile.css')
 
 block content
@@ -31,7 +32,7 @@ block content
 					input.form-control#email(value=(userToShow.email ? userToShow.email : ''), data-default=(userToShow.email ? userToShow.email : ''), placeholder='johndoe@peacecorps.gov')
 					
 					label(for='name') Phone Number
-					input.form-control#phone(value=(userToShow.phone ? userToShow.phone : ''), data-default=(userToShow.phone ? userToShow.phone : ''), placeholder='(123) 456 7890')
+					input.form-control#phone(type='tel', value=(userToShow.phone ? userToShow.phone : ''), data-default=(userToShow.phone ? userToShow.phone : ''), placeholder='(123) 456 7890')
 					
 					label(for='name') Country
 					select.form-control#country(value=userToShow.countryCode, data-default=userToShow.countryCode)
@@ -44,3 +45,5 @@ block content
 block scripts
 	script(src='/js/selectize.min.js')
 	script(src='/js/profile.js')
+	script(src='/js/intlTelInput.min.js')
+	script(src='/js/utils.js')

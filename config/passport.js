@@ -47,6 +47,8 @@ module.exports = function (passport) {
     function (req, email, password, done) {
 		email = email.toLowerCase();
 
+		console.log(req.body.token);
+
 		// asynchronous
 		// User.findOne wont fire unless data is sent back
 		process.nextTick(function () {
@@ -63,11 +65,13 @@ module.exports = function (passport) {
 						User.findOne({ email: email }, function (err, user) {
 							// if there are any errors, return the error
 							if (err) {
+								console.log('Email already exists.');
 								return done(err);
 							}
 
 							// check to see if theres already a user with that email
 							if (user) {
+								console.log('That email is already taken');
 								req.session.submission = req.body;
 								return done(null, false, req.flash('loginFlash',
 										{
@@ -75,6 +79,7 @@ module.exports = function (passport) {
 											class: 'danger',
 										}));
 							} else if (password != req.body.password2) {
+								console.log('Those passwords do not match');
 								req.session.submission = req.body;
 								return done(null, false, req.flash('loginFlash',
 										{
@@ -96,6 +101,8 @@ module.exports = function (passport) {
 								newUser.phone = req.body.phone;
 								newUser.access = Access.VOLUNTEER;
 								newUser.countryCode = token.country;
+
+								console.log('generating new user');
 
 								// save the user
 								newUser.save(function (err) {
@@ -124,6 +131,7 @@ module.exports = function (passport) {
 							}
 						});
 					} else {
+						console.log('invalid token');
 						return done(null, false, req.flash('loginFlash',
 							{
 								text: 'Registration Token is invalid.',
@@ -172,7 +180,6 @@ module.exports = function (passport) {
 			user.comparePassword(password, function (err, valid) {
 				// check if
 				if (err) {
-					console.log('Compare password errored: ');
 					console.log(err);
 				}
 

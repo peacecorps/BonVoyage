@@ -3,6 +3,15 @@
 
 $(function() {
     'use strict';
+    var phone = $('input#phone');
+    var phoneCache = phone.val();
+
+    phone.intlTelInput({
+        utilsScript: '/js/utils.js',
+    });
+
+    phone.intlTelInput('setNumber', phoneCache);
+
     var $select = $('select#country').selectize({
         valueField: 'countryCode',
         labelField: 'country',
@@ -54,7 +63,7 @@ $(function() {
         var data = {};
         if(ifChanged($('input#name'))) { data.name = ifChanged($('input#name')); }
         if(ifChanged($('input#email'))) { data.email = ifChanged($('input#email')); }
-        if(ifChanged($('input#phone'))) { data.phone = ifChanged($('input#phone')); }
+        if(ifChanged($('input#phone'))) { data.phone = phone.intlTelInput('getNumber'); }
         if(ifChanged($('select#country'))) { data.countryCode = ifSelectizeChanged($('select#country')); }
         return data;
     }
