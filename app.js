@@ -138,8 +138,8 @@ app.get('/profile/:userId?', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderProfile);
 
 app.get('/.well-known/acme-challenge/' +
-	'7JT7tzrTBcU_L3QETzDRYqAwRtwL2zBwHFocejbn1CQ', function (req, res) {
-	res.send('7JT7tzrTBcU_L3QETzDRYqAwRtwL2zBwHFocejbn1CQ.' +
+	'AC86a1oSUu_K8DzELD-hynBDBOtms4LDqHPFXK-bQo0', function (req, res) {
+	res.send('AC86a1oSUu_K8DzELD-hynBDBOtms4LDqHPFXK-bQo0.' +
 		'khLTvjUppQrncGgiw9YosG-gvL4-U4ZSWH23WakFSig');
 });
 
