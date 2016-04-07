@@ -3,11 +3,8 @@
 
 var express = require('express');
 var router = express.Router();
-var Access = require('../config/access');
-var fs = require('fs');
-var helpers = require('./helpers');
-var warnings;
-var pcWarnings;
+var Access = require(__dirname + '/../config/access');
+var helpers = require(__dirname + '/helpers');
 
 router.index = function (req, res) {
 	res.redirect('/login');
@@ -79,11 +76,13 @@ router.renderSubform = function (req, res) {
 		req.session.submission = null;
 	}
 
+	console.log(sub);
+
 	var links = [
 		{ text: 'Dashboard', href: '/dashboard' },
 		{ text: 'Submit a Request', href: '/dashboard/submit', active: true },
 	];
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		links.push({ text: 'Users', href: '/users' });
 		links.push({ text: 'Add Users', href: '/users/add' });
 	}
@@ -92,76 +91,120 @@ router.renderSubform = function (req, res) {
 		title: 'Submission Form',
 		links: links,
 		messages: req.flash('submissionFlash'),
-		shouldSelectRequestee: req.user.access >= Access.SUPERVISOR,
+		shouldSelectRequestee: req.user.access >= Access.STAFF,
 		submission: sub,
+		text: {
+			submit: 'Submit All Legs',
+		},
 	});
 };
 
-router.renderApproval = function (req, res) {
-	if (!warnings) {
-		warnings = JSON.parse(fs.readFileSync('public/data/warnings.json', 'utf8'));
-	}
+router.renderEditRequest = function (req, res) {
+	var sub = {};
+	if (req.session.submission) {
+		sub = req.session.submission;
+		req.session.submission = null;
+	} else if (req.request) {
+		console.log(req.request);
+		var legs = [];
+		for (var i = 0; i < req.request.legs.length; i++) {
+			// Convert the start and end dates into a format that
+			// will be accepted by JS Dates
+			var leg = req.request.legs[i];
+			var start = '' + leg.startDate;
+			var end = '' + leg.endDate;
+			leg.startDate = (parseInt(start.substring(4, 6)) + 1) + ' ' +
+				start.substring(6, 8) + ' ' +
+				start.substring(0, 4);
+			leg.endDate = (parseInt(end.substring(4, 6)) + 1) + ' ' +
+				end.substring(6, 8) + ' ' +
+				end.substring(0, 4);
 
-	if (!pcWarnings) {
-		pcWarnings = JSON.parse(
-			fs.readFileSync('public/data/pcWarnings.json', 'utf8')
-		);
-	}
-
-	// Merge warnings to requests
-	for (var i = 0; i < req.request.legs.length; i++) {
-		var cc = req.request.legs[i].countryCode;
-		var allWarnings = [];
-		if (warnings[cc]) {
-			allWarnings = warnings[cc];
+			// Rename the countryCode to country, to match front-end
+			leg.country = leg.countryCode;
+			delete leg.countryCode;
+			legs.push(leg);
 		}
 
-		if (pcWarnings[cc]) {
-			allWarnings = allWarnings.concat(pcWarnings[cc]);
-		}
-
-		req.request.legs[i].warnings = allWarnings;
-	}
-
-	if (req.request.status.isPending === false) {
-		var flash = {};
-		if (req.request.status.isApproved === false) {
-			flash = {
-				text: 'This request has been denied.',
-				class: 'danger',
-			};
-		} else {
-			flash = {
-				text: 'This request has been approved.',
-				class: 'success',
-			};
-		}
-
-		req.flash('approvalFlash', flash);
-	} else {
-		var pendingFlash = {
-			text: 'This request is currently pending.',
-			class: 'warning',
+		sub = {
+			userId: req.request.userId,
+			staffId: req.request.staffId,
+			legs: req.request.legs,
+			counterpartApproved: '' + req.request.counterpartApproved,
 		};
-		req.flash('approvalFlash', pendingFlash);
 	}
 
 	var links = [
 		{ text: 'Dashboard', href: '/dashboard' },
 		{ text: 'Submit a Request', href: '/dashboard/submit' },
 	];
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		links.push({ text: 'Users', href: '/users' });
 		links.push({ text: 'Add Users', href: '/users/add' });
 	}
 
-	res.render('approval.jade', {
-		title: 'Request Approval',
+	res.render('submissionForm.jade', {
+		title: 'Edit Request',
 		links: links,
-		messages: req.flash('approvalFlash'),
-		request: req.request,
-		nextRequestId: req.nextRequestId,
-		prevRequestId: req.prevRequestId,
+		messages: req.flash('submissionFlash'),
+		shouldSelectRequestee: req.user.access >= Access.STAFF,
+		submission: sub,
+		text: {
+			submit: 'Update Leave Request',
+		},
+	});
+};
+
+router.renderApproval = function (req, res) {
+	helpers.fetchWarnings(function (err, warnings) {
+		if (!err) {
+			// Merge warnings to requests
+			for (var i = 0; i < req.request.legs.length; i++) {
+				var cc = req.request.legs[i].countryCode;
+				req.request.legs[i].warnings = (warnings[cc] ? warnings[cc] : []);
+			}
+
+			if (req.request.status.isPending === false) {
+				var flash = {};
+				if (req.request.status.isApproved === false) {
+					flash = {
+						text: 'This request has been denied.',
+						class: 'danger',
+					};
+				} else {
+					flash = {
+						text: 'This request has been approved.',
+						class: 'success',
+					};
+				}
+
+				req.flash('approvalFlash', flash);
+			} else {
+				var pendingFlash = {
+					text: 'This request is currently pending.',
+					class: 'warning',
+				};
+				req.flash('approvalFlash', pendingFlash);
+			}
+
+			var links = [
+				{ text: 'Dashboard', href: '/dashboard' },
+				{ text: 'Submit a Request', href: '/dashboard/submit' },
+			];
+			if (req.user.access >= Access.STAFF) {
+				links.push({ text: 'Users', href: '/users' });
+				links.push({ text: 'Add Users', href: '/users/add' });
+			}
+
+			res.render('approval.jade', {
+				title: 'Request Approval',
+				links: links,
+				messages: req.flash('approvalFlash'),
+				request: req.request,
+			});
+		} else {
+			throw err;
+		}
 	});
 };
 
@@ -170,7 +213,7 @@ router.renderDashboard = function (req, res) {
 		{ text: 'Dashboard', href: '/dashboard', active: true },
 		{ text: 'Submit a Request', href: '/dashboard/submit' },
 	];
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		links.push({ text: 'Users', href: '/users' });
 		links.push({ text: 'Add Users', href: '/users/add' });
 	}
@@ -183,7 +226,7 @@ router.renderDashboard = function (req, res) {
 };
 
 router.renderUsers = function (req, res) {
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		helpers.getUsers({
 			maxAccess: req.user.access,
 		}, function (err, users) {
@@ -193,7 +236,7 @@ router.renderUsers = function (req, res) {
 
 			// Split users based on their access level
 			var admins = [];
-			var supervisors = [];
+			var staff = [];
 			var volunteers = [];
 			for (var i = 0; i < users.length; i++) {
 				var user = users[i];
@@ -201,8 +244,8 @@ router.renderUsers = function (req, res) {
 					case Access.ADMIN:
 						admins.push(user);
 						break;
-					case Access.SUPERVISOR:
-						supervisors.push(user);
+					case Access.STAFF:
+						staff.push(user);
 						break;
 					case Access.VOLUNTEER:
 						volunteers.push(user);
@@ -220,7 +263,7 @@ router.renderUsers = function (req, res) {
 				],
 				messages: req.flash('usersFlash'),
 				admins: admins,
-				supervisors: supervisors,
+				staff: staff,
 				volunteers: volunteers,
 			});
 		});
@@ -281,7 +324,7 @@ router.renderProfile = function (req, res) {
 };
 
 router.renderAddUsers = function (req, res) {
-	if (req.user.access >= Access.SUPERVISOR) {
+	if (req.user.access >= Access.STAFF) {
 		var links = [
 			{ text: 'Dashboard', href: '/dashboard' },
 			{ text: 'Submit a Request', href: '/dashboard/submit' },

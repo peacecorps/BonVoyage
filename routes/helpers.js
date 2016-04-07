@@ -1,54 +1,41 @@
 /* jshint node: true */
 'use strict';
 
-var User = require('../models/user');
-var Request = require('../models/request');
-var Access = require('../config/access');
-var phoneNumber = require('../config/phone');
+var User = require(__dirname + '/../models/user');
+var Request = require(__dirname + '/../models/request');
+var Warning = require(__dirname + '/../models/warning');
+var Access = require(__dirname + '/../config/access');
 var DateOnly = require('dateonly');
+var moment = require('moment');
 var jade = require('jade');
 var path = require('path');
 var fs = require('fs');
-var countryFilePath = 'public/data/countryList.json';
+var twilio = require('twilio');
+var mailgun = require('mailgun-js');
+var mailcomposer = require('mailcomposer');
+var mongoose = require('mongoose');
+var countryFilePath = __dirname + '/../public/data/countryList.json';
 var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
 var countriesDictionary = JSON.parse(countryListFile);
 
 // Attempt to load credentials for email and SMS
-var dropEmail = false;
-var dropSMS = false;
+var dropEmail = true;
+var dropSMS = true;
 
-try {
-	var credentials = require('../config/credentials');
-} catch (exc) {
-	console.error('Credentials file not found. (../config/credentials).' +
-	' Email and SMS will be dropped silently.');
-	dropEmail = true;
-	dropSMS = true;
+if (process.env.MAILGUN_KEY !== undefined &&
+	process.env.BONVOYAGE_DOMAIN !== undefined) {
+	var mailgun = mailgun({
+		apiKey: process.env.MAILGUN_KEY,
+		domain: process.env.DOMAIN,
+	});
+	dropEmail = false;
 }
 
-try {
-	var domain = require('../config/domain');
-} catch (exc) {
-	console.error('Domain file not found. (../config/domain).' +
-		' Email will be dropped silently.');
-	dropEmail = true;
-}
-
-if (credentials && credentials.mailgun && domain) {
-	var mailgunAPIKey = credentials.mailgun;
-	var mailgun = require('mailgun-js')({ apiKey: mailgunAPIKey, domain: domain });
-	var mailcomposer = require('mailcomposer');
-} else {
-	dropEmail = true;
-}
-
-if (credentials && credentials.twilio) {
-	var twilio = require('twilio');
-	var twilioCfg = credentials.twilio;
-	var twilioClient = new twilio.RestClient(twilioCfg.accountSid,
-		twilioCfg.authToken);
-} else {
-	dropSMS = true;
+if (process.env.TWILIO_SID !== undefined &&
+	process.env.TWILIO_AUTH !== undefined) {
+	var twilioClient = new twilio.RestClient(process.env.TWILIO_SID,
+		process.env.TWILIO_AUTH);
+	dropSMS = false;
 }
 
 /*
@@ -86,21 +73,34 @@ module.exports.getEndDate = function (request) {
 	}
 };
 
-module.exports.getRequests = function (req, res, pending, cb) {
+module.exports.getRequests = function (req, res, options, cb) {
 	if (req.user) {
-		var matchUser = {};
-		if (req.user.access < Access.SUPERVISOR) {
-			matchUser.userId = req.user._id;
+		var matchUsers = {};
+		if (options && options._id) {
+			matchUsers._id = mongoose.Types.ObjectId(options._id);
+			console.log('Looking for request with id: ' + matchUsers._id);
+		}
+
+		if (req.user.access < Access.STAFF) {
+			matchUsers.userId = req.user._id;
+		}
+
+		if (options && options.staffId) {
+			matchUsers.staffId = req.staffId;
+		}
+
+		if (options && options.userId) {
+			matchUsers.userId = req.userId;
 		}
 
 		var matchCountry = {};
-		if (req.user.access == Access.SUPERVISOR) {
+		if (req.user.access == Access.STAFF) {
 			matchCountry['user.countryCode'] = req.user.countryCode;
 		}
 
 		Request.aggregate([
 			{
-				$match: matchUser,
+				$match: matchUsers,
 			},
 			{
 				// JOIN with the user data belonging to each request
@@ -117,10 +117,51 @@ module.exports.getRequests = function (req, res, pending, cb) {
 				$unwind: '$user',
 			},
 			{
+				// JOIN with the user data belonging to each request
+				$lookup: {
+					from: 'users',
+					localField: 'staffId',
+					foreignField: '_id',
+					as: 'staff',
+				},
+			},
+			{
+				// Only one staff will ever match (emails are unique)
+				// Convert the staff key to a single document from an array
+				$unwind: '$staff',
+			},
+			{
 				$match: matchCountry,
 			},
 			{
-				$match: (pending !== undefined ? { 'status.isPending': pending } : {}),
+				$match: (options && options.pending !== undefined ?
+						{ 'status.isPending': options.pending } : {}),
+			},
+			{
+				// Hide certain fields of the output (including password hashes)
+				$project: {
+					userId: true,
+					staffId: true,
+					counterpartApproved: true,
+					comments: true,
+					legs: true,
+					timestamp: true,
+					status: true,
+					user: {
+						name: true,
+						email: true,
+						phone: true,
+						access: true,
+						countryCode: true,
+					},
+					staff: {
+						name: true,
+						email: true,
+						phone: true,
+						access: true,
+						countryCode: true,
+					},
+				},
 			},
 		], function (err, requests) {
 			if (err) {
@@ -143,8 +184,22 @@ module.exports.getRequests = function (req, res, pending, cb) {
 module.exports.getUsers = function (options, cb) {
 	var q = (options.user !== undefined ? options.user : {});
 	if (options.maxAccess !== undefined) {
-		q.access = { $lte: options.maxAccess };
+		if (q.access === undefined) {
+			q.access = {};
+		}
+
+		q.access.$lte = options.maxAccess;
 	}
+
+	if (options.minAccess !== undefined) {
+		if (q.access === undefined) {
+			q.access = {};
+		}
+
+		q.access.$gte = options.minAccess;
+	}
+
+	console.log(q);
 
 	// Note: using lean() so that users is a JS obj, instead of a Mongoose obj
 	User.find(q, 'access name email phone _id countryCode').lean().exec(
@@ -236,10 +291,36 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 	}
 };
 
+module.exports.postComment = function (
+	requestId, name, userId, commentMessage, cb) {
+	Request.findByIdAndUpdate(requestId, {
+		$push: {
+			comments: {
+				$each:[
+					{
+						name: name,
+						userId: userId,
+						content: commentMessage,
+					},
+				],
+			},
+		},
+	}, function (err) {
+		cb(err);
+	});
+};
+
+module.exports.formatDateOnly = function (date) {
+	var dateonly = new DateOnly(parseInt(date + ''));
+	var formatteddate = moment(dateonly.toDate()).format('MMM DD, YYYY');
+	console.log(formatteddate);
+	return formatteddate;
+};
+
 module.exports.sendSMS = function (sendTo, body, callback) {
 	var data = {
 		to: sendTo,
-		from: phoneNumber,
+		from: process.env.BONVOYAGE_NUMBER,
 		body: body,
 	};
 
@@ -266,4 +347,30 @@ module.exports.sendSMS = function (sendTo, body, callback) {
 			}
 		});
 	}
+};
+
+module.exports.fetchWarnings = function (callback) {
+	Warning.find({}, function (err, warnings) {
+		if (err) {
+			console.error('An error occurred while fetching warnings:');
+			console.error(err);
+			return callback(err);
+		} else {
+			var countryToWarnings = {};
+
+			for (var i = 0; i < warnings.length; i++) {
+				var today = new DateOnly();
+				if (!((warnings[i].startDate && today < warnings[i].startDate) ||
+					(warnings[i].endDate && today > warnings[i].endDate))) {
+					if (countryToWarnings[warnings[i].countryCode] === undefined) {
+						countryToWarnings[warnings[i].countryCode] = [];
+					}
+
+					countryToWarnings[warnings[i].countryCode].push(warnings[i]);
+				}
+			}
+
+			return callback(null, countryToWarnings);
+		}
+	});
 };

@@ -5,6 +5,7 @@ block styles
   link(href='/css/default.date.css', rel='stylesheet')
   link(href='/css/selectize.css', rel='stylesheet')
   link(href='/css/selectize.bootstrap3.css', rel='stylesheet')
+  link(rel='stylesheet', href='/css/awesome-bootstrap-checkbox.css')
   link(rel='stylesheet', href='/css/submission.css')
 
 block content
@@ -12,30 +13,38 @@ block content
     .col-xs-12.col-md-offset-1.col-md-10
 
       .jumbotron
-        h2 Submission Form
+        h2= title
         div(class='alerts')
         
         include flash
 
         if shouldSelectRequestee
-          label.info(for='selectRequestee') Select Requestee
-          select.form-control.selectRequestee(placeholder='John Doe')
+          label.info(for='selectRequestee') Select the Volunteer
+          select.form-control#selectRequestee(placeholder='John Doe')
+        
+        label.info(for='selectStaff') Assign a Staff Member
+        select.form-control#selectStaff(placeholder='Patrick Choquette')
 
         #request-submit
 
+          .checkbox
+            input(type="checkbox", id="approvalCheckbox") 
+            label(for="approvalCheckbox") 
+              | I attest that I 
+              span#submissionName
+              | have received approval 
+              | from my supervisor at site for this leave. 
+              span.required *
+
           //- Travel legs are inserted in submission.js
           button.btn.btn-default#request-add-leg-btn Add Another Trip Leg
-          button.btn.btn-success#request-submit-btn Submit All Trip Legs
+          button.btn.btn-success#request-submit-btn= text.submit
 
 block scripts
   script.
     var submissionData = !{JSON.stringify(submission)};
   script(src='/js/picker.js')
   script(src='/js/picker.date.js')
-  script(src='/js/tabletop.js')
   script(src='/js/moment.js')
   script(src='/js/selectize.min.js')
   script(src='/js/submission.js')
-
-
-

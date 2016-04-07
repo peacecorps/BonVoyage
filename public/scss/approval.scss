@@ -14,6 +14,9 @@
 		}
 		.comment {
 			margin-bottom: 10px;
+			p {
+				white-space: pre-wrap;
+			}
 		}
 	}
 }

@@ -7,18 +7,16 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
-var views = require('./routes/views');
-var api = require('./routes/api');
+var views = require(__dirname + '/routes/views');
+var api = require(__dirname + '/routes/api');
 var app = express();
 var passport = require('passport');
 var session = require('express-session');
-var configDB = require('./config/database.js');
 var flash    = require('connect-flash');
-var Access = require('./config/access');
-var secrets = require('./config/secrets');
+var Access = require(__dirname + '/config/access');
 var multer = require('multer');
 var upload = multer({
-	dest: 'uploads/users/',
+	dest: __dirname + '/uploads/users/',
 	limits: {
 		// 1MB is default file size already
 	},
@@ -48,26 +46,43 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(flash());
 
 // required for passport
-app.use(session({ secret: secrets.sessionSecret }));
+app.use(session({ secret: process.env.SESSION_SECRET }));
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
 
 // Pass the access level to our Jade templates
 app.use(function (req, res, next) {
-	res.locals.user = req.user;
+	var u = req.user;
+	if (u) {
+		delete u.hash;
+	}
+
+	res.locals.user = u;
 	res.locals.env = process.env.NODE_ENV || 'dev';
-	next();
+	return next();
 });
 
-mongoose.connect(configDB.url);
+// Force https -- need SSL cert first to support custom domain
+// if (process.env.NODE_ENV == 'production') {
+// 	app.use(function (req, res, next) {
+// 		if (req.headers['x-forwarded-proto'] !== 'https') {
+// 			return res.redirect(['https://', req.get('Host'), req.url].join(''));
+// 		}
+//
+// 		return next();
+// 	});
+// }
+
+mongoose.connect(process.env.DATABASE_URL);
 mongoose.connection.on('error', function (err) {
 	if (err) {
 		console.log(err);
 	}
 });
 
-require('./config/passport.js')(passport); // pass passport for configuration
+// pass passport for configuration
+require(__dirname + '/config/passport.js')(passport);
 
 // middleware to ensure the user is authenticated.
 // If not, redirect to login page.
@@ -114,25 +129,32 @@ app.get('/dashboard/submit', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderSubform);
 app.get('/requests/:requestId', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
+app.get('/requests/:requestId/edit', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), views.renderEditRequest);
 app.get('/users', isLoggedIn, views.renderUsers);
 app.get('/users/add', isLoggedIn,
-needsAccess(Access.SUPERVISOR), views.renderAddUsers);
+	needsAccess(Access.STAFF), views.renderAddUsers);
 app.get('/profile/:userId?', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderProfile);
+
+app.get('/.well-known/acme-challenge/' +
+	'AC86a1oSUu_K8DzELD-hynBDBOtms4LDqHPFXK-bQo0', function (req, res) {
+	res.send('AC86a1oSUu_K8DzELD-hynBDBOtms4LDqHPFXK-bQo0.' +
+		'khLTvjUppQrncGgiw9YosG-gvL4-U4ZSWH23WakFSig');
+});
 
 // API
 app.get('/api/requests', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.getRequests);
-
 app.get('/api/users', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.getUsers);
+	needsAccess(Access.STAFF), api.getUsers);
+app.get('/api/warnings', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.getWarnings);
 
 app.post('/api/requests/:requestId/approve', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.postApprove);
+	needsAccess(Access.STAFF), api.postApprove);
 app.post('/api/requests/:requestId/deny', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.postDeny);
-app.post('/api/requests/:requestId/delete', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.postDelete);
+	needsAccess(Access.STAFF), api.postDeny);
 app.post('/api/requests/:requestId/comments', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.postComments);
 app.post('/profile/:userId?', isLoggedIn,
@@ -152,14 +174,18 @@ app.post('/api/logout', api.logout);
 app.post('/api/reset', api.reset);
 app.post('/api/reset/:token', api.resetValidator);
 app.post('/api/requests', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.postRequests);
+	needsAccess(Access.VOLUNTEER), api.postRequest);
+app.post('/api/requests/:requestId', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.postUpdatedRequest);
 app.post('/api/access', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.modifyAccess);
+	needsAccess(Access.STAFF), api.modifyAccess);
 app.post('/api/users', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), api.postUsers);
+	needsAccess(Access.STAFF), api.postUsers);
 app.post('/api/users/validate', isLoggedIn,
-	needsAccess(Access.SUPERVISOR), upload.single('users'), api.validateUsers);
+	needsAccess(Access.STAFF), upload.single('users'), api.validateUsers);
 
+app.delete('/api/requests/:requestId/delete', isLoggedIn,
+	needsAccess(Access.VOLUNTEER), api.deleteRequest);
 app.delete('/api/users', isLoggedIn, api.deleteUser);
 
 // catch 404 and forward to error handler

@@ -50,7 +50,7 @@ $(function () {
 				data: 'access',
 				render: function(data) {
 					if(data === 0) { return "Volunteer"; }
-					else if(data === 1) { return "Supervisor"; }
+					else if(data === 1) { return "Staff"; }
 					else if(data === 2) { return "Admin"; }
 					else { return "None"; }
 				},

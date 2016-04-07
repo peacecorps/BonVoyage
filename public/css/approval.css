@@ -10,3 +10,5 @@
 
 #htmlwrapper .shadow-box .comment {
   margin-bottom: 10px; }
+  #htmlwrapper .shadow-box .comment p {
+    white-space: pre-wrap; }

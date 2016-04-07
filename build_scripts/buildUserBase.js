@@ -1,16 +1,18 @@
 /* jshint node: true */
 'use strict';
 
+require(__dirname + '/../setup');
+
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/bonvoyage');
+mongoose.connect(process.env.DATABASE_URL);
 mongoose.connection.on('error', function (err) {
 	if (err) {
 		console.log(err);
 	}
 });
 
-var User = require('../models/user');
+var User = require(__dirname + '/../models/user');
 
 var userbase = [
 	{

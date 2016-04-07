@@ -1,25 +1,27 @@
 /* jshint node: true */
 'use strict';
 
+require(__dirname + '/../setup');
+
 var mongoose = require('mongoose');
-var Access = require('../config/access');
+var Access = require(__dirname + '/../config/access');
 var ipsum = require('lorem-ipsum');
 var sprintf = require('sprintf-js').sprintf;
 var moment = require('moment');
 var fs = require('fs');
 var DateOnly = require('dateonly');
-var countryFilePath = '../public/data/countryList.json';
+var countryFilePath = __dirname + '/../public/data/countryList.json';
 var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
 var countriesDictionary = JSON.parse(countryListFile);
 var countryCodes = Object.keys(countriesDictionary);
 var nCountries = countryCodes.length;
-var User = require('../models/user');
-var Request = require('../models/request');
+var User = require(__dirname + '/../models/user');
+var Request = require(__dirname + '/../models/request');
 
 var REQUESTS_TO_GENERATE = 100; // * Math.floor((50 * Math.random()));
 var DRY_RUN = false;
 
-mongoose.connect('mongodb://localhost:27017/bonvoyage');
+mongoose.connect(process.env.DATABASE_URL);
 mongoose.connection.on('error', function (err) {
 	if (err) {
 		console.log(err);
@@ -56,16 +58,17 @@ function generateLeg() {
 	return {
 		startDate: dates[0],
 		endDate: dates[1],
+		city: ipsum({ count: 1, units: 'words' }),
 		country: countriesDictionary[cc],
 		countryCode: cc,
 		hotel: ipsum(),
 		contact: ipsum(),
 		companions: ipsum(),
-		description: ipsum(),
+		description: ipsum({ count: randIndex(3), units: 'sentences' }),
 	};
 }
 
-function generateRequest(user) {
+function generateRequest(user, staff) {
 	var isPending = randBool(0.3);
 	var isApproved = (isPending ? undefined : randBool(0.7));
 	var legs = [];
@@ -75,12 +78,14 @@ function generateRequest(user) {
 
 	return new Request({
 		userId: user._id,
+		staffId: staff._id,
 		status: {
 			isPending: isPending,
 			isApproved: isApproved,
 		},
 		legs: legs,
 		comments: [],
+		counterpartApproved: true,
 	});
 }
 
@@ -109,15 +114,26 @@ function saveAll(objects, cb) {
 
 console.log(sprintf('Generating %d requests...', REQUESTS_TO_GENERATE));
 
-User.find({ access: Access.VOLUNTEER }, function (err, users) {
+User.find({  }, function (err, users) {
 	if (err) {
 		console.error(err);
 	}
 
+	var volunteers = [];
+	var staff = [];
+	for (var i = 0; i < users.length; i++) {
+		if (users[i].access == Access.VOLUNTEER) {
+			volunteers.push(users[i]);
+		} else {
+			staff.push(users[i]);
+		}
+	}
+
 	var requests = [];
-	for (var i = 0; i < REQUESTS_TO_GENERATE; i++) {
-		var randUser = users[randIndex(users.length)];
-		requests.push(generateRequest(randUser));
+	for (i = 0; i < REQUESTS_TO_GENERATE; i++) {
+		var randVolunteer = users[randIndex(volunteers.length)];
+		var randStaff = staff[randIndex(staff.length)];
+		requests.push(generateRequest(randVolunteer, randStaff));
 	}
 
 	console.log(sprintf('About to save %d requests.', requests.length));

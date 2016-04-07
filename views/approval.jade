@@ -12,21 +12,34 @@ block content
 				include flash
 				
 				#request
-					if user
-						h2 Contact 
-						.shadow-box
-							p
-								span 
-									b Name: 
-								span= request.user.name
-							p
-								span 
-									b Email: 
-								span= (request.user.email ? request.user.email : "No email on file.")
-							p
-								span 
-									b Phone: 
-								span= (request.user.phone ? request.user.phone : "No phone on file.")
+					h2 Volunteer 
+					.shadow-box
+						p
+							span 
+								b Name: 
+							span= request.user.name
+						p
+							span 
+								b Email: 
+							span= (request.user.email ? request.user.email : "No email on file.")
+						p
+							span 
+								b Phone: 
+							span= (request.user.phone ? request.user.phone : "No phone on file.")
+					h2 Assigned Staff 
+					.shadow-box
+						p
+							span 
+								b Name: 
+							span= request.staff.name
+						p
+							span 
+								b Email: 
+							span= (request.staff.email ? request.staff.email : "No email on file.")
+						p
+							span 
+								b Phone: 
+							span= (request.staff.phone ? request.staff.phone : "No phone on file.")
 					h2 Trip Itinerary
 					.shadow-box
 						each leg in request.legs
@@ -34,7 +47,7 @@ block content
 								span.date(data-unformatted="#{leg.startDate}")
 								span  - 
 								span.date(data-unformatted="#{leg.endDate}")
-								span : #{leg.country}
+								span : #{leg.city}, #{leg.country}
 							p
 								span
 									b Hotel/Hostel info: 
@@ -60,6 +73,11 @@ block content
 									span
 										b
 											a(href=warning.link) More Information
+						br
+						p
+							span
+								b Counterpart Approval: 
+							span= (request.counterpartApproved == true ? "Approved." : "Not yet approved.")
 					h2 Comments #{(request.comments.length > 0 ? "(" + request.comments.length + ")" : "")}
 					.shadow-box
 						table#comments
@@ -81,15 +99,23 @@ block content
 						textarea.form-control#new-comment(rows=3, onkeyup="commentStoppedTyping()", name="content")
 						button.btn.btn-default.disabled#submit-comment Submit Comment
 
-				// If supervisor or higher
+				// If the user is the owner of the request (or a staff)
+				if user && (user.email == request.user.email || user.access >= 1)
+					#request_edit.row
+						.col-xs-12
+							a(href="/requests/#{request._id}/edit")
+								button(class="btn btn-warning", id="request-edit-btn") Edit Request
+
+				// If staff or higher
 				if user.access > 0 
 					#request_approval.row
 						.col-xs-6
 							button(class="btn btn-success" + (request.status.isPending == false && request.status.isApproved ? " disabled" : ""), id="request-approve-btn") Approve
 						.col-xs-6
 							button(class="btn btn-danger" + (request.status.isPending == false && !request.status.isApproved ? " disabled" : ""), id="request-deny-btn") Deny
-				// If the user is the owner of the request
-				if user && (user.email == request.user.email)
+
+				// If the user is the owner of the request (or an admin)
+				if user && (user.email == request.user.email || user.access >= 2)
 					#request_delete.row
 						.col-xs-12
 							button(class="btn btn-danger", id="request-delete-btn") Delete Request
