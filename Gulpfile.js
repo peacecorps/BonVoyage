@@ -36,7 +36,7 @@
 		gulp.watch('./public/scss/**/*.scss', ['scss']);
 	});
 
-	gulp.task('scrape', ['pcWarning', 'countryWarning']);
+	gulp.task('scrape', ['pcWarning', 'usWarning']);
 
 	gulp.task('pcWarning', shell.task([
 		'node scrapers/pcWarnings.js',

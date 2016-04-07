@@ -359,11 +359,15 @@ module.exports.fetchWarnings = function (callback) {
 			var countryToWarnings = {};
 
 			for (var i = 0; i < warnings.length; i++) {
-				if (countryToWarnings[warnings[i].countryCode] === undefined) {
-					countryToWarnings[warnings[i].countryCode] = [];
-				}
+				var today = new DateOnly();
+				if (!((warnings[i].startDate && today < warnings[i].startDate) ||
+					(warnings[i].endDate && today > warnings[i].endDate))) {
+					if (countryToWarnings[warnings[i].countryCode] === undefined) {
+						countryToWarnings[warnings[i].countryCode] = [];
+					}
 
-				countryToWarnings[warnings[i].countryCode].push(warnings[i]);
+					countryToWarnings[warnings[i].countryCode].push(warnings[i]);
+				}
 			}
 
 			return callback(null, countryToWarnings);
