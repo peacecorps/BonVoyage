@@ -1,5 +1,5 @@
 var enableBtn = function() {
-	document.getElementById("submitInfo").disabled = false;
+	document.getElementById('submitInfo').disabled = false;
 }
 
 $(function() {
@@ -7,7 +7,7 @@ $(function() {
 		var data = $('#inputEmail').val();
 		$.ajax({
 			method: 'POST',
-			contentType: "application/x-www-form-urlencoded",
+			contentType: 'application/x-www-form-urlencoded',
 			data: {
 				email: data
 			},
