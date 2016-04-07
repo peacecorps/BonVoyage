@@ -161,12 +161,12 @@ app.post('/profile/:userId?', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.modifyProfile);
 
 app.post('/api/register', passport.authenticate('local-signup', {
-	successRedirect: '/dashboard',
+	successRedirect: '/profile',
 	failureRedirect: '/login',
 	failureFlash: true,
 }));
 app.post('/api/login', passport.authenticate('local-login', {
-	successRedirect: '/profile',
+	successRedirect: '/dashboard',
 	failureRedirect: '/login',
 	failureFlash: true,
 }));
