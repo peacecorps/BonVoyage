@@ -137,8 +137,10 @@ app.get('/users/add', isLoggedIn,
 app.get('/profile/:userId?', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), views.renderProfile);
 
-app.get('/.well-known/acme-challenge/7JT7tzrTBcU_L3QETzDRYqAwRtwL2zBwHFocejbn1CQ', function (req, res) {
-	res.send('7JT7tzrTBcU_L3QETzDRYqAwRtwL2zBwHFocejbn1CQ.khLTvjUppQrncGgiw9YosG-gvL4-U4ZSWH23WakFSig');
+app.get('/.well-known/acme-challenge/' +
+	'7JT7tzrTBcU_L3QETzDRYqAwRtwL2zBwHFocejbn1CQ', function (req, res) {
+	res.send('7JT7tzrTBcU_L3QETzDRYqAwRtwL2zBwHFocejbn1CQ.' +
+		'khLTvjUppQrncGgiw9YosG-gvL4-U4ZSWH23WakFSig');
 });
 
 // API
