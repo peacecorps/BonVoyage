@@ -5,7 +5,7 @@ require(__dirname + '/../setup');
 
 var mongoose = require('mongoose');
 
-mongoose.connect(process.env.DATABASE_URL);
+mongoose.connect(process.env.MONGO_CONNECTION_STRING);
 mongoose.connection.on('error', function (err) {
 	if (err) {
 		console.log(err);

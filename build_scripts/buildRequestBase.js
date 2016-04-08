@@ -21,7 +21,7 @@ var Request = require(__dirname + '/../models/request');
 var REQUESTS_TO_GENERATE = 100; // * Math.floor((50 * Math.random()));
 var DRY_RUN = false;
 
-mongoose.connect(process.env.DATABASE_URL);
+mongoose.connect(process.env.MONGO_CONNECTION_STRING);
 mongoose.connection.on('error', function (err) {
 	if (err) {
 		console.log(err);

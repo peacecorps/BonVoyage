@@ -127,6 +127,16 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 
 	var staffId = req.body.staffId;
 
+	if (staffId === undefined || staffId === '') {
+		req.session.submission = req.body;
+		req.flash('submissionFlash', {
+			text: 'You must select a staff member to assign this leave request to.',
+			class: 'danger',
+		});
+		res.end(JSON.stringify({ redirect: failureRedirect }));
+		return cb(null);
+	}
+
 	// Verify that the volunteer exists
 	helpers.getUsers({
 		user: {

@@ -45,8 +45,23 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(flash());
 
+mongoose.connect(process.env.MONGO_CONNECTION_STRING);
+mongoose.connection.on('error', function (err) {
+	if (err) {
+		console.log(err);
+	}
+});
+
+var MongoStore = require('connect-mongo')(session);
+
+app.use(session({
+	secret: process.env.SESSION_SECRET,
+	store: new MongoStore({
+		mongooseConnection: mongoose.connection,
+	}),
+}));
+
 // required for passport
-app.use(session({ secret: process.env.SESSION_SECRET }));
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
@@ -73,13 +88,6 @@ app.use(function (req, res, next) {
 // 		return next();
 // 	});
 // }
-
-mongoose.connect(process.env.DATABASE_URL);
-mongoose.connection.on('error', function (err) {
-	if (err) {
-		console.log(err);
-	}
-});
 
 // pass passport for configuration
 require(__dirname + '/config/passport.js')(passport);
