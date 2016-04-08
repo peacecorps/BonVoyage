@@ -24,8 +24,8 @@ block content
 							span= (request.user.email ? request.user.email : "No email on file.")
 						p
 							span 
-								b Phone: 
-							span= (request.user.phone ? request.user.phone : "No phone on file.")
+								b Phone(s): 
+							span.phones= (request.user.phones && request.user.phones.length > 0 ? request.user.phones.join(', ') : "No phone on file.")
 					h2 Assigned Staff 
 					.shadow-box
 						p
@@ -38,8 +38,8 @@ block content
 							span= (request.staff.email ? request.staff.email : "No email on file.")
 						p
 							span 
-								b Phone: 
-							span= (request.staff.phone ? request.staff.phone : "No phone on file.")
+								b Phone(s): 
+							span.phones= (request.staff.phones && request.staff.phones.length > 0 ? request.staff.phones.join(', ') : "No phone on file.")
 					h2 Trip Itinerary
 					.shadow-box
 						each leg in request.legs
@@ -129,4 +129,5 @@ block content
 
 block scripts
 	script(src='/js/moment.js')
+	script(src='/js/utils.js')
 	script(src='/js/approval.js')

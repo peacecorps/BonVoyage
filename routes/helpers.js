@@ -150,14 +150,14 @@ module.exports.getRequests = function (req, res, options, cb) {
 					user: {
 						name: true,
 						email: true,
-						phone: true,
+						phones: true,
 						access: true,
 						countryCode: true,
 					},
 					staff: {
 						name: true,
 						email: true,
-						phone: true,
+						phones: true,
 						access: true,
 						countryCode: true,
 					},
@@ -202,7 +202,7 @@ module.exports.getUsers = function (options, cb) {
 	console.log(q);
 
 	// Note: using lean() so that users is a JS obj, instead of a Mongoose obj
-	User.find(q, 'access name email phone _id countryCode').lean().exec(
+	User.find(q, 'access name email phones _id countryCode').lean().exec(
 		function (err, users) {
 		if (err) {
 			cb(err);

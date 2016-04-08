@@ -275,10 +275,6 @@ router.postUpdatedRequest = function (req, res) {
 	var successRedirect = '/requests/' + req.request._id;
 	validateRequestSubmission(req, res, failureRedirect, function (data) {
 		if (data !== null) {
-			console.log('in post update request');
-			console.log(JSON.stringify(data, null, 4));
-			console.log(JSON.stringify(req.request, null, 4));
-
 			// Calculate the difference between data and the existing data (req.request)
 			var changesMade = false;
 			var comment = req.user.name +
@@ -478,17 +474,23 @@ router.postRequest = function (req, res) {
 								countryCode: data.countries[i],
 							},
 							function (err, docs) {
-								for (var j = 0; j < docs.length; j++) {
-									var msg = 'A request by ' +
-										data.users[0].name + ' is waiting ' +
-										'for your approval on BonVoyage.' +
-										' http://localhost:3000/login';
+								if (err) {
+									console.error(err);
+								} else {
+									for (var j = 0; j < docs.length; j++) {
+										var msg = 'A request by ' +
+											data.users[0].name + ' is waiting ' +
+											'for your approval on BonVoyage. ' +
+											process.env.BONVOYAGE_DOMAIN + '/login';
 
-									if (docs[j].phone) {
-										helpers.sendSMS(docs[j].phone, msg);
-									} else {
-										console.log(docs[j].name +
-										' does not have a phone number');
+										if (docs[j].phones) {
+											for (var i = 0; i < docs[j].phones.length; i++) {
+												helpers.sendSMS(docs[j].phones[i], msg);
+											}
+										} else {
+											console.log(docs[j].name +
+											' does not have a phone number');
+										}
 									}
 								}
 							});
@@ -528,7 +530,7 @@ router.postApprove = function (req, res) {
 			var subject = 'Peace Corps BonVoyage Request Approved';
 			var map = {
 				name: req.user.name.split(' ')[0],
-				button: 'http://localhost:3000',
+				button: process.env.BONVOYAGE_DOMAIN,
 			};
 
 			// asynchronous
@@ -536,9 +538,11 @@ router.postApprove = function (req, res) {
 				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 				'approve', map);
 
-				if (user.phone) {
-					helpers.sendSMS(user.phone, 'Your BonVoyage ' +
-						'leave request is now approved!');
+				if (user.phones) {
+					for (var i = 0; i < user.phones.length; i++) {
+						helpers.sendSMS(user.phones[i], 'Your BonVoyage ' +
+							'leave request is now approved!');
+					}
 				}
 			});
 
@@ -573,17 +577,20 @@ router.postDeny = function (req, res) {
 			var subject = 'Peace Corps BonVoyage Request Denied';
 			var map = {
 				name: req.user.name.split(' ')[0],
-				button: 'http://localhost:3000',
+				button: process.env.BONVOYAGE_DOMAIN,
 			};
 
 			process.nextTick(function () {
 				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
 				'deny', map);
 
-				if (user.phone) {
-					helpers.sendSMS(user.phone, 'Your BonVoyage leave request was denied.' +
-						'Please reach out to a Peace Corps staff member ' +
-						'if you have any questions.');
+				if (user.phones) {
+					for (var i = 0; i < user.phones.length; i++) {
+						helpers.sendSMS(user.phones[i],
+							'Your BonVoyage leave request was denied.' +
+							'Please reach out to a Peace Corps staff member ' +
+							'if you have any questions.');
+					}
 				}
 			});
 
@@ -654,7 +661,7 @@ router.reset = function (req, res) {
 					var subject = 'Peace Corps BonVoyage Password Reset Request';
 					var map = {
 						name: user.name.split(' ')[0],
-						button: 'http://localhost:3000/reset/' + token,
+						button: process.env.BONVOYAGE_DOMAIN + '/reset/' + token,
 					};
 
 					// asynchronous
@@ -806,14 +813,16 @@ router.modifyProfile = function (req, res) {
 					' profile.',
 			});
 			console.error(err);
+		} else {
+			req.flash('profileFlash', {
+				text: (req.user._id == userId ?
+					'Your profile has been updated.' :
+					(req.body.new.name || req.body.old.name) +
+					'\'s profile has been updated.'),
+				class: 'success',
+			});
 		}
 
-		req.flash('profileFlash', {
-			text: (req.user._id == userId ?
-				'Your profile has been updated.' :
-				(req.body.new.name || req.body.old.name) + '\'s profile has been updated.'),
-			class: 'success',
-		});
 		res.redirect('/profile');
 	});
 };
@@ -907,7 +916,7 @@ router.postUsers = function (req, res) {
 					var subject = 'Peace Corps BonVoyage Registration';
 					var map = {
 						name: user.name.value.split(' ')[0],
-						button: 'http://localhost:3000/register/' + token,
+						button: process.env.BONVOYAGE_DOMAIN + '/register/' + token,
 					};
 
 					// asynchronous

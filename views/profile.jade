@@ -31,18 +31,21 @@ block content
 					label(for='name') Email
 					input.form-control#email(value=(userToShow.email ? userToShow.email : ''), data-default=(userToShow.email ? userToShow.email : ''), placeholder='johndoe@peacecorps.gov')
 					
-					label(for='name') Phone Number
-					input.form-control#phone(type='tel', value=(userToShow.phone ? userToShow.phone : ''), data-default=(userToShow.phone ? userToShow.phone : ''), placeholder='(123) 456 7890')
+					label(for='name') Phone Number(s)
+					#phoneNumbers
+					button(type='button')#addPhone.btn-override.btn.btn-info Add Extra Phone Number
 					
 					label(for='name') Country
 					select.form-control#country(value=userToShow.countryCode, data-default=userToShow.countryCode)
 					
-					button.btn.btn-success.disabled(type='submit') Update Profile
+					button.btn.btn-success(type='submit' disabled) Update Profile
 
 					if user.access == 2 || '' + user._id == '' + userToShow._id
 						button#deleteAccount.btn.btn-danger Delete Account
 				
 block scripts
+	script.
+		var userToShow = !{JSON.stringify(userToShow)};
 	script(src='/js/selectize.min.js')
 	script(src='/js/profile.js')
 	script(src='/js/intlTelInput.min.js')
