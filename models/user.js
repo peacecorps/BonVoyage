@@ -3,16 +3,41 @@
 
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
+var fs = require('fs');
+
+var Access = require(__dirname + '/../config/access');
+
+var countryFilePath = __dirname + '/../public/data/countryList.json';
+var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
+var countriesDictionary = JSON.parse(countryListFile);
+var allCountryCodes = Object.keys(countriesDictionary);
 
 var userSchema = mongoose.Schema({
-	name: String,
+	name: {
+		type: String,
+		required: true,
+	},
 
-	// Prevent MongoDB from ever saving two duplicate emails
-	email: { type: String, index: { unique: true } },
-	phone: String,
+	email: {
+		type: String,
+
+		// Prevent MongoDB from ever saving two duplicate emails
+		index: {
+			unique: true,
+		},
+	},
+	phones: [String],
 	hash: String,
-	access: Number,
-	countryCode: String,
+	access: {
+		type: Number,
+		required: true,
+		enum: Object.keys(Access),
+	},
+	countryCode: {
+		type: String,
+		required: true,
+		enum: allCountryCodes,
+	},
 });
 
 var presave = function (callback) {

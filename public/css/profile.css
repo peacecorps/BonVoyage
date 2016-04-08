@@ -19,3 +19,18 @@
   #htmlwrapper form .btn {
     margin-top: 10px;
     margin-bottom: 0px; }
+  #htmlwrapper form #addPhone {
+    margin-bottom: 10px;
+    margin-top: 0; }
+  #htmlwrapper form .removePhone {
+    width: 100%;
+    margin-top: 0; }
+  #htmlwrapper form .phoneNumberWrapper {
+    height: 34px;
+    margin-bottom: 10px; }
+    #htmlwrapper form .phoneNumberWrapper > .phoneDiv {
+      padding-right: 10px;
+      padding-left: 0; }
+    #htmlwrapper form .phoneNumberWrapper > .deletePhoneDiv {
+      padding-right: 0;
+      padding-left: 0; }

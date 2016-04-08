@@ -25,7 +25,7 @@ module.exports = {
 
 	// The public-facing domain where this site is hosted: this will be seen
 	// when links are provided in email and SMS.
-	BONVOYAGE_DOMAIN: 'localhost:3000',
+	BONVOYAGE_DOMAIN: 'http://localhost:3000',
 
 	// The phone number that Twilio will send texts from.
 	BONVOYAGE_NUMBER: '+11234567890',

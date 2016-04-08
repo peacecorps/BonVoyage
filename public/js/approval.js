@@ -78,4 +78,13 @@ $(function() {
         });
     });
 
+		// Format the phone numbers
+		$('span.phones').each(function(index) {
+			var formattedPhones = [];
+			$.each($(this).text().split(', '), function(_, phone) {
+				var formattedPhone = intlTelInputUtils.formatNumber(phone, null, intlTelInputUtils.numberFormat.INTERNATIONAL);
+				formattedPhones.push(formattedPhone);
+			});
+			$(this).text(formattedPhones.join(', '));
+		});
 });

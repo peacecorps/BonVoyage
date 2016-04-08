@@ -1,16 +1,40 @@
 /* globals window */
 /* globals confirm */
+/* globals userToShow */
 
 $(function() {
     'use strict';
-    var phone = $('input#phone');
-    var phoneCache = phone.val();
 
-    phone.intlTelInput({
-        utilsScript: '/js/utils.js',
-    });
+    function getPhoneNumbers() {
+      var phones = [];
+      var inputs = $('#phoneNumbers .phoneNumber');
+      inputs.each(function(index) {
+        var phone = inputs.get(index);
+        if ($(phone).intlTelInput("isValidNumber")) {
+          var number = $(phone).intlTelInput('getNumber');
+          phones.push(number);
+        }
+      });
+      return phones;
+    }
 
-    phone.intlTelInput('setNumber', phoneCache);
+    function ifPhonesChanged() {
+      var newNumbers = getPhoneNumbers();
+      if (userToShow.phones === undefined) {
+        return newNumbers.length > 0;
+      }
+      for(var i = 0; i < newNumbers.length; i++) {
+        if(userToShow.phones.indexOf(newNumbers[i]) == -1) {
+          return true;
+        }
+      }
+      for(i = 0; i < userToShow.phones.length; i++) {
+        if(newNumbers.indexOf(userToShow.phones[i]) == -1) {
+          return true;
+        }
+      }
+      return false;
+    }
 
     var $select = $('select#country').selectize({
         valueField: 'countryCode',
@@ -50,20 +74,11 @@ $(function() {
             $select.getValue());
     }
 
-    function defaultProfileData() {
-        return {
-            name: defaultData($('input#name')),
-            email: defaultData($('input#email')),
-            phone: defaultData($('input#phone')),
-            countryCode: defaultData($('select#country')),
-        };
-    }
-
     function changedProfileData() {
         var data = {};
         if(ifChanged($('input#name'))) { data.name = ifChanged($('input#name')); }
         if(ifChanged($('input#email'))) { data.email = ifChanged($('input#email')); }
-        if(ifChanged($('input#phone'))) { data.phone = phone.intlTelInput('getNumber'); }
+        if(ifPhonesChanged()) { data.phones = getPhoneNumbers(); }
         if(ifChanged($('select#country'))) { data.countryCode = ifSelectizeChanged($('select#country')); }
         return data;
     }
@@ -72,17 +87,77 @@ $(function() {
         return (
             changedData.name !== undefined ||
             changedData.email !== undefined ||
-            changedData.phone !== undefined ||
+            changedData.phones !== undefined ||
             changedData.countryCode !== undefined);
     }
 
     function toggleDisabledSubmissionButton() {
         var changedData = changedProfileData();
         if (hasProfileDataChanged(changedData)) {
-            $('form input[type=submit]').removeClass('disabled');
+            $('form button[type=submit]').prop('disabled', false);
         } else {
-            $('form input[type=submit]').addClass('disabled');
+            $('form button[type=submit]').prop('disabled', true);
         }
+    }
+
+    function handlePhoneNumberCount() {
+      if($('#phoneNumbers .phoneNumberWrapper').size() == 1 &&
+        $('#phoneNumbers .phoneNumber').first().intlTelInput("getNumber") === '') {
+        $('#phoneNumbers .removePhone').prop('disabled', true);
+      } else {
+        $('#phoneNumbers .removePhone').prop('disabled', false);
+      }
+    }
+
+    function addPhoneInput(phoneNumber) {
+      // input.form-control#phone(type='tel', value=(userToShow.phone ? userToShow.phone : ''), data-default=(userToShow.phone ? userToShow.phone : ''), placeholder='(123) 456 7890')
+      $('#phoneNumbers').append('<div class="phoneNumberWrapper"><div class="col-xs-9 phoneDiv"><input class="form-control phoneNumber" type="tel" placeholder="(123) 456 7890"></div><div class="col-xs-3 deletePhoneDiv"><button class="btn-override btn btn-danger removePhone" type="button">Delete</button></div></div>');
+      var newPhoneInput = $('#phoneNumbers').find('.phoneNumber').last();
+      newPhoneInput.intlTelInput({
+          utilsScript: '/js/utils.js',
+      });
+      if (phoneNumber !== undefined) {
+        $(newPhoneInput).intlTelInput('setNumber', phoneNumber);
+      }
+      handlePhoneNumberCount();
+      $('.removePhone').off('click');
+      $('.removePhone').on('click', function(event) {
+        var phoneNumberIndex = $('#phoneNumbers .removePhone').index($(this));
+        if($('#phoneNumbers .phoneNumberWrapper').size() == 1) {
+          $('#phoneNumbers .phoneNumber').first().intlTelInput('setNumber', '');
+        } else {
+          $('#phoneNumbers .phoneNumberWrapper').get(phoneNumberIndex).remove();
+        }
+        handlePhoneNumberCount();
+        toggleDisabledSubmissionButton();
+        event.preventDefault();
+      });
+      $(newPhoneInput).off('countrychange');
+      $(newPhoneInput).on('countrychange', toggleDisabledSubmissionButton);
+      $(newPhoneInput).off('keyup');
+      $(newPhoneInput).on('keyup', function() {
+        handlePhoneNumberCount();
+        toggleDisabledSubmissionButton();
+      });
+    }
+
+    $('#addPhone').on('click', function(event) {
+      addPhoneInput();
+      event.preventDefault();
+    });
+
+    // Guarantee that there is at least one phone number field
+    var firstPhone;
+    if (userToShow.phones && userToShow.phones.length > 0) {
+      firstPhone = userToShow.phones[0];
+    }
+    addPhoneInput(firstPhone);
+
+    // If the user has more phone numbers, add them
+    if (userToShow.phones && userToShow.phones.length > 1) {
+      for(var i = 1; i < userToShow.phones.length; i++) {
+        addPhoneInput(userToShow.phones[i]);
+      }
     }
 
     // Events for when the form is changed
@@ -98,7 +173,7 @@ $(function() {
                 url: '/profile/' + $('input#userId').val(),
                 contentType: "application/x-www-form-urlencoded",
                 data: {
-                    old: defaultProfileData(),
+                    old: userToShow,
                     new: changedProfileData(),
                 },
                 dataType: 'json',
