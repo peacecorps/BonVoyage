@@ -9,6 +9,7 @@
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "~1.15.0",
     "cheerio": "^0.20.0",
+    "connect-ensure-login": "^0.1.1",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^1.1.0",
     "cookie-parser": "~1.4.1",
