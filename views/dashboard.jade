@@ -38,10 +38,11 @@ block content
                     a.small(href='#', data-value='limit.onLeave', tabindex='-1')
                       input(type='checkbox')
                       |  On-leave
-                  li
-                    a.small(href='#', data-value='limit.assignedMe', tabindex='-1')
-                      input(type='checkbox')
-                      |  Assigned to me
+                  if staff
+                    li
+                      a.small(href='#', data-value='limit.assignedMe', tabindex='-1')
+                        input(type='checkbox')
+                        |  Assigned to me
               input.form-control(type='text', placeholder='Search...')
 
         #dashboardTable

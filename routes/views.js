@@ -227,6 +227,7 @@ router.renderDashboard = function (req, res) {
 			title: 'Dashboard',
 			links: links,
 			messages: req.flash('dashboardFlash'),
+			staff: req.user.access >= Access.STAFF,
 		});
 	}
 };
