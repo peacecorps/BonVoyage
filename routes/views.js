@@ -210,9 +210,9 @@ router.renderApproval = function (req, res) {
 
 router.renderDashboard = function (req, res) {
 	if (req.session.returnTo) {
-		var redirect_to = req.session.returnTo;
+		var redirectTo = req.session.returnTo;
 		delete req.session.returnTo;
-		res.redirect(redirect_to);
+		res.redirect(redirectTo);
 	} else {
 		var links = [
 			{ text: 'Dashboard', href: '/dashboard', active: true },
