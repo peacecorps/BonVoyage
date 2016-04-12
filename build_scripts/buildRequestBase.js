@@ -77,8 +77,8 @@ function generateRequest(user, staff) {
 	}
 
 	return new Request({
-		userId: user._id,
-		staffId: staff._id,
+		userId: user,
+		staffId: staff,
 		status: {
 			isPending: isPending,
 			isApproved: isApproved,

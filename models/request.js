@@ -5,8 +5,16 @@ var mongoose = require('mongoose');
 var DateOnly = require('mongoose-dateonly')(mongoose);
 
 var requestSchema = mongoose.Schema({
-	userId: { type: mongoose.Schema.Types.ObjectId, required: true, },
-	staffId: { type: mongoose.Schema.Types.ObjectId, required: true, },
+	userId: { type:
+		mongoose.Schema.Types.ObjectId,
+		required: true,
+		ref: 'user',
+	},
+	staffId: {
+		type: mongoose.Schema.Types.ObjectId,
+		required: true,
+		ref: 'user',
+	},
 	status: {
 		isPending: Boolean,
 		isApproved: Boolean,
@@ -30,7 +38,10 @@ var requestSchema = mongoose.Schema({
 	comments: [
 		{
 			name: String,
-			userId: mongoose.Schema.Types.ObjectId,
+			userId: {
+				type: mongoose.Schema.Types.ObjectId,
+				ref: 'user',
+			},
 			content: String,
 			timestamp: { type: Date, default: Date.now },
 		},
