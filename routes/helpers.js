@@ -199,6 +199,10 @@ module.exports.getUsers = function (options, cb) {
 		q.access.$gte = options.minAccess;
 	}
 
+	if (options.countryCode !== undefined) {
+		q.countryCode = options.countryCode;
+	}
+
 	console.log(q);
 
 	// Note: using lean() so that users is a JS obj, instead of a Mongoose obj
