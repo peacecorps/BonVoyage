@@ -156,7 +156,7 @@ app.get('/.well-known/acme-challenge/' +
 app.get('/api/requests', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.getRequests);
 app.get('/api/users', isLoggedIn,
-	needsAccess(Access.STAFF), api.getUsers);
+	needsAccess(Access.VOLUNTEER), api.getUsers);
 app.get('/api/warnings', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.getWarnings);
 
