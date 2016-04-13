@@ -60,6 +60,8 @@ app.use(session({
 	store: new MongoStore({
 		mongooseConnection: mongoose.connection,
 	}),
+	resave: false,
+	saveUninitialized: true,
 }));
 
 // required for passport
