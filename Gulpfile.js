@@ -47,8 +47,13 @@
 		'node scrapers/usWarnings.js',
 	]));
 
+	gulp.task('build_db', shell.task([
+		'node build_scripts/build.js',
+	]));
+
 	gulp.task('tests', function () {
-		return gulp.src('tests/tests.js', { read: false })
+		return gulp
+			.src('tests/*.js', { read: false })
 			.pipe(mocha({ reporter: 'nyan' }));
 	});
 

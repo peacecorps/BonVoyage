@@ -42,7 +42,6 @@ var userSchema = mongoose.Schema({
 
 var presave = function (callback) {
 	var _this = this;
-	console.log('presave');
 	bcrypt.genSalt(10, function (err, salt) {
 		// new passwords are set to the hash and then overwritten below
 		var plainTextPassword = _this.hash;

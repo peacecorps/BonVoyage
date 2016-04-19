@@ -48,9 +48,7 @@ app.use(flash());
 
 mongoose.connect(process.env.MONGO_CONNECTION_STRING);
 mongoose.connection.on('error', function (err) {
-	if (err) {
-		console.log(err);
-	}
+	console.log(err);
 });
 
 var MongoStore = require('connect-mongo')(session);
