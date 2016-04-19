@@ -6,6 +6,7 @@
 	var jshint = require('gulp-jshint');
 	var jscs = require('gulp-jscs');
 	var shell = require('gulp-shell');
+	var mocha = require('gulp-mocha');
 
 	gulp.task('lint', function () {
 		return gulp.src([
@@ -46,7 +47,12 @@
 		'node scrapers/usWarnings.js',
 	]));
 
+	gulp.task('tests', function () {
+		return gulp.src('tests/tests.js', { read: false })
+			.pipe(mocha({ reporter: 'nyan' }));
+	});
+
 	gulp.task('default', ['lint', 'scss', 'scss:watch']);
-	gulp.task('test', ['lint', 'scss']);
+	gulp.task('test', ['lint', 'scss', 'tests']);
 	gulp.task('deploy', ['lint', 'scss', 'scrape']);
 })();
