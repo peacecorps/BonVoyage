@@ -98,8 +98,6 @@ module.exports.getRequests = function (req, res, options, cb) {
 			matchCountry['volunteer.countryCode'] = req.user.countryCode;
 		}
 
-		console.log(matchCountry);
-
 		Request
 			.find(matchUsers)
 			.populate({
@@ -117,8 +115,6 @@ module.exports.getRequests = function (req, res, options, cb) {
 					return cb(err);
 				} else {
 
-					console.log(requests);
-
 					// Add start and end date to all requests
 					for (var i = 0; i < requests.length; i++) {
 						requests[i].startDate = module.exports.getStartDate(requests[i]);
@@ -128,75 +124,6 @@ module.exports.getRequests = function (req, res, options, cb) {
 					cb(null, requests);
 				}
 			});
-
-		// Request.aggregate([
-		// 	{
-		// 		$match: matchUsers,
-		// 	},
-		// 	{
-		// 		// JOIN with the user data belonging to each request
-		// 		$lookup: {
-		// 			from: 'users',
-		// 			localField: 'userId',
-		// 			foreignField: '_id',
-		// 			as: 'user',
-		// 		},
-		// 	},
-		// 	{
-		// 		// Only one user will ever match (emails are unique)
-		// 		// Convert the user key to a single document from an array
-		// 		$unwind: '$user',
-		// 	},
-		// 	{
-		// 		// JOIN with the user data belonging to each request
-		// 		$lookup: {
-		// 			from: 'users',
-		// 			localField: 'staffId',
-		// 			foreignField: '_id',
-		// 			as: 'staff',
-		// 		},
-		// 	},
-		// 	{
-		// 		// Only one staff will ever match (emails are unique)
-		// 		// Convert the staff key to a single document from an array
-		// 		$unwind: '$staff',
-		// 	},
-		// 	{
-		// 		$match: matchCountry,
-		// 	},
-		// 	{
-		// 		$match: (options && options.pending !== undefined ?
-		// 				{ 'status.isPending': options.pending } : {}),
-		// 	},
-		// 	{
-		// 		// Hide certain fields of the output (including password hashes)
-		// 		$project: {
-		// 			userId: true,
-		// 			staffId: true,
-		// 			counterpartApproved: true,
-		// 			comments: true,
-		// 			legs: true,
-		// 			timestamp: true,
-		// 			status: true,
-		// 			user: {
-		// 				name: true,
-		// 				email: true,
-		// 				phones: true,
-		// 				access: true,
-		// 				countryCode: true,
-		// 			},
-		// 			staff: {
-		// 				name: true,
-		// 				email: true,
-		// 				phones: true,
-		// 				access: true,
-		// 				countryCode: true,
-		// 			},
-		// 		},
-		// 	},
-		// ], function (err, requests) {
-		// 	// ...
-		// });
 	} else {
 		cb(new Error('User not logged in!'));
 	}
