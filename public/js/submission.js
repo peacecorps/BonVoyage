@@ -219,7 +219,7 @@ $(function() {
   }
   $.ajax({
       method: "GET",
-      url: "/api/users?minAccess=1",
+      url: "/api/users?minAccess=1&maxAccess=1",
       dataType: "json",
       success: function(json) {
         $selectStaff[0].selectize.addOption(json);

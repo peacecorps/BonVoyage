@@ -83,6 +83,8 @@ router.getUsers = function (req, res) {
 	helpers.getUsers({
 		maxAccess: maxAccess,
 		minAccess: minAccess,
+		countryCode:
+			(req.user.access == Access.VOLUNTEER ? req.user.countryCode : undefined),
 	}, function (err, users) {
 		if (err) {
 			console.error(err);

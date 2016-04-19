@@ -15,6 +15,7 @@ var session = require('express-session');
 var flash    = require('connect-flash');
 var Access = require(__dirname + '/config/access');
 var multer = require('multer');
+var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
 var upload = multer({
 	dest: __dirname + '/uploads/users/',
 	limits: {
@@ -131,18 +132,18 @@ app.get('/login', isNotLoggedIn, views.renderLogin);
 app.get('/register/:token', isNotLoggedIn, views.renderRegister);
 app.get('/reset', isNotLoggedIn, views.renderReset);
 app.get('/reset/:token', views.renderValidReset);
-app.get('/dashboard', isLoggedIn,
+app.get('/dashboard', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderDashboard);
-app.get('/dashboard/submit', isLoggedIn,
+app.get('/dashboard/submit', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderSubform);
-app.get('/requests/:requestId', isLoggedIn,
+app.get('/requests/:requestId', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
-app.get('/requests/:requestId/edit', isLoggedIn,
+app.get('/requests/:requestId/edit', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderEditRequest);
-app.get('/users', isLoggedIn, views.renderUsers);
-app.get('/users/add', isLoggedIn,
+app.get('/users', ensureLoggedIn('/login'), views.renderUsers);
+app.get('/users/add', ensureLoggedIn('/login'),
 	needsAccess(Access.STAFF), views.renderAddUsers);
-app.get('/profile/:userId?', isLoggedIn,
+app.get('/profile/:userId?', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderProfile);
 
 app.get('/.well-known/acme-challenge/' +
@@ -155,7 +156,7 @@ app.get('/.well-known/acme-challenge/' +
 app.get('/api/requests', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.getRequests);
 app.get('/api/users', isLoggedIn,
-	needsAccess(Access.STAFF), api.getUsers);
+	needsAccess(Access.VOLUNTEER), api.getUsers);
 app.get('/api/warnings', isLoggedIn,
 	needsAccess(Access.VOLUNTEER), api.getWarnings);
 

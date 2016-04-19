@@ -206,20 +206,27 @@ router.renderApproval = function (req, res) {
 };
 
 router.renderDashboard = function (req, res) {
-	var links = [
-		{ text: 'Dashboard', href: '/dashboard', active: true },
-		{ text: 'Submit a Request', href: '/dashboard/submit' },
-	];
-	if (req.user.access >= Access.STAFF) {
-		links.push({ text: 'Users', href: '/users' });
-		links.push({ text: 'Add Users', href: '/users/add' });
-	}
+	if (req.session.returnTo) {
+		var redirectTo = req.session.returnTo;
+		delete req.session.returnTo;
+		res.redirect(redirectTo);
+	} else {
+		var links = [
+			{ text: 'Dashboard', href: '/dashboard', active: true },
+			{ text: 'Submit a Request', href: '/dashboard/submit' },
+		];
+		if (req.user.access >= Access.STAFF) {
+			links.push({ text: 'Users', href: '/users' });
+			links.push({ text: 'Add Users', href: '/users/add' });
+		}
 
-	res.render('dashboard.jade', {
-		title: 'Dashboard',
-		links: links,
-		messages: req.flash('dashboardFlash'),
-	});
+		res.render('dashboard.jade', {
+			title: 'Dashboard',
+			links: links,
+			messages: req.flash('dashboardFlash'),
+			staff: req.user.access >= Access.STAFF,
+		});
+	}
 };
 
 router.renderUsers = function (req, res) {
