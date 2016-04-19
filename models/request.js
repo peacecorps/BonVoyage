@@ -5,12 +5,12 @@ var mongoose = require('mongoose');
 var DateOnly = require('mongoose-dateonly')(mongoose);
 
 var requestSchema = mongoose.Schema({
-	userId: { type:
+	volunteer: { type:
 		mongoose.Schema.Types.ObjectId,
 		required: true,
 		ref: 'user',
 	},
-	staffId: {
+	staff: {
 		type: mongoose.Schema.Types.ObjectId,
 		required: true,
 		ref: 'user',
@@ -38,7 +38,7 @@ var requestSchema = mongoose.Schema({
 	comments: [
 		{
 			name: String,
-			userId: {
+			user: {
 				type: mongoose.Schema.Types.ObjectId,
 				ref: 'user',
 			},

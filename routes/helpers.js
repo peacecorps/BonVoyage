@@ -82,15 +82,15 @@ module.exports.getRequests = function (req, res, options, cb) {
 		}
 
 		if (req.user.access < Access.STAFF) {
-			matchUsers.userId = req.user._id;
+			matchUsers.volunteer = req.user._id;
 		}
 
 		if (options && options.staffId) {
-			matchUsers.staffId = req.staffId;
+			matchUsers.staff = req.staffId;
 		}
 
 		if (options && options.userId) {
-			matchUsers.userId = req.userId;
+			matchUsers.volunteer = req.userId;
 		}
 
 		var matchCountry = {};
@@ -99,12 +99,18 @@ module.exports.getRequests = function (req, res, options, cb) {
 		}
 
 		Request
-			.find()
-			.populate('userId staffId', '-hash')
+			.find(matchUsers)
+			.populate({
+				path: 'volunteer staff comments.user',
+				match: matchCountry,
+				select: '-hash',
+			})
+			.lean()
 			.exec(function (err, requests) {
 				if (err) {
 					return cb(err);
 				} else {
+
 					console.log(requests);
 
 					// Add start and end date to all requests
@@ -308,7 +314,7 @@ module.exports.postComment = function (
 				$each:[
 					{
 						name: name,
-						userId: userId,
+						user: userId,
 						content: commentMessage,
 					},
 				],
