@@ -54,7 +54,7 @@ $(function () {
 		},
 		columns: [
 			{
-				data: 'user',
+				data: 'volunteer',
 				render: function (data) {
 					if (data) {
 						return data.name;
@@ -181,7 +181,7 @@ $(function () {
 			) {
 				var rowData = table.rows({order:'original'}).data()[dataIndex];
 				if (!searchOptions.limit.assignedMe ||
-						currentUser._id == rowData.staffId) {
+						currentUser._id == rowData.staff._id) {
 					if (searchOptions.limit.onLeave) {
 						var start_date = new DateOnly(data[2]);
 						var end_date = new DateOnly(data[3]);

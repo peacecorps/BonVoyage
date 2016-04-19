@@ -76,8 +76,6 @@ router.renderSubform = function (req, res) {
 		req.session.submission = null;
 	}
 
-	console.log(sub);
-
 	var links = [
 		{ text: 'Dashboard', href: '/dashboard' },
 		{ text: 'Submit a Request', href: '/dashboard/submit', active: true },
@@ -105,7 +103,6 @@ router.renderEditRequest = function (req, res) {
 		sub = req.session.submission;
 		req.session.submission = null;
 	} else if (req.request) {
-		console.log(req.request);
 		var legs = [];
 		for (var i = 0; i < req.request.legs.length; i++) {
 			// Convert the start and end dates into a format that
@@ -127,8 +124,8 @@ router.renderEditRequest = function (req, res) {
 		}
 
 		sub = {
-			userId: req.request.userId,
-			staffId: req.request.staffId,
+			volunteer: req.request.volunteer._id,
+			staff: req.request.staff._id,
 			legs: req.request.legs,
 			counterpartApproved: '' + req.request.counterpartApproved,
 		};
