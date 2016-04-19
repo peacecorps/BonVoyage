@@ -95,13 +95,19 @@ module.exports.getRequests = function (req, res, options, cb) {
 
 		var matchCountry = {};
 		if (req.user.access == Access.STAFF) {
-			matchCountry['user.countryCode'] = req.user.countryCode;
+			matchCountry['volunteer.countryCode'] = req.user.countryCode;
 		}
+
+		console.log(matchCountry);
 
 		Request
 			.find(matchUsers)
 			.populate({
-				path: 'volunteer staff comments.user',
+				path: 'staff comments.user',
+				select: '-hash',
+			})
+			.populate({
+				path: 'volunteer',
 				match: matchCountry,
 				select: '-hash',
 			})
