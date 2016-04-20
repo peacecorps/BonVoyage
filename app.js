@@ -123,9 +123,6 @@ function needsAccess(access) {
 	};
 }
 
-// Route Parameters
-app.param('requestId', api.handleRequestId);
-
 // Render Views
 app.get('/', views.index);
 app.get('/login', isNotLoggedIn, views.renderLogin);
@@ -137,9 +134,9 @@ app.get('/dashboard', ensureLoggedIn('/login'),
 app.get('/dashboard/submit', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderSubform);
 app.get('/requests/:requestId', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderApproval);
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, views.renderApproval);
 app.get('/requests/:requestId/edit', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderEditRequest);
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, views.renderEditRequest);
 app.get('/users', ensureLoggedIn('/login'), views.renderUsers);
 app.get('/users/add', ensureLoggedIn('/login'),
 	needsAccess(Access.STAFF), views.renderAddUsers);
@@ -153,20 +150,20 @@ app.get('/.well-known/acme-challenge/' +
 });
 
 // API
-app.get('/api/requests', isLoggedIn,
+app.get('/api/requests',
 	needsAccess(Access.VOLUNTEER), api.getRequests);
-app.get('/api/users', isLoggedIn,
+app.get('/api/users',
 	needsAccess(Access.VOLUNTEER), api.getUsers);
-app.get('/api/warnings', isLoggedIn,
+app.get('/api/warnings',
 	needsAccess(Access.VOLUNTEER), api.getWarnings);
 
-app.post('/api/requests/:requestId/approve', isLoggedIn,
-	needsAccess(Access.STAFF), api.postApprove);
-app.post('/api/requests/:requestId/deny', isLoggedIn,
-	needsAccess(Access.STAFF), api.postDeny);
-app.post('/api/requests/:requestId/comments', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.postComments);
-app.post('/profile/:userId?', isLoggedIn,
+app.post('/api/requests/:requestId/approve',
+	needsAccess(Access.STAFF), api.handleRequestId, api.postApprove);
+app.post('/api/requests/:requestId/deny',
+	needsAccess(Access.STAFF), api.handleRequestId, api.postDeny);
+app.post('/api/requests/:requestId/comments',
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.postComments);
+app.post('/profile/:userId?',
 	needsAccess(Access.VOLUNTEER), api.modifyProfile);
 
 app.post('/api/register', passport.authenticate('local-signup', {
@@ -182,20 +179,21 @@ app.post('/api/login', passport.authenticate('local-login', {
 app.post('/api/logout', api.logout);
 app.post('/api/reset', api.reset);
 app.post('/api/reset/:token', api.resetValidator);
-app.post('/api/requests', isLoggedIn,
+app.post('/api/requests',
 	needsAccess(Access.VOLUNTEER), api.postRequest);
-app.post('/api/requests/:requestId', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.postUpdatedRequest);
-app.post('/api/access', isLoggedIn,
+app.post('/api/requests/:requestId',
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.postUpdatedRequest);
+app.post('/api/access',
 	needsAccess(Access.STAFF), api.modifyAccess);
-app.post('/api/users', isLoggedIn,
+app.post('/api/users',
 	needsAccess(Access.STAFF), api.postUsers);
-app.post('/api/users/validate', isLoggedIn,
+app.post('/api/users/validate',
 	needsAccess(Access.STAFF), upload.single('users'), api.validateUsers);
 
-app.delete('/api/requests/:requestId/delete', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.deleteRequest);
-app.delete('/api/users', isLoggedIn, api.deleteUser);
+app.delete('/api/requests/:requestId/delete',
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.deleteRequest);
+app.delete('/api/users',
+	needsAccess(Access.VOLUNTEER), api.deleteUser);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

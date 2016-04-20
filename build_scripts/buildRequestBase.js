@@ -90,9 +90,6 @@ module.exports = function (options, done) {
 				done(err);
 			} else {
 				count -= 1;
-				if (count % 5 === 0) {
-					console.log(sprintf('%d requests left to save...', count));
-				}
 
 				if (count === 0) {
 					done(null);
@@ -105,8 +102,6 @@ module.exports = function (options, done) {
 			object.save(handleSave);
 		}
 	}
-
-	console.log(sprintf('Generating %d requests...', REQUESTS_TO_GENERATE));
 
 	User.find({  }, function (err, users) {
 		if (err) {
@@ -128,8 +123,6 @@ module.exports = function (options, done) {
 				var randStaff = staff[randIndex(staff.length)];
 				requests.push(generateRequest(randVolunteer, randStaff));
 			}
-
-			console.log(sprintf('About to save %d requests.', requests.length));
 
 			saveAll(requests);
 		}

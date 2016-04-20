@@ -20,7 +20,8 @@ var Converter = require('csvtojson').Converter;
 /*
  * Handle Parameters
  */
-router.handleRequestId = function (req, res, next, requestId) {
+router.handleRequestId = function (req, res, next) {
+	var requestId = req.param('requestId');
 	helpers.getRequests(req, res, { _id: requestId },
 		function (err, requests) {
 		if (err) {

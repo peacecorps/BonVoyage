@@ -51,13 +51,13 @@
 		'node build_scripts/build.js',
 	]));
 
-	gulp.task('tests', function () {
+	gulp.task('mocha', function () {
 		return gulp
 			.src('tests/*.js', { read: false })
 			.pipe(mocha({ reporter: 'nyan' }));
 	});
 
 	gulp.task('default', ['lint', 'scss', 'scss:watch']);
-	gulp.task('test', ['lint', 'scss', 'tests']);
+	gulp.task('test', ['lint', 'scss', 'mocha']);
 	gulp.task('deploy', ['lint', 'scss', 'scrape']);
 })();
