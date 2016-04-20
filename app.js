@@ -12,7 +12,7 @@ var api = require(__dirname + '/routes/api');
 var app = express();
 var passport = require('passport');
 var session = require('express-session');
-var flash    = require('connect-flash');
+var flash = require('connect-flash');
 var Access = require(__dirname + '/config/access');
 var multer = require('multer');
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
@@ -131,7 +131,7 @@ app.param('requestId', api.handleRequestId);
 // Render Views
 app.get('/', views.index);
 app.get('/login', isNotLoggedIn, views.renderLogin);
-app.get('/register/:token', isNotLoggedIn, views.renderRegister);
+app.get('/register/:email/:token', isNotLoggedIn, views.renderRegister);
 app.get('/reset', isNotLoggedIn, views.renderReset);
 app.get('/reset/:token', views.renderValidReset);
 app.get('/dashboard', ensureLoggedIn('/login'),

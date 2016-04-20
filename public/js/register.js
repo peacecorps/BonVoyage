@@ -1,10 +1,3 @@
-var global_validation = [false, false, false];
-
-function isEmail(email) {
-	var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
-	return regex.test(email);
-}
-
 function isValid(reference) {
 	reference.css('border', '3px solid #1FDA9A');
 }
@@ -28,12 +21,8 @@ function validate(reference, validate) {
 	}
 }
 
-function validateAll() {
-	for (var i = 0; i < global_validation.length; i++) {
-		if (!global_validation[i]) return;
-	}
-
-	enableBtn();
+function getPosition(str, m, i) {
+	return str.split(m, i).join(m).length;
 }
 
 var enableBtn = function() {
@@ -43,78 +32,67 @@ var enableBtn = function() {
 $(function () {
 	// reference token
 	var uri = window.location.href;
-	var token = uri.substring(uri.indexOf('register') + 9);
+	uri = uri.substring(uri.indexOf('register'));
+	var email = uri.substring(getPosition(uri, '/', 1) + 1, getPosition(uri, '/', 2));
+	var token = uri.substring(getPosition(uri, '/', 2) + 1);
+	$('#signupEmail').val(email);
 	$('#signupToken').val(token);
 
+	$('.form-signin').attr('action', '/api/register');
+	$('.form-signin').attr('method', 'post');
+
 	// initialize phone field
-	var email = $('#signupEmail');
-	var phoneNumber = $('#phone');
 	var password = $('#signupPassword');
 	var rePassword = $('#signupPassword2');
-
-	phoneNumber.intlTelInput({
-		utilsScript: '/js/utils.js',
-	});
-
-	email.on('keyup change', function () {
-		global_validation[0] = validate(email, isEmail(email.val()));
-		validateAll();
-	});
-
-	phoneNumber.on('keyup change', function () {
-		global_validation[1] = validate(phoneNumber, phoneNumber.intlTelInput('isValidNumber'));
-		validateAll();
-	});
 
 	password.on('keyup change', function () {
 		var password1 = password.val();
 		var password2 = rePassword.val();
 
-		global_validation[2] = validate(password, password1 !== '' && password1 === password2);
+		var valid = validate(password, password1 !== '' && password1 === password2);
 		validate(rePassword, password1 !== '' && password1 === password2);
 
-		validateAll();
+		if (valid) enableBtn();
 	});
 
 	rePassword.on('keyup change', function () {
 		var password1 = password.val();
 		var password2 = rePassword.val();
 
-		global_validation[2] = validate(password, password1 !== '' && password1 === password2);
+		var valid = validate(password, password1 !== '' && password1 === password2);
 		validate(rePassword, password1 !== '' && password1 === password2);
 
-		validateAll();
+		if (valid) enableBtn();
 	});
 
-	$('#signupInfo').on('click', function(event) {
-		var tokenForm = $('#signupToken').val();
-		var emailForm = $('#signupEmail').val();
-		var phoneForm = phoneNumber.intlTelInput('getNumber');
-		var passForm = $('#signupPassword').val();
-		var passForm2 = $('#signupPassword2').val();
+	// $('#signupInfo').on('click', function(event) {
+	// 	var tokenForm = $('#signupToken').val();
+	// 	var emailForm = $('#signupEmail').val();
+	// 	var passForm = $('#signupPassword').val();
+	// 	var passForm2 = $('#signupPassword2').val();
 
-		var formData = {
-			token: tokenForm,
-			email: emailForm,
-			phone: phoneForm,
-			password: passForm,
-			password2: passForm2,
-		};
+	// 	var formData = {
+	// 		token: tokenForm,
+	// 		email: emailForm,
+	// 		password: passForm,
+	// 		password2: passForm2,
+	// 	};
 
-		$.ajax({
-            method: 'POST',
-            url: '/api/register',
-            contentType: "application/x-www-form-urlencoded",
-            data: formData,
-            dataType: 'json',
-            success: function(response) {
-                if (response && response.redirect) {
-                    window.location.href = response.redirect;
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-            	window.location.href = '/login';
-			}
-        });
-	});
+	// 	$.ajax({
+ //            method: 'POST',
+ //            url: '/api/register',
+ //            contentType: "application/x-www-form-urlencoded",
+ //            data: formData,
+ //            dataType: 'html',
+ //            success: function(response) {
+ //                if (response && response.redirect) {
+ //                	console.log(response.redirect);
+ //                    window.location.href = response.redirect;
+ //                }
+ //            },
+ //            error: function(jqXHR, textStatus, errorThrown) {
+ //            	window.location.href = '/login';
+	// 		}
+ //        });
+	// });
 });

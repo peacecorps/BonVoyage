@@ -92,13 +92,13 @@ module.exports = function (passport) {
 								var newUser = new User();
 
 								// set the user's local credentials
-								newUser.email = email;
+								newUser.email = token.email;
 
 								// This password will be hashed, and in the process
 								// overwrite the plain text password we just stored into newUser.hash
 								newUser.hash = password;
 								newUser.name = token.name;
-								newUser.phone = req.body.phone;
+								newUser.phones = [];
 								newUser.access = Access.VOLUNTEER;
 								newUser.countryCode = token.country;
 
@@ -111,7 +111,7 @@ module.exports = function (passport) {
 									}
 
 									var sendFrom = 'Peace Corps <team@projectdelta.io>';
-									var sendTo = email;
+									var sendTo = [email];
 									var subject = 'Peace Corps BonVoyage Registration Confirmation';
 									var map = {
 										name: token.name.split(' ')[0],

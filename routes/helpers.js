@@ -26,7 +26,7 @@ if (process.env.MAILGUN_KEY !== undefined &&
 	process.env.BONVOYAGE_DOMAIN !== undefined) {
 	var mailgun = mailgun({
 		apiKey: process.env.MAILGUN_KEY,
-		domain: process.env.DOMAIN,
+		domain: 'projectdelta.io', // this is temporary
 	});
 	dropEmail = false;
 }
@@ -248,46 +248,55 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 	var html = jade.renderFile(path.join(__dirname, '../email',
 		template + '.jade'), map);
 
-	var data = {
-		from: sendFrom,
-		to: sendTo,
-		subject: subject,
-		html: html,
-	};
-
-	if (dropEmail) {
-		console.error('Email dropped. Email data:');
-		console.error(data);
-		if (callback) {
-			callback();
-		}
-	} else {
-		var mail = mailcomposer(data);
-
-		mail.build(function (buildError, message) {
+	var createMailCallback = function (sendTo, recipient) {
+		return function (buildError, message) {
 			if (buildError) {
 				console.log(buildError);
 			}
 
 			var dataToSend = {
-				to: sendTo,
+				to: sendTo[recipient],
 				message: message.toString('ascii'),
 			};
 
-			mailgun.messages().sendMime(dataToSend, function (sendError, body) {
-				if (sendError) {
-					console.log(sendError);
-				}
+			mailgun.messages().sendMime(dataToSend, sendMimeCallback);
+		};
+	};
 
-				if (body) {
-					console.log('Email data:' + body);
-				}
+	var sendMimeCallback = function (sendError, body) {
+		if (sendError) {
+			console.log('was unable to send');
+			console.log(sendError);
+		}
 
-				if (callback) {
-					callback();
-				}
-			});
-		});
+		if (body) {
+			console.log('Email data:' + body);
+		}
+
+		if (callback) {
+			callback();
+		}
+	};
+
+	for (var recipient in sendTo) {
+		var data = {
+			from: sendFrom,
+			to: sendTo[recipient],
+			subject: subject,
+			html: html,
+		};
+
+		if (dropEmail) {
+			console.error('Email dropped. Email data:');
+			console.error(data);
+			if (callback) {
+				callback();
+			}
+		} else {
+			var mail = mailcomposer(data);
+
+			mail.build(createMailCallback(sendTo, recipient));
+		}
 	}
 };
 

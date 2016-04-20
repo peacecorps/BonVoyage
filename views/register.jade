@@ -14,28 +14,15 @@ block content
 
       label.signup.sr-only(for='signupToken') Registration Token
       input#signupToken.form-control.hidden(type='text', placeholder='Token Value', required='', autofocus='', name='token', value=submission.token)
-      label.signup(for='signupEmail') Email address
-      input#signupEmail.form-control(type='email', placeholder='Enter Email Address', required='', autofocus='', name='email', value=submission.email)
-      label.signup(for='signupPhone') Phone Number
-      // input#signupPhone.form-control(type='tel', placeholder='Phone Number', required='', name='phone', value=submission.phone)
-
-      input#phone.form-control(type='tel', autofocus='')
-
+      label.signup.sr-only(for='signupEmail') Email
+      input#signupEmail.form-control.hidden(type='text', placeholder='Token Value', required='', autofocus='', name='email', value=submission.email)
       label.signup(for='signupPassword') Password
       input#signupPassword.form-control(type='password', placeholder='Enter Password', required='', name='password', value=submission.password)
       label.signup(for='signupPassword2') Re-enter Password
       input#signupPassword2.form-control(type='password', placeholder='Re-Enter Password', required='', name='password2', value=submission.password2)
 
-      button#signupInfo.submit-btn.btn.btn-lg.btn-default.btn-block(disabled='true', type='button') Sign Up
-
-
-
+      button#signupInfo.submit-btn.btn.btn-lg.btn-default.btn-block(disabled='true', type='submit') Sign Up
 
 block scripts
   // Include all complied plugins
   script(src='/js/register.js')
-  script(src='/js/intlTelInput.min.js')
-  script(src='/js/utils.js')
-
-
-
