@@ -539,7 +539,7 @@ router.postApprove = function (req, res) {
 
 		User.findOne({ _id: doc.volunteer }, function (err, user) {
 			var sendFrom = 'Peace Corps <team@projectdelta.io>';
-			var sendTo = user.email;
+			var sendTo = [user.email];
 			var subject = 'Peace Corps BonVoyage Request Approved';
 			var map = {
 				name: req.user.name.split(' ')[0],
@@ -586,7 +586,7 @@ router.postDeny = function (req, res) {
 
 		User.findOne({ _id: doc.volunteer }, function (err, user) {
 			var sendFrom = 'Peace Corps <team@projectdelta.io>';
-			var sendTo = user.email;
+			var sendTo = [user.email];
 			var subject = 'Peace Corps BonVoyage Request Denied';
 			var map = {
 				name: req.user.name.split(' ')[0],
@@ -670,7 +670,7 @@ router.reset = function (req, res) {
 					}
 
 					var sendFrom = 'Peace Corps <team@projectdelta.io>';
-					var sendTo = email;
+					var sendTo = [email];
 					var subject = 'Peace Corps BonVoyage Password Reset Request';
 					var map = {
 						name: user.name.split(' ')[0],
@@ -925,11 +925,12 @@ router.postUsers = function (req, res) {
 					}
 
 					var sendFrom = 'Peace Corps <team@projectdelta.io>';
-					var sendTo = user.email.value.toLowerCase();
+					var sendTo = [user.email.value.toLowerCase()];
 					var subject = 'Peace Corps BonVoyage Registration';
 					var map = {
 						name: user.name.value.split(' ')[0],
-						button: process.env.BONVOYAGE_DOMAIN + '/register/' + token,
+						button: process.env.BONVOYAGE_DOMAIN + '/register/' +
+						sendTo + '/' + token,
 					};
 
 					// asynchronous
