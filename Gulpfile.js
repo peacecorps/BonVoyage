@@ -7,6 +7,7 @@
 	var jscs = require('gulp-jscs');
 	var shell = require('gulp-shell');
 	var mocha = require('gulp-mocha');
+	var cover = require('gulp-coverage');
 
 	gulp.task('lint', function () {
 		return gulp.src([
@@ -55,6 +56,19 @@
 		return gulp
 			.src('tests/*.js', { read: false })
 			.pipe(mocha({ reporter: 'nyan' }));
+	});
+
+	gulp.task('coveralls', function () {
+		return gulp
+			.src('tests/*.js', { read: false })
+			.pipe(cover.instrument({
+				pattern: ['routes/*.js'],
+				debugDirectory: 'tests/debug',
+			}))
+			.pipe(mocha())
+			.pipe(cover.gather())
+			.pipe(cover.format())
+			.pipe(gulp.dest('tests/reports'));
 	});
 
 	gulp.task('default', ['lint', 'scss', 'scss:watch']);
