@@ -60,4 +60,6 @@ uploads
 # Coveralls
 .coverrun
 .coverdata
-tests/reports
+tests/debug/**/*
+tests/reports/**/*
+.coveralls.yml

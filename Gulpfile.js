@@ -1,3 +1,5 @@
+/* jshint node: true */
+
 (function () {
 	'use strict';
 
@@ -7,7 +9,8 @@
 	var jscs = require('gulp-jscs');
 	var shell = require('gulp-shell');
 	var mocha = require('gulp-mocha');
-	var cover = require('gulp-coverage');
+	var istanbul = require('gulp-istanbul');
+	var coveralls = require('gulp-coveralls');
 
 	gulp.task('lint', function () {
 		return gulp.src([
@@ -58,17 +61,26 @@
 			.pipe(mocha({ reporter: 'nyan' }));
 	});
 
-	gulp.task('coveralls', function () {
+	gulp.task('pre-coveralls', function () {
+		// This tells gulp which files you want to pipe
+		// In our case we want to pipe every `.js` file inside any folders inside `test`
+		return gulp.src('tests/**/*.js')
+			.pipe(istanbul())
+			.pipe(istanbul.hookRequire());
+	});
+
+	gulp.task('coverage', ['pre-coveralls'], function () {
 		return gulp
-			.src('tests/*.js', { read: false })
-			.pipe(cover.instrument({
-				pattern: ['routes/*.js'],
-				debugDirectory: 'tests/debug',
-			}))
-			.pipe(mocha())
-			.pipe(cover.gather())
-			.pipe(cover.format())
-			.pipe(gulp.dest('tests/reports'));
+			.src('tests/**/*.js', { read: false })
+			.pipe(mocha({ reporter: 'spec' }))
+			.pipe(istanbul.writeReports());
+	});
+
+	gulp.task('coveralls', ['coverage'], function () {
+		// lcov.info is the file which has the coverage information we wan't to upload
+		return gulp
+			.src(__dirname + '/coverage/lcov.info')
+			.pipe(coveralls());
 	});
 
 	gulp.task('default', ['lint', 'scss', 'scss:watch']);
