@@ -93,20 +93,10 @@ module.exports.getRequests = function (req, res, options, cb) {
 			matchUsers.volunteer = req.userId;
 		}
 
-		var matchCountry = {};
-		if (req.user.access == Access.STAFF) {
-			matchCountry['volunteer.countryCode'] = req.user.countryCode;
-		}
-
 		Request
 			.find(matchUsers)
 			.populate({
-				path: 'staff comments.user',
-				select: '-hash',
-			})
-			.populate({
-				path: 'volunteer',
-				match: matchCountry,
+				path: 'staff comments.user volunteer',
 				select: '-hash',
 			})
 			.lean()
@@ -114,6 +104,12 @@ module.exports.getRequests = function (req, res, options, cb) {
 				if (err) {
 					return cb(err);
 				} else {
+					// Only show requests from the same country, if staff level
+					if (req.user.access == Access.STAFF) {
+						requests = requests.filter(function (request) {
+							return request.volunteer.countryCode == req.user.countryCode;
+						});
+					}
 
 					// Add start and end date to all requests
 					for (var i = 0; i < requests.length; i++) {
