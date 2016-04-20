@@ -200,21 +200,6 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 	var html = jade.renderFile(path.join(__dirname, '../email',
 		template + '.jade'), map);
 
-	var createMailCallback = function (sendTo, recipient) {
-		return function (buildError, message) {
-			if (buildError) {
-				console.log(buildError);
-			}
-
-			var dataToSend = {
-				to: sendTo[recipient],
-				message: message.toString('ascii'),
-			};
-
-			mailgun.messages().sendMime(dataToSend, sendMimeCallback);
-		};
-	};
-
 	var sendMimeCallback = function (sendError, body) {
 		if (sendError) {
 			console.log('was unable to send');
@@ -228,6 +213,21 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 		if (callback) {
 			callback();
 		}
+	};
+
+	var createMailCallback = function (sendTo, recipient) {
+		return function (buildError, message) {
+			if (buildError) {
+				console.log(buildError);
+			}
+
+			var dataToSend = {
+				to: sendTo[recipient],
+				message: message.toString('ascii'),
+			};
+
+			mailgun.messages().sendMime(dataToSend, sendMimeCallback);
+		};
 	};
 
 	for (var recipient in sendTo) {

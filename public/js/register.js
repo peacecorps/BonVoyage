@@ -64,35 +64,4 @@ $(function () {
 
 		if (valid) enableBtn();
 	});
-
-	// $('#signupInfo').on('click', function(event) {
-	// 	var tokenForm = $('#signupToken').val();
-	// 	var emailForm = $('#signupEmail').val();
-	// 	var passForm = $('#signupPassword').val();
-	// 	var passForm2 = $('#signupPassword2').val();
-
-	// 	var formData = {
-	// 		token: tokenForm,
-	// 		email: emailForm,
-	// 		password: passForm,
-	// 		password2: passForm2,
-	// 	};
-
-	// 	$.ajax({
- //            method: 'POST',
- //            url: '/api/register',
- //            contentType: "application/x-www-form-urlencoded",
- //            data: formData,
- //            dataType: 'html',
- //            success: function(response) {
- //                if (response && response.redirect) {
- //                	console.log(response.redirect);
- //                    window.location.href = response.redirect;
- //                }
- //            },
- //            error: function(jqXHR, textStatus, errorThrown) {
- //            	window.location.href = '/login';
-	// 		}
- //        });
-	// });
 });
