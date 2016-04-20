@@ -166,11 +166,11 @@ $(function() {
       return !$.isEmptyObject(submissionData);
   }
 
-  function updateVolunteerName(userId) {
+  function updateVolunteerName(volunteer) {
     if (users) {
       var name = null;
       for(var i = 0; i < users.length; i++) {
-        if (users[i]._id === userId) {
+        if (users[i]._id === volunteer) {
           name = users[i].name;
         }
       }
@@ -209,25 +209,25 @@ $(function() {
             $selectRequestee[0].selectize.refreshOptions(false);
             if(submissionDataExists()) {
                 // A failure just occurred during submission: we need to replace the previously submitted data
-                if (isSubmitAsOtherUserShowing() && submissionData.userId !== undefined) {
-                    $selectRequestee[0].selectize.setValue(submissionData.userId);
+                if (isSubmitAsOtherUserShowing() && submissionData.volunteer !== undefined) {
+                    $selectRequestee[0].selectize.setValue(submissionData.volunteer);
                 }
-                updateVolunteerName(submissionData.userId);
+                updateVolunteerName(submissionData.volunteer);
             }
           }
       });
   }
   $.ajax({
       method: "GET",
-      url: "/api/users?minAccess=1",
+      url: "/api/users?minAccess=1&maxAccess=1",
       dataType: "json",
       success: function(json) {
         $selectStaff[0].selectize.addOption(json);
         $selectStaff[0].selectize.refreshOptions(false);
         if(submissionDataExists()) {
             // A failure just occurred during submission: we need to replace the previously submitted data
-            if (submissionData.staffId !== undefined) {
-                $selectStaff[0].selectize.setValue(submissionData.staffId);
+            if (submissionData.staff !== undefined) {
+                $selectStaff[0].selectize.setValue(submissionData.staff);
             }
         }
       }
@@ -285,11 +285,11 @@ $(function() {
       for (var i = 1; i <= count; i++) {
           legs.push(getLeg(i));
       }
-      var userId;
+      var volunteer;
       if (isSubmitAsOtherUserShowing()) {
-          userId = $selectRequestee[0].selectize.getValue();
+          volunteer = $selectRequestee[0].selectize.getValue();
       }
-      var staffId = $selectStaff[0].selectize.getValue();
+      var staff = $selectStaff[0].selectize.getValue();
       var counterpartApproved = $('#approvalCheckbox').is(':checked');
 
       var url = '/api/requests';
@@ -304,8 +304,8 @@ $(function() {
           method: "POST",
           contentType: "application/x-www-form-urlencoded",
           data: {
-              userId: userId,
-              staffId: staffId,
+              volunteer: volunteer,
+              staff: staff,
               legs: legs,
               counterpartApproved: counterpartApproved,
           },

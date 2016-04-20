@@ -17,15 +17,15 @@ block content
 						p
 							span 
 								b Name: 
-							span= request.user.name
+							span= request.volunteer.name
 						p
 							span 
 								b Email: 
-							span= (request.user.email ? request.user.email : "No email on file.")
+							span= (request.volunteer.email ? request.volunteer.email : "No email on file.")
 						p
 							span 
 								b Phone(s): 
-							span.phones= (request.user.phones && request.user.phones.length > 0 ? request.user.phones.join(', ') : "No phone on file.")
+							span.phones= (request.volunteer.phones && request.volunteer.phones.length > 0 ? request.volunteer.phones.join(', ') : "No phone on file.")
 					h2 Assigned Staff 
 					.shadow-box
 						p
@@ -80,7 +80,7 @@ block content
 							span= (request.counterpartApproved == true ? "Approved." : "Not yet approved.")
 					h2 Comments #{(request.comments.length > 0 ? "(" + request.comments.length + ")" : "")}
 					.shadow-box
-						table#comments
+						#comments
 							each comment in request.comments
 								.comment
 									p
@@ -100,25 +100,25 @@ block content
 						button.btn.btn-default.disabled#submit-comment Submit Comment
 
 				// If the user is the owner of the request (or a staff)
-				if user && (user.email == request.user.email || user.access >= 1)
+				if user && (user.email == request.volunteer.email || user.access >= 1)
 					#request_edit.row
 						.col-xs-12
 							a(href="/requests/#{request._id}/edit")
 								button(class="btn btn-warning", id="request-edit-btn") Edit Request
 
+				// If the user is the owner of the request (or an admin)
+				if user && (user.email == request.volunteer.email || user.access >= 2)
+					#request_delete.row
+						.col-xs-12
+							button(class="btn btn-danger", id="request-delete-btn") Delete Request
+
 				// If staff or higher
-				if user.access > 0 
+				if user && user.access > 0 
 					#request_approval.row
 						.col-xs-6
 							button(class="btn btn-success" + (request.status.isPending == false && request.status.isApproved ? " disabled" : ""), id="request-approve-btn") Approve
 						.col-xs-6
 							button(class="btn btn-danger" + (request.status.isPending == false && !request.status.isApproved ? " disabled" : ""), id="request-deny-btn") Deny
-
-				// If the user is the owner of the request (or an admin)
-				if user && (user.email == request.user.email || user.access >= 2)
-					#request_delete.row
-						.col-xs-12
-							button(class="btn btn-danger", id="request-delete-btn") Delete Request
 				//- #request_pagination.row
 				//- 	.col-xs-6
 				//- 		a(href=(prev_request_id ? "/requests/#{prev_request_id}" : "")) 

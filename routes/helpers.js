@@ -82,100 +82,48 @@ module.exports.getRequests = function (req, res, options, cb) {
 		}
 
 		if (req.user.access < Access.STAFF) {
-			matchUsers.userId = req.user._id;
+			matchUsers.volunteer = req.user._id;
 		}
 
 		if (options && options.staffId) {
-			matchUsers.staffId = req.staffId;
+			matchUsers.staff = req.staffId;
 		}
 
 		if (options && options.userId) {
-			matchUsers.userId = req.userId;
+			matchUsers.volunteer = req.userId;
 		}
 
 		var matchCountry = {};
 		if (req.user.access == Access.STAFF) {
-			matchCountry['user.countryCode'] = req.user.countryCode;
+			matchCountry['volunteer.countryCode'] = req.user.countryCode;
 		}
 
-		Request.aggregate([
-			{
-				$match: matchUsers,
-			},
-			{
-				// JOIN with the user data belonging to each request
-				$lookup: {
-					from: 'users',
-					localField: 'userId',
-					foreignField: '_id',
-					as: 'user',
-				},
-			},
-			{
-				// Only one user will ever match (emails are unique)
-				// Convert the user key to a single document from an array
-				$unwind: '$user',
-			},
-			{
-				// JOIN with the user data belonging to each request
-				$lookup: {
-					from: 'users',
-					localField: 'staffId',
-					foreignField: '_id',
-					as: 'staff',
-				},
-			},
-			{
-				// Only one staff will ever match (emails are unique)
-				// Convert the staff key to a single document from an array
-				$unwind: '$staff',
-			},
-			{
-				$match: matchCountry,
-			},
-			{
-				$match: (options && options.pending !== undefined ?
-						{ 'status.isPending': options.pending } : {}),
-			},
-			{
-				// Hide certain fields of the output (including password hashes)
-				$project: {
-					userId: true,
-					staffId: true,
-					counterpartApproved: true,
-					comments: true,
-					legs: true,
-					timestamp: true,
-					status: true,
-					user: {
-						name: true,
-						email: true,
-						phones: true,
-						access: true,
-						countryCode: true,
-					},
-					staff: {
-						name: true,
-						email: true,
-						phones: true,
-						access: true,
-						countryCode: true,
-					},
-				},
-			},
-		], function (err, requests) {
-			if (err) {
-				return cb(err);
-			} else {
-				// Add start and end date to all requests
-				for (var i = 0; i < requests.length; i++) {
-					requests[i].startDate = module.exports.getStartDate(requests[i]);
-					requests[i].endDate = module.exports.getEndDate(requests[i]);
-				}
+		Request
+			.find(matchUsers)
+			.populate({
+				path: 'staff comments.user',
+				select: '-hash',
+			})
+			.populate({
+				path: 'volunteer',
+				match: matchCountry,
+				select: '-hash',
+			})
+			.lean()
+			.exec(function (err, requests) {
+				if (err) {
+					return cb(err);
+				} else {
 
-				cb(null, requests);
-			}
-		});
+					// Add start and end date to all requests
+					for (var i = 0; i < requests.length; i++) {
+						requests[i].startDate = module.exports.getStartDate(requests[i]);
+						requests[i].endDate = module.exports.getEndDate(requests[i]);
+					}
+
+					cb(null, requests);
+				}
+			});
 	} else {
 		cb(new Error('User not logged in!'));
 	}
@@ -197,6 +145,10 @@ module.exports.getUsers = function (options, cb) {
 		}
 
 		q.access.$gte = options.minAccess;
+	}
+
+	if (options.countryCode !== undefined) {
+		q.countryCode = options.countryCode;
 	}
 
 	console.log(q);
@@ -308,7 +260,7 @@ module.exports.postComment = function (
 				$each:[
 					{
 						name: name,
-						userId: userId,
+						user: userId,
 						content: commentMessage,
 					},
 				],

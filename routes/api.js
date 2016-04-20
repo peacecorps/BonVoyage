@@ -83,6 +83,8 @@ router.getUsers = function (req, res) {
 	helpers.getUsers({
 		maxAccess: maxAccess,
 		minAccess: minAccess,
+		countryCode:
+			(req.user.access == Access.VOLUNTEER ? req.user.countryCode : undefined),
 	}, function (err, users) {
 		if (err) {
 			console.error(err);
@@ -113,11 +115,11 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 
 	// Staff will select a user to submit a request for on the form
 	if (req.user.access >= Access.STAFF) {
-		userId = req.body.userId;
+		userId = req.body.volunteer;
 		if (userId === undefined || userId === '') {
 			req.session.submission = req.body;
 			req.flash('submissionFlash', {
-				text: 'You must select a requestee to submit this request for.',
+				text: 'You must select a volunteer to submit this request for.',
 				class: 'danger',
 			});
 			res.end(JSON.stringify({ redirect: failureRedirect }));
@@ -125,7 +127,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 		}
 	}
 
-	var staffId = req.body.staffId;
+	var staffId = req.body.staff;
 
 	if (staffId === undefined || staffId === '') {
 		req.session.submission = req.body;
@@ -142,7 +144,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 		user: {
 			_id: userId,
 		},
-	}, function (err, users) {
+	}, function (err, volunteers) {
 		if (err) {
 			console.error(err);
 			req.session.submission = req.body;
@@ -152,7 +154,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 				class: 'danger',
 			});
 			res.end(JSON.stringify({ redirect: failureRedirect }));
-		} else if (users.length > 0) {
+		} else if (volunteers.length > 0) {
 			// Verify that the volunteer exists
 			helpers.getUsers({
 				user: {
@@ -235,8 +237,8 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 					} else if (legs.length > 0) {
 						cb({
 							requestData: {
-								userId: userId,
-								staffId: staffId,
+								volunteer: userId,
+								staff: staffId,
 								status: {
 									isPending: true,
 									isApproved: false,
@@ -245,7 +247,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 								counterpartApproved: true,
 							},
 							countries: countries,
-							users: users,
+							users: volunteers,
 							staff: staff,
 						});
 					} else {
@@ -392,7 +394,8 @@ router.postUpdatedRequest = function (req, res) {
 			}
 
 			// Detect if the user submitted for changed
-			if (data.users.length > 0 && !data.users[0]._id.equals(req.request.userId)) {
+			if (data.users.length > 0 &&
+				!data.users[0]._id.equals(req.request.volunteer._id)) {
 				comment += '- Changed Peace Corps volunteer from ' +
 					req.request.user.name + ' to ' + data.users[0].name + '\n';
 				changesMade = true;
@@ -400,7 +403,7 @@ router.postUpdatedRequest = function (req, res) {
 
 			// Detect if the staff assigned has changed
 			if (data.staff.length > 0 &&
-				!data.staff[0]._id.equals(req.request.staffId)) {
+				!data.staff[0]._id.equals(req.request.staff._id)) {
 				comment += '- Changed assigned Peace Corps staff from ' +
 					req.request.staff.name + ' to ' + data.staff[0].name + '\n';
 				changesMade = true;
@@ -534,7 +537,7 @@ router.postApprove = function (req, res) {
 			return res.send(500, { error: err });
 		}
 
-		User.findOne({ _id: doc.userId }, function (err, user) {
+		User.findOne({ _id: doc.volunteer }, function (err, user) {
 			var sendFrom = 'Peace Corps <team@projectdelta.io>';
 			var sendTo = [user.email];
 			var subject = 'Peace Corps BonVoyage Request Approved';
@@ -581,7 +584,7 @@ router.postDeny = function (req, res) {
 			return res.send(500, { error: err });
 		}
 
-		User.findOne({ _id: doc.userId }, function (err, user) {
+		User.findOne({ _id: doc.volunteer }, function (err, user) {
 			var sendFrom = 'Peace Corps <team@projectdelta.io>';
 			var sendTo = [user.email];
 			var subject = 'Peace Corps BonVoyage Request Denied';
@@ -996,7 +999,7 @@ router.validateUsers = function (req, res) {
 router.deleteUser = function (req, res) {
 	var userId = req.body.userId;
 	if (userId == req.user._id || req.user.access == Access.ADMIN) {
-		Request.find({ userId: userId }).remove(function (err) {
+		Request.find({ volunteer: userId }).remove(function (err) {
 			if (err) {
 				console.error(err);
 				req.flash('usersFlash', {
@@ -1032,7 +1035,7 @@ router.deleteRequest = function (req, res) {
 	var id = req.params.requestId;
 	var q = { _id: id };
 	if (req.user.access != Access.ADMIN) {
-		q.userId = req.user._id;
+		q.volunteer = req.user._id;
 	}
 
 	Request.findOneAndRemove(q, function (err) {
