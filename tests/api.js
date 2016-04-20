@@ -19,6 +19,42 @@ var clearDatabase = require(__dirname +
 
 var BASE_URL = 'http://localhost:3000';
 
+var endpoints = {
+	VIEWS: [
+		'/dashboard',
+		'/dashboard/submit',
+		'/requests/:requestId',
+		'/requests/:requestId/edit',
+		'/users',
+		'/users/add',
+		'/profile',
+		'/profile/:userId',
+	],
+	API: {
+		GET: [
+			'/api/requests',
+			'/api/users',
+			'/api/warnings',
+		],
+		POST: [
+			'/api/requests/:requestId/approve',
+			'/api/requests/:requestId/deny',
+			'/api/requests/:requestId/comments',
+			'/profile/',
+			'/profile/:userId',
+			'/api/requests',
+			'/api/requests/:requestId',
+			'/api/access',
+			'/api/users',
+			'/api/users/validate',
+		],
+		DELETE: [
+			'/api/requests/:requestId/delete',
+			'/api/users',
+		],
+	},
+};
+
 function closeDatabase() {
 	'use strict';
 
@@ -62,44 +98,8 @@ function setupDatabase(done) {
 	});
 }
 
-describe('API endpoints redirect when not logged in', function () {
+describe('Endpoints redirect when not logged in', function () {
 	'use strict';
-
-	var endpoints = {
-		VIEWS: [
-			'/dashboard',
-			'/dashboard/submit',
-			'/requests/:requestId',
-			'/requests/:requestId/edit',
-			'/users',
-			'/users/add',
-			'/profile',
-			'/profile/:userId',
-		],
-		API: {
-			GET: [
-				'/api/requests',
-				'/api/users',
-				'/api/warnings',
-			],
-			POST: [
-				'/api/requests/:requestId/approve',
-				'/api/requests/:requestId/deny',
-				'/api/requests/:requestId/comments',
-				'/profile/',
-				'/profile/:userId',
-				'/api/requests',
-				'/api/requests/:requestId',
-				'/api/access',
-				'/api/users',
-				'/api/users/validate',
-			],
-			DELETE: [
-				'/api/requests/:requestId/delete',
-				'/api/users',
-			],
-		},
-	};
 
 	endpoints.VIEWS.map(function (endpoint) {
 		it('GET ' + endpoint + ' redirects to /login', function (done) {
@@ -151,6 +151,27 @@ describe('API endpoints redirect when not logged in', function () {
 	});
 });
 
+describe.skip('Other endpoints redirect when logged in', function () {
+
+});
+
+describe('404 errors', function () {
+	'use strict';
+
+	it('Redirects to the error page', function (done) {
+		request
+			.get(BASE_URL + '/some/nonexistant/page')
+			.end(function (err, res) {
+				assert.equal(res.header.location, '/errors/404');
+				done();
+			});
+	});
+});
+
+describe.skip('Limits access to proper access level', function () {
+
+});
+
 describe('/api/users', function () {
 	'use strict';
 
@@ -158,14 +179,130 @@ describe('/api/users', function () {
 		setupDatabase(done);
 	});
 
-	it('returns contains a full user object', function () {
+	it.skip('returns contains a full user object', function (done) {
 		request
 			.get('http://localhost:3000/api/users')
 			.end(function (err, res) {
+				done();
 			});
 	});
+
+	it('minAccess filters user list');
+	it('maxAccess filters user list');
 
 	after(function () {
 		closeDatabase();
 	});
+});
+
+describe.skip('/login', function () {
+
+});
+
+describe.skip('/register', function () {
+
+});
+
+describe.skip('/reset', function () {
+
+});
+
+describe.skip('/dashboard', function () {
+
+});
+
+describe.skip('/dashboard/submit and /requests/:requestId/edit', function () {
+
+});
+
+describe.skip('/requests', function () {
+
+});
+
+describe.skip('/users', function () {
+
+});
+
+describe.skip('/users/add', function () {
+
+});
+
+describe.skip('/profile', function () {
+
+});
+
+describe.skip('/api/requests', function () {
+
+});
+
+describe.skip('/api/users', function () {
+
+});
+
+describe.skip('/api/warnings', function () {
+
+});
+
+describe.skip('/api/requests/:requestId/approve', function () {
+
+});
+
+describe.skip('/api/requests/:requestId/deny', function () {
+
+});
+
+describe.skip('/api/requests/:requestId/comments', function () {
+
+});
+
+describe.skip('/profile/:userId?', function () {
+
+});
+
+describe.skip('/api/register', function () {
+
+});
+
+describe.skip('/api/login', function () {
+
+});
+
+describe.skip('/api/logout', function () {
+
+});
+
+describe.skip('/api/reset', function () {
+
+});
+
+describe.skip('/api/reset/:token', function () {
+
+});
+
+describe.skip('/api/requests', function () {
+
+});
+
+describe.skip('/api/requests/:requestId', function () {
+
+});
+
+describe.skip('/api/access', function () {
+
+});
+
+describe.skip('/api/users', function () {
+
+});
+
+describe.skip('/api/users/validate', function () {
+
+});
+
+describe.skip('/api/requests/:requestId/delete', function () {
+
+});
+
+describe.skip('/api/users', function () {
+
 });
