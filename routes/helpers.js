@@ -164,6 +164,33 @@ module.exports.getUsers = function (options, cb) {
 	});
 };
 
+function formatDate(rawDate) {
+	return String(rawDate);
+}
+
+module.exports.legsToString = function (legs) {
+	if (legs) {
+		var report = '';
+
+		for (var i = 0; i < legs.length; i++) {
+			var leg = legs[i];
+			report += 'Leg ' + (i + 1) + ': ' + leg.city + ', ' +
+						leg.country + '\n';
+			report += 'Description: ' + leg.description + '\n';
+			report += 'Companions: ' + leg.companions + '\n';
+			report += 'Contact: ' + leg.contact + '\n';
+			report += 'Hotel: ' + leg.hotel + '\n';
+			report += 'Date: ' + formatDate(leg.startDate) + ' - ' +
+						formatDate(leg.endDate) + '\n';
+			report += '\n';
+		}
+
+		return report;
+	} else {
+		return 'Invalid request data.';
+	}
+};
+
 module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 	callback) {
 	var data = {

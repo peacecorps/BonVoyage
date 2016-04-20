@@ -541,9 +541,13 @@ router.postApprove = function (req, res) {
 			var sendFrom = 'Peace Corps <team@projectdelta.io>';
 			var sendTo = [user.email];
 			var subject = 'Peace Corps BonVoyage Request Approved';
+			var details = helpers.legsToString(doc.legs);
+
 			var map = {
-				name: req.user.name.split(' ')[0],
-				button: process.env.BONVOYAGE_DOMAIN,
+				name: user.name.split(' ')[0],
+				volunteer: 'Your',
+				details: details,
+				button: process.env.BONVOYAGE_DOMAIN + '/requests/' + id,
 			};
 
 			// asynchronous
@@ -557,6 +561,43 @@ router.postApprove = function (req, res) {
 							'leave request is now approved!');
 					}
 				}
+
+				var countries = [];
+
+				for (var leg in doc.legs) {
+					countries.push(doc.legs[leg].countryCode);
+				}
+
+				User.find({
+					access: Access.STAFF,
+					countryCode: { $in: countries },
+				}, function (err, staffs) {
+					for (var staff in staffs) {
+						// send SMS and email to all relevant staffs
+						var map = {
+							name: staffs[staff].name.split(' ')[0],
+							volunteer: user.name + '\'s',
+							details: details,
+							button: process.env.BONVOYAGE_DOMAIN + '/requests/' + id,
+						};
+
+						helpers.sendTemplateEmail(sendFrom,
+							[staffs[staff].email], subject, 'approve', map);
+
+						var phones = staffs[staff.phones];
+
+						if (phones) {
+							for (var phone in phones) {
+								helpers.sendSMS(phones[phone],
+									'A BonVoyage leave request has been ' +
+									' approved for ' + user.name + '. ' +
+									'Please review the details at ' +
+									process.env.BONVOYAGE_DOMAIN +
+									'/requests/' + id);
+							}
+						}
+					}
+				});
 			});
 
 			req.flash('dashboardFlash', {
