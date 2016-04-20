@@ -5,10 +5,17 @@
 /* jshint node: true */
 
 require(__dirname + '/../setup');
+process.env.NODE_ENV = 'test';
 
 var assert = require('chai').assert;
-var request = require('superagent');
+
+// var request = require('superagent');
 var mongoose = require('mongoose');
+var request = require('supertest');
+
+var serverObjects = require(__dirname + '/../bin/www');
+var app = serverObjects.app;
+var server = serverObjects.server;
 
 var buildUserBase = require(__dirname +
 	'/../build_scripts/buildUserBase.js');
@@ -16,8 +23,6 @@ var buildRequestBase = require(__dirname +
 	'/../build_scripts/buildRequestBase.js');
 var clearDatabase = require(__dirname +
 	'/../build_scripts/clearDatabase.js');
-
-var BASE_URL = 'http://localhost:3000';
 
 var endpoints = {
 	VIEWS: [
@@ -53,6 +58,13 @@ var endpoints = {
 			'/api/users',
 		],
 	},
+	NO_LOGIN: [
+		'/',
+		'/login',
+		'/register/:token',
+		'/reset',
+		'/reset/:token',
+	],
 };
 
 function closeDatabase() {
@@ -101,13 +113,20 @@ function setupDatabase(done) {
 	});
 }
 
+before(function (done) {
+	'use strict';
+
+	this.timeout(5000);
+	setupDatabase(done);
+});
+
 describe('Endpoints redirect when not logged in', function () {
 	'use strict';
 
 	endpoints.VIEWS.map(function (endpoint) {
 		it('GET ' + endpoint + ' redirects to /login', function (done) {
-			request
-				.get(BASE_URL + endpoint)
+			request(app)
+				.get(endpoint)
 				.redirects(0)
 				.end(function (err, res) {
 					assert.equal(res.statusCode, 302);
@@ -119,8 +138,8 @@ describe('Endpoints redirect when not logged in', function () {
 
 	endpoints.API.GET.map(function (endpoint) {
 		it('GET ' + endpoint + ' returns 401', function (done) {
-			request
-				.get(BASE_URL + endpoint)
+			request(app)
+				.get(endpoint)
 				.redirects(0)
 				.end(function (err, res) {
 					assert.equal(res.statusCode, 401);
@@ -131,8 +150,8 @@ describe('Endpoints redirect when not logged in', function () {
 
 	endpoints.API.POST.map(function (endpoint) {
 		it('POST ' + endpoint + ' returns 401', function (done) {
-			request
-				.post(BASE_URL + endpoint)
+			request(app)
+				.post(endpoint)
 				.redirects(0)
 				.end(function (err, res) {
 					assert.equal(res.statusCode, 401);
@@ -143,8 +162,8 @@ describe('Endpoints redirect when not logged in', function () {
 
 	endpoints.API.DELETE.map(function (endpoint) {
 		it('DELETE ' + endpoint + ' returns 401', function (done) {
-			request
-				.delete(BASE_URL + endpoint)
+			request(app)
+				.delete(endpoint)
 				.redirects(0)
 				.end(function (err, res) {
 					assert.equal(res.statusCode, 401);
@@ -162,9 +181,11 @@ describe('404 errors', function () {
 	'use strict';
 
 	it.skip('Redirects to the error page', function (done) {
-		request
-			.get(BASE_URL + '/some/nonexistant/page')
+		request(app)
+			.get('/some/nonexistant/page')
+			.redirects(0)
 			.end(function (err, res) {
+				assert.equal(res.statusCode, 302);
 				assert.equal(res.header.location, '/errors/404');
 				done();
 			});
@@ -172,16 +193,24 @@ describe('404 errors', function () {
 });
 
 describe.skip('Limits access to proper access level', function () {
-
-});
-
-describe('/api/users', function () {
 	'use strict';
 
-	before(function (done) {
-		this.timeout(5000);
-		setupDatabase(done);
+	it('redirects to /dashboard if logged in', function (done) {
+		var agent = request.agent(app);
+		agent;
+		agent
+			.get('/login')
+			.redirects(0)
+			.end(function (err, res) {
+				assert.equal(res.statusCode, 302);
+				assert.equal(res.header.location, '/dashboard');
+				done();
+			});
 	});
+});
+
+describe.skip('/api/users', function () {
+	'use strict';
 
 	it.skip('returns contains a full user object', function (done) {
 		request
@@ -193,10 +222,6 @@ describe('/api/users', function () {
 
 	it('minAccess filters user list');
 	it('maxAccess filters user list');
-
-	after(function () {
-		closeDatabase();
-	});
 });
 
 describe.skip('/login', function () {
@@ -309,4 +334,11 @@ describe.skip('/api/requests/:requestId/delete', function () {
 
 describe.skip('/api/users', function () {
 
+});
+
+after(function () {
+	'use strict';
+
+	server.close();
+	closeDatabase();
 });

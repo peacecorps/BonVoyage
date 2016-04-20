@@ -46,7 +46,10 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(flash());
 
-mongoose.connect(process.env.MONGO_CONNECTION_STRING);
+mongoose.connect((process.env.NODE_ENV === 'production' ?
+	process.env.MONGO_PROD_CONNECTION_STRING :
+	process.env.MONGO_DEV_CONNECTION_STRING)
+);
 mongoose.connection.on('error', function (err) {
 	console.log(err);
 });
@@ -92,16 +95,6 @@ app.use(function (req, res, next) {
 
 // pass passport for configuration
 require(__dirname + '/config/passport.js')(passport);
-
-// middleware to ensure the user is authenticated.
-// If not, redirect to login page.
-function isLoggedIn(req, res, next) {
-	if (req.isAuthenticated()) {
-		return next();
-	} else {
-		res.redirect('/login');
-	}
-}
 
 // middleware to redirect the user to the dashboard if they already logged in
 function isNotLoggedIn(req, res, next) {

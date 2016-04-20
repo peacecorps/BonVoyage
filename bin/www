@@ -36,11 +36,23 @@ function normalizePort(val) {
 	return false;
 }
 
+function getEnvironmentPort() {
+	'use strict';
+	switch (process.env.NODE_ENV) {
+		case 'test':
+			return process.env.TEST_PORT;
+		case 'production':
+			return process.env.PROD_PORT;
+		default:
+			return process.env.DEV_PORT;
+	}
+}
+
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT || getEnvironmentPort());
 app.set('port', port);
 
 /**
@@ -94,3 +106,6 @@ function onListening() {
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+// Export the app and server for testing purposes
+module.exports = { app: app, server: server };
