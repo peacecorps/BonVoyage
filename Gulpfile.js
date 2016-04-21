@@ -57,7 +57,7 @@
 
 	gulp.task('mocha', function () {
 		return gulp
-			.src('tests/*.js', { read: false })
+			.src('tests/**/*.js', { read: false })
 			.pipe(mocha({ reporter: 'nyan' }));
 	});
 
@@ -81,6 +81,6 @@
 	});
 
 	gulp.task('default', ['lint', 'scss', 'scss:watch']);
-	gulp.task('test', ['lint', 'scss', 'mocha']);
+	gulp.task('ci', ['lint', 'scss', 'mocha']);
 	gulp.task('deploy', ['lint', 'scss', 'scrape']);
 })();
