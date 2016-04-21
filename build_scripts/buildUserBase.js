@@ -61,15 +61,16 @@ module.exports = function (done) {
 			countryCode: 'US',
 		},
 	];
-
+	var users = [];
 	var finished = 0;
-	var handleSave = function (err) {
+	var handleSave = function (err, doc) {
 		if (err) {
 			done(err);
 		} else {
+			users.push(doc);
 			finished += 1;
 			if (finished == userbase.length) {
-				done(null);
+				done(null, users);
 			}
 		}
 	};

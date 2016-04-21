@@ -62,9 +62,7 @@
 	});
 
 	gulp.task('pre-coveralls', function () {
-		// This tells gulp which files you want to pipe
-		// In our case we want to pipe every `.js` file inside any folders inside `test`
-		return gulp.src('tests/**/*.js')
+		return gulp.src('routes/**/*.js')
 			.pipe(istanbul())
 			.pipe(istanbul.hookRequire());
 	});
@@ -77,7 +75,6 @@
 	});
 
 	gulp.task('coveralls', ['coverage'], function () {
-		// lcov.info is the file which has the coverage information we wan't to upload
 		return gulp
 			.src(__dirname + '/coverage/lcov.info')
 			.pipe(coveralls());

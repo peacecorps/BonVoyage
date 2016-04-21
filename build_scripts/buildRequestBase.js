@@ -4,7 +4,6 @@
 module.exports = function (options, done) {
 	var Access = require(__dirname + '/../config/access');
 	var ipsum = require('lorem-ipsum');
-	var sprintf = require('sprintf-js').sprintf;
 	var moment = require('moment');
 	var fs = require('fs');
 	var DateOnly = require('dateonly');
@@ -19,6 +18,7 @@ module.exports = function (options, done) {
 
 	var REQUESTS_TO_GENERATE = options.nrequests || 100;
 	var SEED = options.seed || 12345;
+	var RANDOM = options.random;
 
 	var rng = seedrandom(SEED);
 
@@ -92,7 +92,7 @@ module.exports = function (options, done) {
 				count -= 1;
 
 				if (count === 0) {
-					done(null);
+					done(null, objects);
 				}
 			}
 		};
@@ -100,6 +100,19 @@ module.exports = function (options, done) {
 		for (var i = 0; i < objects.length; i++) {
 			var object = objects[i];
 			object.save(handleSave);
+		}
+	}
+
+	function userWithName(objects, name) {
+		var foundUsers = objects.filter(function (object) {
+			return object.name == name;
+		});
+
+		if (foundUsers.length !== 1) {
+			throw Error('Did not find exactly one user with name: ' + name +
+				' (found ' + foundUsers.length + ')');
+		} else {
+			return foundUsers[0];
 		}
 	}
 
@@ -118,10 +131,44 @@ module.exports = function (options, done) {
 			}
 
 			var requests = [];
-			for (i = 0; i < REQUESTS_TO_GENERATE; i++) {
-				var randVolunteer = users[randIndex(volunteers.length)];
-				var randStaff = staff[randIndex(staff.length)];
-				requests.push(generateRequest(randVolunteer, randStaff));
+			if (RANDOM) {
+				for (i = 0; i < REQUESTS_TO_GENERATE; i++) {
+					var randVolunteer = users[randIndex(volunteers.length)];
+					var randStaff = staff[randIndex(staff.length)];
+					requests.push(generateRequest(randVolunteer, randStaff));
+				}
+			} else {
+				requests = [
+					new Request({
+						volunteer: userWithName(volunteers, 'Ishaan Parikh')._id,
+						staff: userWithName(staff, 'Patrick Choquette')._id,
+						status: {
+							isPending: true,
+							isApproved: false,
+						},
+						legs: [
+							{
+								startDate: 'May 3, 2016',
+								endDate: 'May 10, 2016',
+								city: 'Chicago',
+								country: countriesDictionary.US,
+								countryCode: 'US',
+								hotel: '',
+								contact: '',
+								companions: '',
+								description: '',
+							},
+						],
+						comments: [
+							{
+								name: 'Patrick Choquette',
+								user: userWithName(staff, 'Patrick Choquette')._id,
+								content: 'I approve of this request.',
+							},
+						],
+						counterpartApproved: true,
+					}),
+				];
 			}
 
 			saveAll(requests);

@@ -7,7 +7,11 @@ var Access = require(__dirname + '/../config/access');
 var helpers = require(__dirname + '/helpers');
 
 router.index = function (req, res) {
-	res.redirect('/login');
+	if (req.isAuthenticated()) {
+		res.redirect('/dashboard');
+	} else {
+		res.redirect('/login');
+	}
 };
 
 router.renderLogin = function (req, res) {

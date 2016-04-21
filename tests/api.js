@@ -3,19 +3,21 @@
 /* globals before */
 /* globals after */
 /* jshint node: true */
+'use strict';
 
 require(__dirname + '/../setup');
 process.env.NODE_ENV = 'test';
 
 var assert = require('chai').assert;
-
-// var request = require('superagent');
 var mongoose = require('mongoose');
 var request = require('supertest');
+var Access = require(__dirname + '/../config/access');
 
 var serverObjects = require(__dirname + '/../bin/www');
 var app = serverObjects.app;
 var server = serverObjects.server;
+var users;
+var requests;
 
 var buildUserBase = require(__dirname +
 	'/../build_scripts/buildUserBase.js');
@@ -26,59 +28,54 @@ var clearDatabase = require(__dirname +
 
 var endpoints = {
 	VIEWS: [
-		'/dashboard',
-		'/dashboard/submit',
-		'/requests/:requestId',
-		'/requests/:requestId/edit',
-		'/users',
-		'/users/add',
-		'/profile',
-		'/profile/:userId',
+		{ url: '/dashboard', access: Access.VOLUNTEER },
+		{ url: '/dashboard/submit', access: Access.VOLUNTEER },
+		{ url: '/requests/:requestId', access: Access.VOLUNTEER },
+		{ url: '/requests/:requestId/edit', access: Access.VOLUNTEER },
+		{ url: '/users', access: Access.STAFF },
+		{ url: '/users/add', access: Access.STAFF },
+		{ url: '/profile', access: Access.VOLUNTEER },
+		{ url: '/profile/:userId', access: Access.VOLUNTEER },
 	],
 	API: {
 		GET: [
-			'/api/requests',
-			'/api/users',
-			'/api/warnings',
+			{ url: '/api/requests', access: Access.VOLUNTEER },
+			{ url: '/api/users', access: Access.VOLUNTEER },
+			{ url: '/api/warnings', access: Access.VOLUNTEER },
 		],
 		POST: [
-			'/api/requests/:requestId/approve',
-			'/api/requests/:requestId/deny',
-			'/api/requests/:requestId/comments',
-			'/profile/',
-			'/profile/:userId',
-			'/api/requests',
-			'/api/requests/:requestId',
-			'/api/access',
-			'/api/users',
-			'/api/users/validate',
+			{ url: '/api/requests/:requestId/approve', access: Access.STAFF },
+			{ url: '/api/requests/:requestId/deny', access: Access.STAFF },
+			{ url: '/api/requests/:requestId/comments', access: Access.VOLUNTEER },
+			{ url: '/profile/', access: Access.VOLUNTEER },
+			{ url: '/profile/:userId', access: Access.VOLUNTEER },
+			{ url: '/api/requests', access: Access.VOLUNTEER },
+			{ url: '/api/requests/:requestId', access: Access.VOLUNTEER },
+			{ url: '/api/access', access: Access.STAFF },
+			{ url: '/api/users', access: Access.STAFF },
+			{ url: '/api/users/validate', access: Access.STAFF },
 		],
 		DELETE: [
-			'/api/requests/:requestId/delete',
-			'/api/users',
+			{ url: '/api/requests/:requestId/delete', access: Access.VOLUNTEER },
+			{ url: '/api/users', access: Access.VOLUNTEER },
 		],
 	},
 	NO_LOGIN: [
-		'/',
-		'/login',
-		'/register/:token',
-		'/reset',
-		'/reset/:token',
+		{ url: '/' },
+		{ url: '/login' },
+		{ url: '/register/:email/:token' },
+		{ url: '/reset' },
+		{ url: '/reset/:token' },
 	],
 };
 
-function closeDatabase() {
-	'use strict';
-
-	mongoose.connection.close();
+function closeDatabase(done) {
+	mongoose.disconnect(done);
 }
 
 function setupDatabase(done) {
-	'use strict';
-
-	mongoose.connect(process.env.MONGO_TEST_CONNECTION_STRING);
+	mongoose.createConnection(process.env.MONGO_TEST_CONNECTION_STRING);
 	mongoose.connection.on('error', function (err) {
-		closeDatabase();
 		done(err);
 	});
 
@@ -89,21 +86,24 @@ function setupDatabase(done) {
 				closeDatabase();
 				done(err);
 			} else {
-				buildUserBase(function (err) {
+				buildUserBase(function (err, users) {
 					if (err) {
 						console.error(err);
 						closeDatabase();
 						done(err);
 					} else {
 						buildRequestBase({
-							nrequests: 5,
-						}, function (err) {
+							random: false,
+						}, function (err, requests) {
 							if (err) {
 								console.error(err);
 								closeDatabase();
 								done(err);
 							} else {
-								done(null);
+								done(null, {
+									users: users,
+									requests: requests,
+								});
 							}
 						});
 					}
@@ -113,232 +113,289 @@ function setupDatabase(done) {
 	});
 }
 
-before(function (done) {
-	'use strict';
+function userWithName(objects, name) {
+	var foundUsers = objects.filter(function (object) {
+		return object.name == name;
+	});
 
+	if (foundUsers.length !== 1) {
+		throw Error('Did not find exactly one user with name: ' + name +
+			' (found ' + foundUsers.length + ')');
+	} else {
+		return foundUsers[0];
+	}
+}
+
+function requestWithName(requests, name, field) {
+	var user = userWithName(users, name);
+
+	var foundRequests = requests.filter(function (request) {
+		return user._id.equals(request[field]);
+	});
+
+	if (foundRequests.length === 0) {
+		throw Error('Could not find any requests for: ' + name);
+	}
+
+	return foundRequests;
+}
+
+before(function (done) {
 	this.timeout(5000);
-	setupDatabase(done);
+	setupDatabase(function (err, docs) {
+		users = docs.users;
+		requests = docs.requests;
+		done(err);
+	});
 });
 
 describe('Endpoints redirect when not logged in', function () {
-	'use strict';
-
 	endpoints.VIEWS.map(function (endpoint) {
-		it('GET ' + endpoint + ' redirects to /login', function (done) {
+		it('GET ' + endpoint.url + ' redirects to /login', function (done) {
 			request(app)
-				.get(endpoint)
-				.redirects(0)
-				.end(function (err, res) {
-					assert.equal(res.statusCode, 302);
+				.get(endpoint.url)
+				.expect(302)
+				.expect(function (res) {
 					assert.equal(res.header.location, '/login');
-					done();
-				});
+				})
+				.end(done);
 		});
 	});
 
 	endpoints.API.GET.map(function (endpoint) {
-		it('GET ' + endpoint + ' returns 401', function (done) {
+		it('GET ' + endpoint.url + ' returns 401', function (done) {
 			request(app)
-				.get(endpoint)
-				.redirects(0)
-				.end(function (err, res) {
-					assert.equal(res.statusCode, 401);
-					done();
-				});
+				.get(endpoint.url)
+				.expect(401, done);
 		});
 	});
 
 	endpoints.API.POST.map(function (endpoint) {
-		it('POST ' + endpoint + ' returns 401', function (done) {
+		it('POST ' + endpoint.url + ' returns 401', function (done) {
 			request(app)
-				.post(endpoint)
-				.redirects(0)
-				.end(function (err, res) {
-					assert.equal(res.statusCode, 401);
-					done();
-				});
+				.post(endpoint.url)
+				.expect(401, done);
 		});
 	});
 
 	endpoints.API.DELETE.map(function (endpoint) {
-		it('DELETE ' + endpoint + ' returns 401', function (done) {
+		it('DELETE ' + endpoint.url + ' returns 401', function (done) {
 			request(app)
-				.delete(endpoint)
-				.redirects(0)
-				.end(function (err, res) {
-					assert.equal(res.statusCode, 401);
-					done();
-				});
+				.delete(endpoint.url)
+				.expect(401, done);
 		});
 	});
 });
 
-describe.skip('Other endpoints redirect when logged in', function () {
+describe('Other endpoints redirect when logged in', function () {
+	var agent = request.agent(app);
 
+	before(function (done) {
+		agent
+			.post('/api/login')
+			.send({ email: 'colink@umd.edu', password: 'colin' })
+			.end(done);
+	});
+
+	endpoints.NO_LOGIN.map(function (endpoint) {
+		it(endpoint.url + ' redirects to /dashboard if logged in', function (done) {
+			agent
+				.get(endpoint.url)
+				.expect(302)
+				.expect(function (res) {
+					assert.equal(res.header.location, '/dashboard');
+				})
+				.end(done);
+		});
+	});
 });
 
-describe('404 errors', function () {
-	'use strict';
-
+describe('/errors', function () {
 	it.skip('Redirects to the error page', function (done) {
 		request(app)
 			.get('/some/nonexistant/page')
-			.redirects(0)
-			.end(function (err, res) {
-				assert.equal(res.statusCode, 302);
+			.expect(302)
+			.expect(function (res) {
 				assert.equal(res.header.location, '/errors/404');
-				done();
-			});
+			})
+			.end(done);
 	});
 });
 
-describe.skip('Limits access to proper access level', function () {
-	'use strict';
+describe('needAccess properly limits access level', function () {
+	var agents;
 
-	it('redirects to /dashboard if logged in', function (done) {
-		var agent = request.agent(app);
-		agent;
-		agent
-			.get('/login')
-			.redirects(0)
-			.end(function (err, res) {
-				assert.equal(res.statusCode, 302);
-				assert.equal(res.header.location, '/dashboard');
-				done();
+	before(function (done) {
+		agents = {
+			volunteer: {
+				request: request.agent(app),
+				user: userWithName(users, 'Ishaan Parikh'),
+			},
+			staff: {
+				request: request.agent(app),
+				user: userWithName(users, 'Patrick Choquette'),
+			},
+			admin: {
+				request: request.agent(app),
+				user: userWithName(users, 'Colin King'),
+			},
+		};
+
+		agents.volunteer.request
+			.post('/api/login')
+			.send({ email: 'ishaan@test.com', password: 'ishaan' })
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.staff.request
+					.post('/api/login')
+					.send({ email: 'pchoquette@peacecorps.gov', password: 'patrick' })
+					.end(function (err) {
+						if (err) {
+							return done(err);
+						}
+
+						agents.admin.request
+							.post('/api/login')
+							.send({ email: 'colink@umd.edu', password: 'colin' })
+							.end(done);
+					});
 			});
 	});
+
+	var getCheckEndpointFunc = function (statusCodeExpected, requestType) {
+		return function (endpoint) {
+			if (endpoint.access !== undefined) {
+				if (endpoint.access == Access.VOLUNTEER) {
+					it('Volunteers can access ' + requestType +
+						' ' + endpoint.url, function (done) {
+						// Modify the endpoint, if necessary
+						endpoint.url = endpoint.url.replace(':userId', agents.volunteer.user._id);
+						endpoint.url = endpoint.url.replace(':requestId',
+							requestWithName(requests,
+								agents.volunteer.user.name, 'volunteer')[0]._id);
+
+						agents.volunteer.request[requestType](endpoint.url)
+							.redirects(1)
+							.expect(statusCodeExpected, done);
+					});
+				}
+
+				if (endpoint.access <= Access.STAFF) {
+					it('Staff can access ' + requestType +
+						' ' + endpoint.url, function (done) {
+						agents.staff.request[requestType](endpoint.url)
+							.redirects(1)
+							.expect(statusCodeExpected, done);
+					});
+				}
+
+				if (endpoint.access <= Access.ADMIN) {
+					it('Admins can access ' + requestType +
+						' ' + endpoint.url, function (done) {
+						agents.admin.request[requestType](endpoint.url)
+							.redirects(1)
+							.expect(statusCodeExpected, done);
+					});
+				}
+			}
+		};
+	};
+
+	endpoints.VIEWS.map(getCheckEndpointFunc(200, 'get'));
+	endpoints.API.GET.map(getCheckEndpointFunc(200, 'get'));
+	it('endpoints.api.post meet access restrictions');
+	it('endpoints.api.delete meet access restrictions');
 });
 
-describe.skip('/api/users', function () {
-	'use strict';
+describe('/api/requests', function () {
 
-	it.skip('returns contains a full user object', function (done) {
-		request
-			.get('http://localhost:3000/api/users')
-			.end(function (err, res) {
-				done();
-			});
-	});
+});
 
+describe('/api/users', function () {
+
+});
+
+describe('/api/warnings', function () {
+
+});
+
+describe('/api/requests/:requestId/approve', function () {
+
+});
+
+describe('/api/requests/:requestId/deny', function () {
+
+});
+
+describe('/api/requests/:requestId/comments', function () {
+
+});
+
+describe('/profile/:userId?', function () {
+
+});
+
+describe('/api/register', function () {
+
+});
+
+describe('/api/login', function () {
+	it('fails with missing credentials');
+	it('fails with incorrect credentials');
+	it('redirects properly on failure');
+});
+
+describe('/api/logout', function () {
+
+});
+
+describe('/api/reset', function () {
+
+});
+
+describe('/api/reset/:token', function () {
+
+});
+
+describe('/api/requests', function () {
+
+});
+
+describe('/api/requests/:requestId', function () {
+
+});
+
+describe('/api/access', function () {
+
+});
+
+describe('/api/users', function () {
+
+});
+
+describe('/api/users/validate', function () {
+
+});
+
+describe('/api/requests/:requestId/delete', function () {
+
+});
+
+describe('/api/users', function () {
+	it('returns the correct user objects');
+	it('limits to same country for volunteers');
 	it('minAccess filters user list');
 	it('maxAccess filters user list');
 });
 
-describe.skip('/login', function () {
+after(function (done) {
 
-});
-
-describe.skip('/register', function () {
-
-});
-
-describe.skip('/reset', function () {
-
-});
-
-describe.skip('/dashboard', function () {
-
-});
-
-describe.skip('/dashboard/submit and /requests/:requestId/edit', function () {
-
-});
-
-describe.skip('/requests', function () {
-
-});
-
-describe.skip('/users', function () {
-
-});
-
-describe.skip('/users/add', function () {
-
-});
-
-describe.skip('/profile', function () {
-
-});
-
-describe.skip('/api/requests', function () {
-
-});
-
-describe.skip('/api/users', function () {
-
-});
-
-describe.skip('/api/warnings', function () {
-
-});
-
-describe.skip('/api/requests/:requestId/approve', function () {
-
-});
-
-describe.skip('/api/requests/:requestId/deny', function () {
-
-});
-
-describe.skip('/api/requests/:requestId/comments', function () {
-
-});
-
-describe.skip('/profile/:userId?', function () {
-
-});
-
-describe.skip('/api/register', function () {
-
-});
-
-describe.skip('/api/login', function () {
-
-});
-
-describe.skip('/api/logout', function () {
-
-});
-
-describe.skip('/api/reset', function () {
-
-});
-
-describe.skip('/api/reset/:token', function () {
-
-});
-
-describe.skip('/api/requests', function () {
-
-});
-
-describe.skip('/api/requests/:requestId', function () {
-
-});
-
-describe.skip('/api/access', function () {
-
-});
-
-describe.skip('/api/users', function () {
-
-});
-
-describe.skip('/api/users/validate', function () {
-
-});
-
-describe.skip('/api/requests/:requestId/delete', function () {
-
-});
-
-describe.skip('/api/users', function () {
-
-});
-
-after(function () {
-	'use strict';
-
-	server.close();
-	closeDatabase();
+	server.close(function () {
+		closeDatabase(function () {
+			done();
+		});
+	});
 });

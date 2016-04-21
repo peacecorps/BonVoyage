@@ -46,10 +46,18 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(flash());
 
-mongoose.connect((process.env.NODE_ENV === 'production' ?
-	process.env.MONGO_PROD_CONNECTION_STRING :
-	process.env.MONGO_DEV_CONNECTION_STRING)
-);
+function getConnectionString() {
+	switch (process.env.NODE_ENV) {
+		case 'production':
+			return process.env.MONGO_PROD_CONNECTION_STRING;
+		case 'test':
+			return process.env.MONGO_TEST_CONNECTION_STRING;
+		case 'development':
+			return process.env.MONGO_DEV_CONNECTION_STRING;
+	}
+}
+
+mongoose.connect(getConnectionString());
 mongoose.connection.on('error', function (err) {
 	console.log(err);
 });
@@ -121,7 +129,7 @@ app.get('/', views.index);
 app.get('/login', isNotLoggedIn, views.renderLogin);
 app.get('/register/:email/:token', isNotLoggedIn, views.renderRegister);
 app.get('/reset', isNotLoggedIn, views.renderReset);
-app.get('/reset/:token', views.renderValidReset);
+app.get('/reset/:token', isNotLoggedIn, views.renderValidReset);
 app.get('/dashboard', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderDashboard);
 app.get('/dashboard/submit', ensureLoggedIn('/login'),
@@ -130,7 +138,8 @@ app.get('/requests/:requestId', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), api.handleRequestId, views.renderApproval);
 app.get('/requests/:requestId/edit', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), api.handleRequestId, views.renderEditRequest);
-app.get('/users', ensureLoggedIn('/login'), views.renderUsers);
+app.get('/users', ensureLoggedIn('/login'),
+	needsAccess(Access.VOLUNTEER), views.renderUsers);
 app.get('/users/add', ensureLoggedIn('/login'),
 	needsAccess(Access.STAFF), views.renderAddUsers);
 app.get('/profile/:userId?', ensureLoggedIn('/login'),
@@ -169,7 +178,8 @@ app.post('/api/login', passport.authenticate('local-login', {
 	failureRedirect: '/login',
 	failureFlash: true,
 }));
-app.post('/api/logout', api.logout);
+app.post('/api/logout',
+	needsAccess(Access.VOLUNTEER), api.logout);
 app.post('/api/reset', api.reset);
 app.post('/api/reset/:token', api.resetValidator);
 app.post('/api/requests',

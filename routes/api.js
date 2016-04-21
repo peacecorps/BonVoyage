@@ -21,7 +21,7 @@ var Converter = require('csvtojson').Converter;
  * Handle Parameters
  */
 router.handleRequestId = function (req, res, next) {
-	var requestId = req.param('requestId');
+	var requestId = req.params.requestId;
 	helpers.getRequests(req, res, { _id: requestId },
 		function (err, requests) {
 		if (err) {
@@ -664,7 +664,7 @@ router.postDeny = function (req, res) {
 
 router.postComments = function (req, res) {
 	var id = req.params.requestId;
-	helpers.postComment(id, req.user.name, req.user._id, req.param('content'),
+	helpers.postComment(id, req.user.name, req.user._id, req.params.content,
 	function (err) {
 		if (err) {
 			return res.send(500, { error: err });
