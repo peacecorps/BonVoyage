@@ -411,7 +411,6 @@ router.postUpdatedRequest = function (req, res) {
 			}
 
 			if (changesMade) {
-				console.log(comment);
 
 				// Submit a comment with these changes
 				helpers.postComment(req.request._id, 'Administrator', null, comment,
@@ -856,9 +855,6 @@ router.modifyProfile = function (req, res) {
 		userId = req.user._id;
 	}
 
-	console.log(userId);
-	console.log(req.body);
-
 	User.update({ _id: userId }, req.body.new, function (err) {
 		if (err) {
 			req.flash('profileFlash', {
@@ -1003,7 +999,6 @@ router.postUsers = function (req, res) {
 router.validateUsers = function (req, res) {
 	var file = req.file;
 	if (file !== undefined && file.path) {
-		console.log(file);
 		var converter = new Converter({
 			noheader: true,
 		});
@@ -1011,7 +1006,6 @@ router.validateUsers = function (req, res) {
 			if (err) {
 				throw err;
 			} else {
-				console.log(json);
 				var formattedJSON = [];
 				for (var i = 0; i < json.length; i++) {
 					formattedJSON.push({

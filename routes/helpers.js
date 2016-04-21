@@ -78,7 +78,6 @@ module.exports.getRequests = function (req, res, options, cb) {
 		var matchUsers = {};
 		if (options && options._id) {
 			matchUsers._id = mongoose.Types.ObjectId(options._id);
-			console.log('Looking for request with id: ' + matchUsers._id);
 		}
 
 		if (req.user.access < Access.STAFF) {
@@ -147,8 +146,6 @@ module.exports.getUsers = function (options, cb) {
 		q.countryCode = options.countryCode;
 	}
 
-	console.log(q);
-
 	// Note: using lean() so that users is a JS obj, instead of a Mongoose obj
 	User.find(q, 'access name email phones _id countryCode').lean().exec(
 		function (err, users) {
@@ -208,8 +205,6 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 		}
 	} else {
 		mailgun.messages().send(data, function (err, body) {
-			console.log(body);
-
 			if (callback) {
 				callback();
 			}
@@ -227,10 +222,6 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 		if (sendError) {
 			console.log('was unable to send');
 			console.log(sendError);
-		}
-
-		if (body) {
-			console.log('Email data:' + body);
 		}
 
 		if (callback) {
@@ -297,7 +288,6 @@ module.exports.postComment = function (
 module.exports.formatDateOnly = function (date) {
 	var dateonly = new DateOnly(parseInt(date + ''));
 	var formatteddate = moment(dateonly.toDate()).format('MMM DD, YYYY');
-	console.log(formatteddate);
 	return formatteddate;
 };
 

@@ -63,3 +63,4 @@ uploads
 tests/debug/**/*
 tests/reports/**/*
 .coveralls.yml
+tests/**/*.log
