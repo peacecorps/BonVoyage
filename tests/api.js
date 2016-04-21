@@ -18,6 +18,7 @@ var app = serverObjects.app;
 var server = serverObjects.server;
 var users;
 var requests;
+var agents;
 
 var buildUserBase = require(__dirname +
 	'/../build_scripts/buildUserBase.js');
@@ -140,12 +141,52 @@ function requestWithName(requests, name, field) {
 	return foundRequests;
 }
 
+function initializeAgents(done) {
+	agents = {
+		volunteer: {
+			request: request.agent(app),
+			user: userWithName(users, 'Ishaan Parikh'),
+		},
+		staff: {
+			request: request.agent(app),
+			user: userWithName(users, 'Patrick Choquette'),
+		},
+		admin: {
+			request: request.agent(app),
+			user: userWithName(users, 'Colin King'),
+		},
+	};
+
+	agents.volunteer.request
+		.post('/api/login')
+		.send({ email: 'ishaan@test.com', password: 'ishaan' })
+		.end(function (err) {
+			if (err) {
+				return done(err);
+			}
+
+			agents.staff.request
+				.post('/api/login')
+				.send({ email: 'pchoquette@peacecorps.gov', password: 'patrick' })
+				.end(function (err) {
+					if (err) {
+						return done(err);
+					}
+
+					agents.admin.request
+						.post('/api/login')
+						.send({ email: 'colink@umd.edu', password: 'colin' })
+						.end(done);
+				});
+		});
+}
+
 before(function (done) {
 	this.timeout(5000);
 	setupDatabase(function (err, docs) {
 		users = docs.users;
 		requests = docs.requests;
-		done(err);
+		initializeAgents(done);
 	});
 });
 
@@ -223,89 +264,63 @@ describe('/errors', function () {
 });
 
 describe('needAccess properly limits access level', function () {
-	var agents;
-
-	before(function (done) {
-		agents = {
-			volunteer: {
-				request: request.agent(app),
-				user: userWithName(users, 'Ishaan Parikh'),
-			},
-			staff: {
-				request: request.agent(app),
-				user: userWithName(users, 'Patrick Choquette'),
-			},
-			admin: {
-				request: request.agent(app),
-				user: userWithName(users, 'Colin King'),
-			},
-		};
-
-		agents.volunteer.request
-			.post('/api/login')
-			.send({ email: 'ishaan@test.com', password: 'ishaan' })
-			.end(function (err) {
-				if (err) {
-					return done(err);
-				}
-
-				agents.staff.request
-					.post('/api/login')
-					.send({ email: 'pchoquette@peacecorps.gov', password: 'patrick' })
-					.end(function (err) {
-						if (err) {
-							return done(err);
-						}
-
-						agents.admin.request
-							.post('/api/login')
-							.send({ email: 'colink@umd.edu', password: 'colin' })
-							.end(done);
-					});
-			});
-	});
-
-	var getCheckEndpointFunc = function (statusCodeExpected, requestType) {
+	var getCheckEndpointFunc = function (
+		statusCodeExpected, failureStatusCodeExpected) {
 		return function (endpoint) {
 			if (endpoint.access !== undefined) {
 				if (endpoint.access == Access.VOLUNTEER) {
-					it('Volunteers can access ' + requestType +
-						' ' + endpoint.url, function (done) {
+					it('Volunteers can access GET ' + endpoint.url, function (done) {
 						// Modify the endpoint, if necessary
 						endpoint.url = endpoint.url.replace(':userId', agents.volunteer.user._id);
 						endpoint.url = endpoint.url.replace(':requestId',
 							requestWithName(requests,
 								agents.volunteer.user.name, 'volunteer')[0]._id);
 
-						agents.volunteer.request[requestType](endpoint.url)
+						agents.volunteer.request.get(endpoint.url)
 							.redirects(1)
 							.expect(statusCodeExpected, done);
+					});
+				} else {
+					it('Volunteers can not access GET ' + endpoint.url, function (done) {
+						agents.volunteer.request.get(endpoint.url)
+							.redirects(0)
+							.expect(failureStatusCodeExpected, done);
 					});
 				}
 
 				if (endpoint.access <= Access.STAFF) {
-					it('Staff can access ' + requestType +
-						' ' + endpoint.url, function (done) {
-						agents.staff.request[requestType](endpoint.url)
+					it('Staff can access GET ' + endpoint.url, function (done) {
+						agents.staff.request.get(endpoint.url)
 							.redirects(1)
 							.expect(statusCodeExpected, done);
+					});
+				} else {
+					it('Staff can not access GET ' + endpoint.url, function (done) {
+						agents.staff.request.get(endpoint.url)
+							.redirects(0)
+							.expect(failureStatusCodeExpected, done);
 					});
 				}
 
 				if (endpoint.access <= Access.ADMIN) {
-					it('Admins can access ' + requestType +
-						' ' + endpoint.url, function (done) {
-						agents.admin.request[requestType](endpoint.url)
+					it('Admins can access GET ' + endpoint.url, function (done) {
+						agents.admin.request.get(endpoint.url)
 							.redirects(1)
 							.expect(statusCodeExpected, done);
+					});
+				} else {
+					it('Admins can not access GET ' + endpoint.url, function (done) {
+						agents.admin.request.get(endpoint.url)
+							.redirects(0)
+							.expect(failureStatusCodeExpected, done);
 					});
 				}
 			}
 		};
 	};
 
-	endpoints.VIEWS.map(getCheckEndpointFunc(200, 'get'));
-	endpoints.API.GET.map(getCheckEndpointFunc(200, 'get'));
+	endpoints.VIEWS.map(getCheckEndpointFunc(200, 302));
+	endpoints.API.GET.map(getCheckEndpointFunc(200, 401));
 	it('endpoints.api.post meet access restrictions');
 	it('endpoints.api.delete meet access restrictions');
 });
@@ -385,10 +400,184 @@ describe('/api/requests/:requestId/delete', function () {
 });
 
 describe('/api/users', function () {
-	it('returns the correct user objects');
+	var verifyReturnedUserAccess = function (query, permittedAccess, done) {
+		agents.admin.request
+			.get(query)
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				var userList = res.body;
+
+				if (permittedAccess.indexOf(Access.VOLUNTEER) !== -1) {
+					assert(userList.filter(function (u) {
+						return u.access === Access.VOLUNTEER;
+					}).length > 0);
+				} else {
+					assert(userList.filter(function (u) {
+						return u.access === Access.VOLUNTEER;
+					}).length === 0);
+				}
+
+				if (permittedAccess.indexOf(Access.STAFF) !== -1) {
+					assert(userList.filter(function (u) {
+						return u.access === Access.STAFF;
+					}).length > 0);
+				} else {
+					assert(userList.filter(function (u) {
+						return u.access === Access.STAFF;
+					}).length === 0);
+				}
+
+				if (permittedAccess.indexOf(Access.ADMIN) !== -1) {
+					assert(userList.filter(function (u) {
+						return u.access === Access.ADMIN;
+					}).length > 0);
+				} else {
+					assert(userList.filter(function (u) {
+						return u.access === Access.ADMIN;
+					}).length === 0);
+				}
+
+				done();
+			});
+	};
+
+	it('returns the correct user objects for admins', function (done) {
+		agents.admin.request
+			.get('/api/users')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				var userList = res.body;
+				assert.isArray(userList);
+				assert(userList.length > 0);
+				var testUser = userList[0];
+				assert.isObject(testUser);
+				assert.isString(testUser.name);
+				assert.isString(testUser.email);
+				assert.isString(testUser.countryCode);
+				assert.isString(testUser.country);
+				assert.isString(testUser._id);
+				assert.isNumber(testUser.access);
+				assert.isArray(testUser.phones);
+				assert(userList.filter(function (u) {
+					return u.access === Access.VOLUNTEER;
+				}).length > 0, 'At least one volunteer is returned');
+				assert(userList.filter(function (u) {
+					return u.access === Access.STAFF;
+				}).length > 0, 'At least one staff is returned');
+				assert(userList.filter(function (u) {
+					return u.access === Access.ADMIN;
+				}).length > 0, 'At least one admin is returned');
+				done();
+			});
+	});
+
+	it('returns the correct user objects for staff', function (done) {
+		agents.staff.request
+			.get('/api/users')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				var userList = res.body;
+				assert(userList.filter(function (u) {
+					return u.access === Access.VOLUNTEER;
+				}).length > 0, 'At least one volunteer is returned');
+				assert(userList.filter(function (u) {
+					return u.access === Access.STAFF;
+				}).length > 0, 'At least one staff is returned');
+				assert(userList.filter(function (u) {
+					return u.access === Access.ADMIN;
+				}).length > 0, 'At least one admin is returned');
+				done();
+			});
+	});
+
+	it('returns the correct user objects for volunteers', function (done) {
+		agents.volunteer.request
+			.get('/api/users')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				var userList = res.body;
+				assert(userList.filter(function (u) {
+					return u.access === Access.VOLUNTEER;
+				}).length > 0, 'At least one volunteer is returned');
+				assert(userList.filter(function (u) {
+					return u.access === Access.STAFF;
+				}).length > 0, 'At least one staff is returned');
+				assert(userList.filter(function (u) {
+					return u.access === Access.ADMIN;
+				}).length > 0, 'At least one admin is returned');
+				done();
+			});
+	});
+
+	// Waiting on issue #58 for spec of this endpoint
 	it('limits to same country for volunteers');
-	it('minAccess filters user list');
-	it('maxAccess filters user list');
+
+	it('minAccess filters to just admins', function (done) {
+		verifyReturnedUserAccess('/api/users?minAccess=2',
+			[Access.ADMIN], done);
+	});
+
+	it('minAccess filters to just admins and staff', function (done) {
+		verifyReturnedUserAccess('/api/users?minAccess=1',
+			[Access.STAFF, Access.ADMIN], done);
+	});
+
+	it('minAccess does not filter when zero', function (done) {
+		verifyReturnedUserAccess('/api/users?minAccess=0',
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], done);
+	});
+
+	it('minAccess does not filter when < zero', function (done) {
+		verifyReturnedUserAccess('/api/users?minAccess=-1',
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], done);
+	});
+
+	it('minAccess returns nothing when > admin', function (done) {
+		verifyReturnedUserAccess('/api/users?minAccess=3',
+			[], done);
+	});
+
+	it('maxAccess filters to just volunteers', function (done) {
+		verifyReturnedUserAccess('/api/users?maxAccess=0',
+			[Access.VOLUNTEER], done);
+	});
+
+	it('maxAccess filters to just volunteers and staff', function (done) {
+		verifyReturnedUserAccess('/api/users?maxAccess=1',
+			[Access.STAFF, Access.VOLUNTEER], done);
+	});
+
+	it('maxAccess does not filter when = admin', function (done) {
+		verifyReturnedUserAccess('/api/users?maxAccess=2',
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], done);
+	});
+
+	it('maxAccess does not filter when > admin', function (done) {
+		verifyReturnedUserAccess('/api/users?maxAccess=3',
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], done);
+	});
+
+	it('maxAccess returns nothing when < zero', function (done) {
+		verifyReturnedUserAccess('/api/users?maxAccess=-1',
+			[], done);
+	});
+
 });
 
 after(function (done) {

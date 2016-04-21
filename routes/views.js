@@ -275,9 +275,6 @@ router.renderUsers = function (req, res) {
 				volunteers: volunteers,
 			});
 		});
-	} else {
-		req.flash({ text: 'You do not have access to this page.', class: 'danger' });
-		res.redirect('/dashboard');
 	}
 };
 

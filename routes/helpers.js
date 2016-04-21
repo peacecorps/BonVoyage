@@ -204,7 +204,7 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 			callback();
 		}
 	} else {
-		mailgun.messages().send(data, function (err, body) {
+		mailgun.messages().send(data, function () {
 			if (callback) {
 				callback();
 			}
@@ -218,7 +218,7 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 	var html = jade.renderFile(path.join(__dirname, '../email',
 		template + '.jade'), map);
 
-	var sendMimeCallback = function (sendError, body) {
+	var sendMimeCallback = function (sendError) {
 		if (sendError) {
 			console.log('was unable to send');
 			console.log(sendError);

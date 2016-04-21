@@ -121,12 +121,21 @@ function isNotLoggedIn(req, res, next) {
 }
 
 // middleware to check if the user is at least that access level
-function needsAccess(access) {
+function needsAccess(access, doRedirect) {
+	doRedirect = doRedirect || false;
 	return function (req, res, next) {
 		if (req.user && req.user.access >= access) {
 			next();
 		} else {
-			res.status(401).send('Unauthorized');
+			if (doRedirect) {
+				req.flash('dashboardFlash', {
+					text: 'You do not have access to this page.',
+					class: 'danger',
+				});
+				res.redirect('/dashboard');
+			} else {
+				res.status(401).send('Unauthorized');
+			}
 		}
 	};
 }
@@ -137,20 +146,17 @@ app.get('/login', isNotLoggedIn, views.renderLogin);
 app.get('/register/:email/:token', isNotLoggedIn, views.renderRegister);
 app.get('/reset', isNotLoggedIn, views.renderReset);
 app.get('/reset/:token', isNotLoggedIn, views.renderValidReset);
-app.get('/dashboard', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderDashboard);
-app.get('/dashboard/submit', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderSubform);
+app.get('/dashboard', ensureLoggedIn('/login'), views.renderDashboard);
+app.get('/dashboard/submit', ensureLoggedIn('/login'), views.renderSubform);
 app.get('/requests/:requestId', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), api.handleRequestId, views.renderApproval);
+	api.handleRequestId, views.renderApproval);
 app.get('/requests/:requestId/edit', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), api.handleRequestId, views.renderEditRequest);
+	api.handleRequestId, views.renderEditRequest);
 app.get('/users', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderUsers);
+	needsAccess(Access.STAFF, true), views.renderUsers);
 app.get('/users/add', ensureLoggedIn('/login'),
-	needsAccess(Access.STAFF), views.renderAddUsers);
-app.get('/profile/:userId?', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderProfile);
+	needsAccess(Access.STAFF, true), views.renderAddUsers);
+app.get('/profile/:userId?', ensureLoggedIn('/login'), views.renderProfile);
 
 app.get('/.well-known/acme-challenge/' +
 	'AC86a1oSUu_K8DzELD-hynBDBOtms4LDqHPFXK-bQo0', function (req, res) {
