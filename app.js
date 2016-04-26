@@ -155,8 +155,10 @@ app.get('/.well-known/acme-challenge/' +
 });
 
 // API
+app.get('/api/requests/:requestId',
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.getRequests);
 app.get('/api/requests',
-	needsAccess(Access.VOLUNTEER), api.getRequests);
+		needsAccess(Access.VOLUNTEER), api.getRequests);
 app.get('/api/users',
 	needsAccess(Access.VOLUNTEER), api.getUsers);
 app.get('/api/warnings',

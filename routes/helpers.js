@@ -19,8 +19,8 @@ var mongoose = require('mongoose');
 var dropEmail = true;
 var dropSMS = true;
 
-if (process.env.MAILGUN_KEY !== undefined &&
-	process.env.BONVOYAGE_DOMAIN !== undefined) {
+if (process.env.MAILGUN_KEY !== 'undefined' &&
+	process.env.BONVOYAGE_DOMAIN !== 'undefined') {
 	var mailgun = mailgun({
 		apiKey: process.env.MAILGUN_KEY,
 		domain: 'projectdelta.io', // this is temporary
@@ -28,8 +28,8 @@ if (process.env.MAILGUN_KEY !== undefined &&
 	dropEmail = false;
 }
 
-if (process.env.TWILIO_SID !== undefined &&
-	process.env.TWILIO_AUTH !== undefined) {
+if (process.env.TWILIO_SID !== 'undefined' &&
+	process.env.TWILIO_AUTH !== 'undefined') {
 	var twilioClient = new twilio.RestClient(process.env.TWILIO_SID,
 		process.env.TWILIO_AUTH);
 	dropSMS = false;
@@ -194,9 +194,8 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 		text: text,
 	};
 
-	if (dropEmail) {
-		console.error('Email dropped. Email data:');
-		console.error(data);
+	if (dropEmail === true) {
+		// console.error('Email dropped.');
 		if (callback) {
 			callback();
 		}
@@ -249,9 +248,8 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 			html: html,
 		};
 
-		if (dropEmail) {
-			console.error('Email dropped. Email data:');
-			console.error(data);
+		if (dropEmail === true) {
+			// console.error('Template email dropped.');
 			if (callback) {
 				callback();
 			}
@@ -295,9 +293,8 @@ module.exports.sendSMS = function (sendTo, body, callback) {
 		body: body,
 	};
 
-	if (dropSMS) {
-		console.error('SMS dropped. SMS data:');
-		console.error(data);
+	if (dropSMS === true) {
+		// console.error('SMS dropped.');
 		if (callback) {
 			callback();
 		}

@@ -38,6 +38,10 @@ router.handleRequestId = function (req, res, next) {
  * GET Requests
  */
 router.getRequests = function (req, res) {
+	if (req.request !== undefined) {
+		return res.send(req.request);
+	}
+
 	helpers.getRequests(req, res, undefined, function (err, requests) {
 		if (err) {
 			console.error(err);

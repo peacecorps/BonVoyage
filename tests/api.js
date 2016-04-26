@@ -340,7 +340,7 @@ describe('GET /api/requests', function () {
 				var requestList = res.body;
 				assert.isArray(requestList);
 				assert(requestList.length === 1,
-					'Only one request exists that should be returned');
+					'Only one request exists by Ishaan that should be returned');
 				var testRequest = requestList[0];
 				assert(testRequest.startDate === 20160403);
 				assert(testRequest.endDate === 20160410);
@@ -410,6 +410,11 @@ describe('GET /api/requests', function () {
 	});
 });
 
+describe('GET /api/requests/:requestId', function () {
+	it('returns a correctly formatted request');
+	it('returns the correct request');
+});
+
 describe('GET /api/users', function () {
 	var verifyReturnedUserAccess = function (query, permittedAccess, done) {
 		agents.admin.request
@@ -468,15 +473,17 @@ describe('GET /api/users', function () {
 				var userList = res.body;
 				assert.isArray(userList);
 				assert(userList.length > 0);
-				var testUser = userList[0];
-				assert.isObject(testUser);
-				assert.isString(testUser.name);
-				assert.isString(testUser.email);
-				assert.isString(testUser.countryCode);
-				assert.isString(testUser.country);
-				assert.isString(testUser._id);
-				assert.isNumber(testUser.access);
-				assert.isArray(testUser.phones);
+				userList.map(function (testUser) {
+					assert.isObject(testUser);
+					assert.isString(testUser.name);
+					assert.isString(testUser.email);
+					assert.isString(testUser.countryCode);
+					assert.isString(testUser.country);
+					assert.isString(testUser._id);
+					assert.isNumber(testUser.access);
+					assert.isArray(testUser.phones);
+				});
+
 				assert(userList.filter(function (u) {
 					return u.access === Access.VOLUNTEER;
 				}).length > 0, 'At least one volunteer is returned');
@@ -603,19 +610,34 @@ describe('GET /api/warnings', function () {
 				var warningList = res.body;
 				assert.isObject(warningList);
 				assert(Object.keys(warningList).length > 0);
-				var testWarnings = warningList[Object.keys(warningList)[0]];
-				assert(testWarnings.length > 0);
-				var testWarning = testWarnings[0];
-				assert.isObject(testWarning);
-				assert.isString(testWarning._id);
-				assert.isString(testWarning.countryCode);
-				assert.isString(testWarning.type);
-				assert.isString(testWarning.textOverview);
-				assert.isString(testWarning.link);
-				assert.isString(testWarning.colorClass);
-				assert.isString(testWarning.source);
-				assert.isString(testWarning.batchUUID);
-				assert.isString(testWarning.timestamp);
+				Object.keys(warningList).map(function (cc) {
+					assert(warningList[cc].length > 0);
+					warningList[cc].map(function (testWarning) {
+						assert.isObject(testWarning);
+						assert.isString(testWarning._id);
+						assert.isString(testWarning.countryCode);
+						assert.isString(testWarning.type);
+						assert.isString(testWarning.textOverview);
+
+						if (testWarning.link) {
+							assert.isString(testWarning.link);
+						}
+
+						if (testWarning.startDate) {
+							assert.isNumber(testWarning.startDate);
+						}
+
+						if (testWarning.endDate) {
+							assert.isNumber(testWarning.startDate);
+						}
+
+						assert.isString(testWarning.colorClass);
+						assert.isString(testWarning.source);
+						assert.isString(testWarning.batchUUID);
+						assert.isString(testWarning.timestamp);
+					});
+				});
+
 				done();
 			});
 	});
@@ -624,36 +646,93 @@ describe('GET /api/warnings', function () {
 		agents.admin.request
 			.get('/api/warnings')
 			.expect(200)
-				.end(function (err, res) {
-					if (err) {
-						return done(err);
-					}
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
 
-					var warningList = res.body;
-					Object.keys(warningList).map(function (cc) {
-						assert(countries.codeList.indexOf(cc) !== -1,
-							cc + ' is not a valid country code');
-					});
-
-					done();
+				var warningList = res.body;
+				Object.keys(warningList).map(function (cc) {
+					assert(countries.codeList.indexOf(cc) !== -1,
+						cc + ' is not a valid country code');
 				});
+
+				done();
+			});
 	});
 });
 
 describe('POST /api/requests/:requestId/approve', function () {
-	it('marks request as approved');
-	it('doesn\'t change other fields');
+	it('marks request as approved', function (done) {
+		var n = requests.length;
+		requests.map(function (request) {
+			(function (request) {
+				agents.admin.request
+				.post('/api/requests/' + request._id + '/approve')
+				.expect(200)
+				.end(function (err) {
+					if (err) {
+						return done(err);
+					}
+
+					agents.admin.request
+						.get('/api/requests/' + request._id)
+						.expect(200)
+						.end(function (err, res) {
+							if (err) {
+								return done(err);
+							}
+
+							assert(res.body.status.isApproved === true);
+							assert(res.body.status.isPending === false);
+							n--;
+							if (n === 0) {
+								done();
+							}
+						});
+				});
+			})(request);
+		});
+	});
 });
 
 describe('POST /api/requests/:requestId/deny', function () {
-	it('marks request as denied');
-	it('doesn\'t change other fields');
+	it('marks request as denied', function (done) {
+		var n = requests.length;
+		requests.map(function (request) {
+			(function (request) {
+				agents.admin.request
+				.post('/api/requests/' + request._id + '/deny')
+				.expect(200)
+				.end(function (err) {
+					if (err) {
+						return done(err);
+					}
+
+					agents.admin.request
+						.get('/api/requests/' + request._id)
+						.expect(200)
+						.end(function (err, res) {
+							if (err) {
+								return done(err);
+							}
+
+							assert(res.body.status.isApproved === false);
+							assert(res.body.status.isPending === false);
+							n--;
+							if (n === 0) {
+								done();
+							}
+						});
+				});
+			})(request);
+		});
+	});
 });
 
 describe('POST /api/requests/:requestId/comments', function () {
 	it('adds the full comment');
 	it('comment is returned in /api/requests');
-	it('doesn\'t change other fields');
 });
 
 describe('POST /profile/:userId?', function () {
