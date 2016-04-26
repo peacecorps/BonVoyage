@@ -3,7 +3,8 @@
 
 if (process.env.DID_SETUP !== true) {
 
-	if (process.env.NODE_ENV !== 'production') {
+	if (process.env.IS_ON_HEROKU === undefined &&
+		process.env.IS_ON_TRAVIS === undefined) {
 		try {
 			var environment = require(__dirname + '/config/environment.js');
 			var envVariables = Object.keys(environment);
