@@ -5,13 +5,9 @@ module.exports = function (options, done) {
 	var Access = require(__dirname + '/../config/access');
 	var ipsum = require('lorem-ipsum');
 	var moment = require('moment');
-	var fs = require('fs');
 	var DateOnly = require('dateonly');
-	var countryFilePath = __dirname + '/../public/data/countryList.json';
-	var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
-	var countriesDictionary = JSON.parse(countryListFile);
-	var countryCodes = Object.keys(countriesDictionary);
-	var nCountries = countryCodes.length;
+	var countries = require(__dirname + '/../config/countries');
+	var nCountries = countries.codeList.length;
 	var User = require(__dirname + '/../models/user');
 	var Request = require(__dirname + '/../models/request');
 	var seedrandom = require('seedrandom');
@@ -33,7 +29,7 @@ module.exports = function (options, done) {
 	}
 
 	function randCountryCode() {
-		return countryCodes[randIndex(nCountries)];
+		return countries.codeList[randIndex(nCountries)];
 	}
 
 	function randDatePair() {
@@ -53,7 +49,7 @@ module.exports = function (options, done) {
 			startDate: dates[0],
 			endDate: dates[1],
 			city: ipsum({ count: 1, units: 'words' }),
-			country: countriesDictionary[cc],
+			country: countries.countries[cc],
 			countryCode: cc,
 			hotel: ipsum(),
 			contact: ipsum(),
@@ -138,9 +134,9 @@ module.exports = function (options, done) {
 					requests.push(generateRequest(randVolunteer, randStaff));
 				}
 			} else {
-				requests = [
-					new Request({
-						volunteer: userWithName(volunteers, 'Ishaan Parikh')._id,
+				var getRequestForName = function (name) {
+					return new Request({
+						volunteer: userWithName(volunteers, name)._id,
 						staff: userWithName(staff, 'Patrick Choquette')._id,
 						status: {
 							isPending: true,
@@ -151,12 +147,12 @@ module.exports = function (options, done) {
 								startDate: 'May 3, 2016',
 								endDate: 'May 10, 2016',
 								city: 'Chicago',
-								country: countriesDictionary.US,
+								country: countries.countries.US,
 								countryCode: 'US',
-								hotel: '',
-								contact: '',
-								companions: '',
-								description: '',
+								hotel: 'Test Hotel',
+								contact: 'Test Contact',
+								companions: 'Test Companion',
+								description: 'Test Description',
 							},
 						],
 						comments: [
@@ -167,7 +163,13 @@ module.exports = function (options, done) {
 							},
 						],
 						counterpartApproved: true,
-					}),
+					});
+				};
+
+				requests = [
+					getRequestForName('Ishaan Parikh'),
+					getRequestForName('Jeff Hilnbrand'),
+					getRequestForName('John Doe'),
 				];
 			}
 

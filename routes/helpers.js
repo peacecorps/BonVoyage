@@ -5,18 +5,15 @@ var User = require(__dirname + '/../models/user');
 var Request = require(__dirname + '/../models/request');
 var Warning = require(__dirname + '/../models/warning');
 var Access = require(__dirname + '/../config/access');
+var countries = require(__dirname + '/../config/countries');
 var DateOnly = require('dateonly');
 var moment = require('moment');
 var jade = require('jade');
 var path = require('path');
-var fs = require('fs');
 var twilio = require('twilio');
 var mailgun = require('mailgun-js');
 var mailcomposer = require('mailcomposer');
 var mongoose = require('mongoose');
-var countryFilePath = __dirname + '/../public/data/countryList.json';
-var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
-var countriesDictionary = JSON.parse(countryListFile);
 
 // Attempt to load credentials for email and SMS
 var dropEmail = true;
@@ -153,7 +150,7 @@ module.exports.getUsers = function (options, cb) {
 			cb(err);
 		} else {
 			for (var i = 0; i < users.length; i++) {
-				users[i].country = countriesDictionary[users[i].countryCode];
+				users[i].country = countries.countries[users[i].countryCode];
 			}
 
 			cb(null, users);

@@ -11,6 +11,7 @@
 	var mocha = require('gulp-mocha');
 	var istanbul = require('gulp-istanbul');
 	var coveralls = require('gulp-coveralls');
+	var env = require('gulp-env');
 
 	gulp.task('lint', function () {
 		return gulp.src([
@@ -55,10 +56,24 @@
 		'node build_scripts/build.js',
 	]));
 
-	gulp.task('mocha', function () {
+	gulp.task('set-test-env', function () {
+		env({
+			vars: {
+				NODE_ENV: 'test',
+			},
+		});
+	});
+
+	gulp.task('mocha', ['set-test-env', 'scrape'], function () {
 		return gulp
 			.src('tests/**/*.js', { read: false })
 			.pipe(mocha({ reporter: 'dot' }));
+	});
+
+	gulp.task('mocha-nyan', ['set-test-env', 'scrape'], function () {
+		return gulp
+			.src('tests/**/*.js', { read: false })
+			.pipe(mocha({ reporter: 'nyan' }));
 	});
 
 	gulp.task('pre-coveralls', function () {

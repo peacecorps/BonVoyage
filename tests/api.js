@@ -6,14 +6,16 @@
 'use strict';
 
 require(__dirname + '/../setup');
-process.env.NODE_ENV = 'test';
 
 var assert = require('chai').assert;
 var mongoose = require('mongoose');
 var request = require('supertest');
 var Access = require(__dirname + '/../config/access');
 
+var mongoConnection = require(__dirname + '/../config/mongoConnection');
 var serverObjects = require(__dirname + '/../bin/www');
+var countries = require(__dirname + '/../config/countries');
+
 var app = serverObjects.app;
 var server = serverObjects.server;
 var users;
@@ -75,7 +77,7 @@ function closeDatabase(done) {
 }
 
 function setupDatabase(done) {
-	mongoose.createConnection(process.env.MONGO_TEST_CONNECTION_STRING);
+	mongoose.createConnection(mongoConnection.getConnectionString());
 	mongoose.connection.on('error', function (err) {
 		done(err);
 	});
@@ -325,81 +327,90 @@ describe('needAccess properly limits access level', function () {
 	it('endpoints.api.delete meet access restrictions');
 });
 
-describe('/api/requests', function () {
+describe('GET /api/requests', function () {
+	it('returns a valid request object', function (done) {
+		agents.volunteer.request
+			.get('/api/requests')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
 
+				var requestList = res.body;
+				assert.isArray(requestList);
+				assert(requestList.length === 1,
+					'Only one request exists that should be returned');
+				var testRequest = requestList[0];
+				assert(testRequest.startDate === 20160403);
+				assert(testRequest.endDate === 20160410);
+				assert(testRequest.status.isPending === true);
+				assert(testRequest.status.isApproved === false);
+				assert.isString(testRequest.timestamp);
+				assert.isArray(testRequest.legs);
+				assert(testRequest.legs.length === 1);
+				assert(testRequest.legs[0].startDate === 20160403);
+				assert(testRequest.legs[0].endDate === 20160410);
+				assert(testRequest.legs[0].city === 'Chicago');
+				assert(testRequest.legs[0].country === 'United States');
+				assert(testRequest.legs[0].countryCode === 'US');
+				assert(testRequest.legs[0].hotel === 'Test Hotel');
+				assert(testRequest.legs[0].contact === 'Test Contact');
+				assert(testRequest.legs[0].companions === 'Test Companion');
+				assert(testRequest.legs[0].description === 'Test Description');
+				assert.isArray(testRequest.comments);
+				assert(testRequest.comments.length === 1);
+				assert(testRequest.comments[0].name === 'Patrick Choquette');
+				assert(testRequest.comments[0].user.name === 'Patrick Choquette');
+				assert(testRequest.comments[0].content === 'I approve of this request.');
+				assert.isString(testRequest.comments[0]._id);
+				assert.isString(testRequest.comments[0].timestamp);
+				assert(testRequest.counterpartApproved === true);
+				assert(testRequest.staff.name === 'Patrick Choquette');
+				assert(testRequest.volunteer.name === 'Ishaan Parikh');
+				assert.isString(testRequest._id);
+				done();
+			});
+	});
+
+	it('requests for staff are limited by country', function (done) {
+		agents.staff.request
+			.get('/api/requests')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				var requestList = res.body;
+				assert(requestList.filter(function (u) {
+					return u.volunteer.countryCode !== 'US';
+				}).length === 0);
+				assert(requestList.length === 2);
+				done();
+			});
+	});
+
+	it('requests for admins are not limited by country', function (done) {
+		agents.admin.request
+			.get('/api/requests')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				var requestList = res.body;
+				assert(requestList.filter(function (u) {
+					return u.volunteer.countryCode !== 'US';
+				}).length === 1);
+				assert(requestList.length === 3);
+				done();
+			});
+	});
 });
 
-describe('/api/users', function () {
-
-});
-
-describe('/api/warnings', function () {
-
-});
-
-describe('/api/requests/:requestId/approve', function () {
-
-});
-
-describe('/api/requests/:requestId/deny', function () {
-
-});
-
-describe('/api/requests/:requestId/comments', function () {
-
-});
-
-describe('/profile/:userId?', function () {
-
-});
-
-describe('/api/register', function () {
-
-});
-
-describe('/api/login', function () {
-	it('fails with missing credentials');
-	it('fails with incorrect credentials');
-	it('redirects properly on failure');
-});
-
-describe('/api/logout', function () {
-
-});
-
-describe('/api/reset', function () {
-
-});
-
-describe('/api/reset/:token', function () {
-
-});
-
-describe('/api/requests', function () {
-
-});
-
-describe('/api/requests/:requestId', function () {
-
-});
-
-describe('/api/access', function () {
-
-});
-
-describe('/api/users', function () {
-
-});
-
-describe('/api/users/validate', function () {
-
-});
-
-describe('/api/requests/:requestId/delete', function () {
-
-});
-
-describe('/api/users', function () {
+describe('GET /api/users', function () {
 	var verifyReturnedUserAccess = function (query, permittedAccess, done) {
 		agents.admin.request
 			.get(query)
@@ -577,11 +588,129 @@ describe('/api/users', function () {
 		verifyReturnedUserAccess('/api/users?maxAccess=-1',
 			[], done);
 	});
+});
+
+describe('GET /api/warnings', function () {
+	it('returns a full warning object', function (done) {
+		agents.admin.request
+			.get('/api/warnings')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				var warningList = res.body;
+				assert.isObject(warningList);
+				assert(Object.keys(warningList).length > 0);
+				var testWarnings = warningList[Object.keys(warningList)[0]];
+				assert(testWarnings.length > 0);
+				var testWarning = testWarnings[0];
+				assert.isObject(testWarning);
+				assert.isString(testWarning._id);
+				assert.isString(testWarning.countryCode);
+				assert.isString(testWarning.type);
+				assert.isString(testWarning.textOverview);
+				assert.isString(testWarning.link);
+				assert.isString(testWarning.colorClass);
+				assert.isString(testWarning.source);
+				assert.isString(testWarning.batchUUID);
+				assert.isString(testWarning.timestamp);
+				done();
+			});
+	});
+
+	it('returns valid country keys', function (done) {
+		agents.admin.request
+			.get('/api/warnings')
+			.expect(200)
+				.end(function (err, res) {
+					if (err) {
+						return done(err);
+					}
+
+					var warningList = res.body;
+					Object.keys(warningList).map(function (cc) {
+						assert(countries.codeList.indexOf(cc) !== -1,
+							cc + ' is not a valid country code');
+					});
+
+					done();
+				});
+	});
+});
+
+describe('POST /api/requests/:requestId/approve', function () {
+	it('marks request as approved');
+	it('doesn\'t change other fields');
+});
+
+describe('POST /api/requests/:requestId/deny', function () {
+	it('marks request as denied');
+	it('doesn\'t change other fields');
+});
+
+describe('POST /api/requests/:requestId/comments', function () {
+	it('adds the full comment');
+	it('comment is returned in /api/requests');
+	it('doesn\'t change other fields');
+});
+
+describe('POST /profile/:userId?', function () {
+
+});
+
+describe('POST /api/register', function () {
+
+});
+
+describe('POST /api/login', function () {
+	it('fails with missing credentials');
+	it('fails with incorrect credentials');
+	it('redirects properly on failure');
+});
+
+describe('POST /api/logout', function () {
+	it('logs the user out');
+});
+
+describe('POST /api/reset', function () {
+
+});
+
+describe('POST /api/reset/:token', function () {
+
+});
+
+describe('POST /api/requests', function () {
+
+});
+
+describe('POST /api/requests/:requestId', function () {
+
+});
+
+describe('POST /api/access', function () {
+
+});
+
+describe('POST /api/users', function () {
+
+});
+
+describe('POST /api/users/validate', function () {
+
+});
+
+describe('POST /api/requests/:requestId/delete', function () {
+
+});
+
+describe('POST /api/users', function () {
 
 });
 
 after(function (done) {
-
 	server.close(function () {
 		closeDatabase(function () {
 			done();

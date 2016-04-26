@@ -7,6 +7,8 @@
 
 require(__dirname + '/../setup');
 
+var mongoConnection = require(__dirname + '/../config/mongoConnection');
+
 /**
  * Module dependencies.
  */
@@ -36,23 +38,12 @@ function normalizePort(val) {
 	return false;
 }
 
-function getEnvironmentPort() {
-	'use strict';
-	switch (process.env.NODE_ENV) {
-		case 'test':
-			return process.env.TEST_PORT;
-		case 'production':
-			return process.env.PROD_PORT;
-		default:
-			return process.env.DEV_PORT;
-	}
-}
-
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || getEnvironmentPort());
+var port = normalizePort(process.env.PORT ||
+	mongoConnection.getEnvironmentPort());
 app.set('port', port);
 
 /**

@@ -8,11 +8,8 @@ var User = require(__dirname + '/../models/user');
 var Request = require(__dirname + '/../models/request');
 var Token = require(__dirname + '/../models/token');
 var Access = require(__dirname + '/../config/access');
-var fs = require('fs');
+var countries = require(__dirname + '/../config/countries');
 var randtoken = require('rand-token');
-var countryFilePath = __dirname + '/../public/data/countryList.json';
-var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
-var countriesDictionary = JSON.parse(countryListFile);
 var helpers = require('./helpers');
 var DateOnly = require('dateonly');
 var Converter = require('csvtojson').Converter;
@@ -188,7 +185,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 							});
 							res.end(JSON.stringify({ redirect: failureRedirect }));
 							return cb(null);
-						} else if (Object.keys(countriesDictionary).indexOf(leg.country) == -1) {
+						} else if (countries.codeList.indexOf(leg.country) == -1) {
 							req.session.submission = req.body;
 							req.flash('submissionFlash', {
 								text: 'The country that you have selected for leg #' +
@@ -211,7 +208,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 								startDate: start,
 								endDate: end,
 								city: leg.city,
-								country: countriesDictionary[leg.country],
+								country: countries.countries[leg.country],
 								countryCode: leg.country,
 								hotel: leg.hotel,
 								contact: leg.contact,
@@ -895,7 +892,7 @@ function validateUsers(users, loggedInUser, cb) {
 					user.countryCode.value !== '' ? user.countryCode.value :
 					loggedInUser.country);
 				var isCountryValid = countryValue && countryValue !== '' &&
-					countriesDictionary[countryValue] !== undefined;
+					countries.countries[countryValue] !== undefined;
 				var accessValue = (user.access.value && user.access.value !== '' ?
 					user.access.value : Access.VOLUNTEER);
 				var isAccessValid = (accessValue >= Access.VOLUNTEER &&
@@ -911,7 +908,7 @@ function validateUsers(users, loggedInUser, cb) {
 						valid: isEmailValid,
 					},
 					country: {
-						value: (isCountryValid ? countriesDictionary[countryValue] : ''),
+						value: (isCountryValid ? countries.countries[countryValue] : ''),
 						valid: isCountryValid,
 					},
 					countryCode: {

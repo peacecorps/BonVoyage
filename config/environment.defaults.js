@@ -9,7 +9,6 @@
  */
 
 module.exports = {
-	NODE_ENV: 'development',
 	SESSION_SECRET: 'drtwxroGWs9f93AQWbALN8Q7cvgNe4',
 
 	// For development

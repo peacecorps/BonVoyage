@@ -6,8 +6,9 @@ require(__dirname + '/../setup');
 var mongoose = require('mongoose');
 var uuid = require('node-uuid');
 var Warning = require(__dirname + '/../models/warning');
+var mongoConnection = require(__dirname + '/../config/mongoConnection');
 
-mongoose.connect(process.env.MONGO_CONNECTION_STRING);
+mongoose.connect(mongoConnection.getConnectionString());
 
 function removeAll(newBatchUUID, source) {
 	console.log('Removing all ' + source +

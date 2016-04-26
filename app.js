@@ -9,6 +9,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var mongoConnection = require(__dirname + '/config/mongoConnection');
 var views = require(__dirname + '/routes/views');
 var api = require(__dirname + '/routes/api');
 var app = express();
@@ -53,18 +54,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(flash());
 
-function getConnectionString() {
-	switch (process.env.NODE_ENV) {
-		case 'production':
-			return process.env.MONGO_PROD_CONNECTION_STRING;
-		case 'test':
-			return process.env.MONGO_TEST_CONNECTION_STRING;
-		case 'development':
-			return process.env.MONGO_DEV_CONNECTION_STRING;
-	}
-}
-
-mongoose.connect(getConnectionString());
+mongoose.connect(mongoConnection.getConnectionString());
 mongoose.connection.on('error', function (err) {
 	console.log(err);
 });
