@@ -10,8 +10,9 @@ require(__dirname + '/../setup');
 var assert = require('chai').assert;
 var mongoose = require('mongoose');
 var request = require('supertest');
-var Access = require(__dirname + '/../config/access');
+var async = require('async');
 
+var Access = require(__dirname + '/../config/access');
 var mongoConnection = require(__dirname + '/../config/mongoConnection');
 var serverObjects = require(__dirname + '/../bin/www');
 var countries = require(__dirname + '/../config/countries');
@@ -50,17 +51,15 @@ var endpoints = {
 			{ url: '/api/requests/:requestId/approve', access: Access.STAFF },
 			{ url: '/api/requests/:requestId/deny', access: Access.STAFF },
 			{ url: '/api/requests/:requestId/comments', access: Access.VOLUNTEER },
-			{ url: '/profile/', access: Access.VOLUNTEER },
-			{ url: '/profile/:userId', access: Access.VOLUNTEER },
+			{ url: '/api/users/:userId', access: Access.VOLUNTEER },
 			{ url: '/api/requests', access: Access.VOLUNTEER },
 			{ url: '/api/requests/:requestId', access: Access.VOLUNTEER },
-			{ url: '/api/access', access: Access.STAFF },
 			{ url: '/api/users', access: Access.STAFF },
 			{ url: '/api/users/validate', access: Access.STAFF },
 		],
 		DELETE: [
-			{ url: '/api/requests/:requestId/delete', access: Access.VOLUNTEER },
-			{ url: '/api/users', access: Access.VOLUNTEER },
+			{ url: '/api/requests/:requestId', access: Access.VOLUNTEER },
+			{ url: '/api/users/:userId', access: Access.VOLUNTEER },
 		],
 	},
 	NO_LOGIN: [
@@ -129,7 +128,7 @@ function userWithName(objects, name) {
 	}
 }
 
-function requestWithName(requests, name, field) {
+function requestsWithName(requests, name, field) {
 	var user = userWithName(users, name);
 
 	var foundRequests = requests.filter(function (request) {
@@ -275,7 +274,7 @@ describe('needAccess properly limits access level', function () {
 						// Modify the endpoint, if necessary
 						endpoint.url = endpoint.url.replace(':userId', agents.volunteer.user._id);
 						endpoint.url = endpoint.url.replace(':requestId',
-							requestWithName(requests,
+							requestsWithName(requests,
 								agents.volunteer.user.name, 'volunteer')[0]._id);
 
 						agents.volunteer.request.get(endpoint.url)
@@ -411,8 +410,25 @@ describe('GET /api/requests', function () {
 });
 
 describe('GET /api/requests/:requestId', function () {
-	it('returns a correctly formatted request');
-	it('returns the correct request');
+	it('returns a correctly formatted request', function (done) {
+		var rs = requestsWithName(requests, 'Ishaan Parikh', 'volunteer');
+		assert(rs.length > 0);
+		var request = rs[0];
+		agents.admin.request
+			.get('/api/requests/' + request._id)
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				assert.isObject(res.body);
+				assert(res.body.staff.name === 'Patrick Choquette');
+				assert(res.body.volunteer.name === 'Ishaan Parikh');
+				assert.equal(res.body._id, request._id);
+				done();
+			});
+	});
 });
 
 describe('GET /api/users', function () {
@@ -664,15 +680,13 @@ describe('GET /api/warnings', function () {
 
 describe('POST /api/requests/:requestId/approve', function () {
 	it('marks request as approved', function (done) {
-		var n = requests.length;
-		requests.map(function (request) {
-			(function (request) {
-				agents.admin.request
-				.post('/api/requests/' + request._id + '/approve')
-				.expect(200)
+		async.eachSeries(requests, function (request, cb) {
+			agents.admin.request
+			.post('/api/requests/' + request._id + '/approve')
+			.expect(200)
 				.end(function (err) {
 					if (err) {
-						return done(err);
+						return cb(err);
 					}
 
 					agents.admin.request
@@ -680,33 +694,27 @@ describe('POST /api/requests/:requestId/approve', function () {
 						.expect(200)
 						.end(function (err, res) {
 							if (err) {
-								return done(err);
+								return cb(err);
 							}
 
 							assert(res.body.status.isApproved === true);
 							assert(res.body.status.isPending === false);
-							n--;
-							if (n === 0) {
-								done();
-							}
+							cb();
 						});
 				});
-			})(request);
-		});
+		}, done);
 	});
 });
 
 describe('POST /api/requests/:requestId/deny', function () {
 	it('marks request as denied', function (done) {
-		var n = requests.length;
-		requests.map(function (request) {
-			(function (request) {
-				agents.admin.request
+		async.eachSeries(requests, function (request, cb) {
+			agents.admin.request
 				.post('/api/requests/' + request._id + '/deny')
 				.expect(200)
 				.end(function (err) {
 					if (err) {
-						return done(err);
+						return cb(err);
 					}
 
 					agents.admin.request
@@ -714,79 +722,817 @@ describe('POST /api/requests/:requestId/deny', function () {
 						.expect(200)
 						.end(function (err, res) {
 							if (err) {
-								return done(err);
+								return cb(err);
 							}
 
 							assert(res.body.status.isApproved === false);
 							assert(res.body.status.isPending === false);
-							n--;
-							if (n === 0) {
-								done();
-							}
+
+							cb();
 						});
 				});
-			})(request);
-		});
+		}, done);
 	});
 });
 
 describe('POST /api/requests/:requestId/comments', function () {
-	it('adds the full comment');
-	it('comment is returned in /api/requests');
+	it('adds the full comment', function (done) {
+		async.eachSeries(requests, function (request, cb) {
+			var commentString = 'This is a test comment for request id: ' + request._id;
+			agents.admin.request
+				.post('/api/requests/' + request._id + '/comments')
+				.send({ content: commentString })
+				.end(function (err) {
+					if (err) {
+						return cb(err);
+					}
+
+					agents.admin.request
+						.get('/api/requests/' + request._id)
+						.end(function (err, res) {
+							if (err) {
+								return cb(err);
+							}
+
+							// Initially there is just one example comment
+							assert(res.body.comments.length === 2);
+							var returnedComment = res.body.comments[1];
+							assert(returnedComment.name === agents.admin.user.name);
+							assert(returnedComment.content === commentString);
+							assert.isString(returnedComment.timestamp);
+							assert.isString(returnedComment._id);
+							assert.isObject(returnedComment.user);
+
+							cb();
+						});
+				});
+		}, done);
+	});
 });
 
-describe('POST /profile/:userId?', function () {
+describe('POST /api/users/:userId', function () {
+	var user;
+	before(function () {
+		user = userWithName(users, 'John Doe');
+	});
 
+	it('updates the user object', function (done) {
+		agents.admin.request
+			.post('/api/users/' + user._id)
+			.send({
+				name: 'Test User',
+				email: 'tester@test.com',
+				countryCode: 'US',
+				access: Access.STAFF,
+				phones: [
+					'+14431234567',
+					'+10987654321',
+				],
+			})
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.admin.request
+					.get('/api/users/' + user._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						assert.equal(res.body.name, 'Test User');
+						assert.equal(res.body.email, 'tester@test.com');
+						assert.equal(res.body.countryCode, 'US');
+						assert.equal(res.body.access, Access.STAFF);
+						assert.deepEqual(res.body.phones, [
+							'+14431234567',
+							'+10987654321',
+						]);
+						assert.equal(res.body.country, 'United States');
+						assert.isString(res.body._id);
+						done();
+					});
+			});
+	});
+
+	it('doesn\'t allow volunteers to edit other profiles', function (done) {
+		agents.volunteer.request
+			.post('/api/users/' + user._id)
+			.send({
+				name: 'A New Name',
+			})
+			.expect(401)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.volunteer.request
+					.get('/api/users/' + user._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						// Assert that no changes occurred
+						assert.equal(res.body.name, 'Test User');
+						done();
+					});
+			});
+	});
+
+	it('doesn\'t accept an empty string name/email/phone', function (done) {
+		agents.admin.request
+			.post('/api/users/' + user._id)
+			.send({
+				name: '',
+				email: '',
+				phones: '', // Non-array value
+			})
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.admin.request
+					.get('/api/users/' + user._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						// Assert that no changes occurred
+						assert.equal(res.body.name, 'Test User');
+						assert.equal(res.body.email, 'tester@test.com');
+						assert.deepEqual(res.body.phones, [
+							'+14431234567',
+							'+10987654321',
+						]);
+						done();
+					});
+			});
+	});
+
+	it('doesn\'t enable access vulnerability for volunteers', function (done) {
+		agents.volunteer.request
+			.post('/api/users/' + agents.volunteer.user._id)
+			.send({
+				access: Access.ADMIN,
+			})
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.volunteer.request
+					.get('/api/users/' + agents.volunteer.user._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						// Assert that no changes occurred
+						assert.equal(res.body.access, Access.VOLUNTEER);
+						done();
+					});
+			});
+	});
+
+	it('doesn\'t enable access vulnerability for staff', function (done) {
+		agents.staff.request
+			.post('/api/users/' + agents.staff.user._id)
+			.send({
+				access: Access.ADMIN,
+			})
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.staff.request
+					.get('/api/users/' + agents.staff.user._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						// Assert that no changes occurred
+						assert.equal(res.body.access, Access.STAFF);
+						done();
+					});
+			});
+	});
+
+	it('doesn\'t allow changes to _id', function (done) {
+		agents.admin.request
+			.post('/api/users/' + user._id)
+			.send({
+				_id: '571fdb846ffb798fa940a95d',
+			})
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.admin.request
+					.get('/api/users/' + user._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						// Assert that no changes occurred
+						assert.equal(res.body._id, user._id);
+						done();
+					});
+			});
+	});
+
+	it('doesn\'t accept invalid data', function (done) {
+		agents.admin.request
+			.post('/api/users/' + user._id)
+			.send({
+				countryCode: 'BLAH',
+				email: 'not an email',
+				access: 'I am not a number',
+				phones: [
+					'not a phone number',
+				],
+			})
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.admin.request
+					.get('/api/users/' + user._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						// Assert that no changes occurred
+						assert.equal(res.body.email, 'tester@test.com');
+						assert.equal(res.body.countryCode, 'US');
+						assert.equal(res.body.access, Access.STAFF);
+						assert.deepEqual(res.body.phones, [
+							'+14431234567',
+							'+10987654321',
+						]);
+						assert.equal(res.body.country, 'United States');
+						done();
+					});
+			});
+	});
 });
 
 describe('POST /api/register', function () {
-
+	// @SeanBae
 });
 
 describe('POST /api/login', function () {
-	it('fails with missing credentials');
-	it('fails with incorrect credentials');
-	it('redirects properly on failure');
+	var agent;
+	before(function () {
+		agent = request(app);
+	});
+
+	var loginFailed = function (done) {
+		return function (err, res) {
+			if (err) {
+				return done(err);
+			}
+
+			assert.equal(res.header.location, '/login');
+			done();
+		};
+	};
+
+	it('fails with invalid credentials', function (done) {
+		agent
+			.post('/api/login')
+			.send({ email: 'colink@umd.edu', password: 'not the password' })
+			.expect(302)
+			.end(loginFailed(done));
+	});
+
+	it('fails with missing email and password', function (done) {
+		agent
+			.post('/api/login')
+			.expect(302)
+			.end(loginFailed(done));
+	});
+
+	it('fails with missing password', function (done) {
+		agent
+			.post('/api/login')
+			.send({ email: 'colink@umd.edu' })
+			.expect(302)
+			.end(loginFailed(done));
+	});
+
+	it('fails with missing email', function (done) {
+		agent
+			.post('/api/login')
+			.send({ password: 'test' })
+			.expect(302)
+			.end(loginFailed(done));
+	});
 });
 
 describe('POST /api/logout', function () {
-	it('logs the user out');
+	it('logs the user out', function (done) {
+		agents.volunteer.request
+			.post('/api/logout')
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.volunteer.request
+					.get('/dashboard')
+					.expect(302)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						assert.equal(res.header.location, '/login');
+						done();
+					});
+			});
+	});
+
+	it('fails when the user is not logged in', function (done) {
+		// Note: the volunteer is currently logged out
+		agents.volunteer.request
+			.post('/api/logout')
+			.expect(401)
+			.end(done);
+	});
+
+	after(function (done) {
+		// Log the volunteer back in
+		agents.volunteer.request
+			.post('/api/login')
+			.send({ email: 'ishaan@test.com', password: 'ishaan' })
+			.end(done);
+	});
 });
 
 describe('POST /api/reset', function () {
-
+	// @SeanBae
 });
 
 describe('POST /api/reset/:token', function () {
-
+	// @SeanBae
 });
 
 describe('POST /api/requests', function () {
+	it('validates the request', function (done) {
+		var volunteer = userWithName(users, 'John Doe');
+		agents.admin.request
+			.post('/api/requests')
+			.send({
+				volunteer: volunteer._id,
+				staff: agents.admin.user._id,
+				legs: [
+					{
+						startDate: 20160319,
+						endDate: 20160310, // Invalid start/end dates
+						city: 'Sunnyvale',
+						country: 'US',
+					},
+				],
+				counterpartApproved: true,
+			})
+			.expect(200, {
+				redirect: '/dashboard/submit',
+			})
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
 
+				agents.admin.request
+					.get('/api/requests')
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						assert(res.body.filter(function (request) {
+							return request.volunteer._id == volunteer._id &&
+								request.staff._id == agents.admin.user._id;
+						}).length === 0);
+						done();
+					});
+			});
+	});
+
+	it('creates the new request with the correct data', function (done) {
+		var volunteer = userWithName(users, 'John Doe');
+		agents.admin.request
+			.post('/api/requests')
+			.send({
+				volunteer: volunteer._id,
+				staff: agents.admin.user._id,
+				legs: [
+					{
+						startDate: 20160309,
+						endDate: 20160310,
+						city: 'Sunnyvale',
+						country: 'US',
+					},
+				],
+				counterpartApproved: true,
+			})
+			.expect(200, {
+				redirect: '/dashboard',
+			})
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.admin.request
+					.get('/api/requests')
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						assert(res.body.filter(function (request) {
+							return request.volunteer._id == volunteer._id &&
+								request.staff._id == agents.admin.user._id;
+						}).length > 0);
+						done();
+					});
+			});
+	});
 });
 
 describe('POST /api/requests/:requestId', function () {
 
-});
+	it('validates the request', function (done) {
+		var rs = requestsWithName(requests, 'Ishaan Parikh', 'volunteer');
+		assert(rs.length > 0);
+		var request = rs[0];
+		agents.admin.request
+			.post('/api/requests/' + request._id)
+			.send({
+				legs: [
+					{
+						startDate: 20160319,
+						endDate: 20160310, // Invalid start/end dates
+						city: 'Sunnyvale',
+						country: 'US',
+					},
+				],
+			})
+			.expect(200, {
+				redirect: '/requests/' + request._id + '/edit',
+			})
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
 
-describe('POST /api/access', function () {
+				agents.admin.request
+					.get('/api/requests/' + request._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
 
+						assert(res.body.legs.length > 0);
+						assert(res.body.legs[0].startDate != 20160319);
+						assert(res.body.legs[0].city != 'Sunnyvale');
+						done();
+					});
+			});
+	});
+
+	it('updates the request with the correct data', function (done) {
+		var rs = requestsWithName(requests, 'Ishaan Parikh', 'volunteer');
+		assert(rs.length > 0);
+		var request = rs[0];
+		agents.admin.request
+			.post('/api/requests/' + request._id)
+			.send({
+				volunteer: userWithName(users, 'Ishaan Parikh'),
+				staff: agents.admin.user._id,
+				legs: [
+					{
+						startDate: 20160309,
+						endDate: 20160310,
+						city: 'Washington',
+						country: 'US',
+						addedLegCount: 1,
+					},
+				],
+				counterpartApproved: true,
+			})
+			.expect(200, {
+				redirect: '/requests/' + request._id,
+			})
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.admin.request
+					.get('/api/requests/' + request._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						assert(res.body.legs.length === 1);
+						assert(res.body.legs[0].startDate == 20160309);
+						assert(res.body.legs[0].city == 'Washington');
+						assert(res.body.comments.length === 3);
+						assert(res.body.comments[2].name == 'Administrator');
+						done();
+					});
+			});
+	});
 });
 
 describe('POST /api/users', function () {
+	// Formatted valid/value JSON
+	it('validates the supplied users', function (done) {
+		agents.admin.request
+			.post('/api/users')
+			.send([
+				{
+					// Missing email
+					name: { value: 'Test Account' },
+				},
+			])
+			.expect(200, {
+				redirect: '/users/add',
+			})
+			.end(done);
+	});
 
+	// Waiting on issue #93
+	it('inserts the new users into the database as pending');
 });
 
 describe('POST /api/users/validate', function () {
+	it('returns the validated users', function (done) {
+		agents.admin.request
+			.post('/api/users/validate')
+			.attach('users', __dirname + '/user_tests/test1.csv')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
 
+				assert.isArray(res.body);
+				assert(res.body.length == 3);
+				res.body.forEach(function (user) {
+					assert.isObject(user);
+					assert.isObject(user.name);
+					assert.isString(user.name.value);
+					assert(user.name.valid === true);
+					assert.isObject(user.email);
+					assert.isString(user.email.value);
+					assert(user.email.valid === true);
+					assert.isObject(user.countryCode);
+					assert.isString(user.countryCode.value);
+					assert(user.countryCode.valid === true);
+					assert.isObject(user.country);
+					assert.isString(user.country.value);
+					assert(user.country.valid === true);
+					assert.isObject(user.access);
+					assert.isNumber(user.access.value);
+					assert(user.access.valid === true);
+					assert.isObject(user.phones);
+					assert(user.valid === true);
+				});
+
+				done();
+			});
+	});
+
+	it('invalidates incorrect data', function (done) {
+		agents.admin.request
+			.post('/api/users/validate')
+			.attach('users', __dirname + '/user_tests/test2.csv')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				assert.isArray(res.body);
+				assert(res.body.length == 7);
+
+				// ,noname@test.com,US
+				assert.isObject(res.body[0]);
+				assert.isObject(res.body[0].name);
+				assert(res.body[0].name.value === '');
+				assert(res.body[0].name.valid === false);
+				assert(res.body[0].email.value === 'noname@test.com');
+				assert(res.body[0].email.valid === true);
+				assert(res.body[0].countryCode.value === 'US');
+				assert(res.body[0].countryCode.valid === true);
+				assert(res.body[0].country.value === 'United States');
+				assert(res.body[0].country.valid === true);
+				assert(res.body[0].valid === false);
+
+				// No Email,,US
+				assert.isObject(res.body[1]);
+				assert.isObject(res.body[1].name);
+				assert(res.body[1].name.value === 'No Email');
+				assert(res.body[1].name.valid === true);
+				assert(res.body[1].email.value === '');
+				assert(res.body[1].email.valid === false);
+				assert(res.body[1].countryCode.value === 'US');
+				assert(res.body[1].countryCode.valid === true);
+				assert(res.body[1].country.value === 'United States');
+				assert(res.body[1].country.valid === true);
+				assert(res.body[1].valid === false);
+
+				// No Country,country@country.com,
+				assert.isObject(res.body[2]);
+				assert.isObject(res.body[2].name);
+				assert(res.body[2].name.value === 'No Country');
+				assert(res.body[2].name.valid === true);
+				assert(res.body[2].email.value === 'country@country.com');
+				assert(res.body[2].email.valid === true);
+				assert(res.body[2].countryCode.value === 'US'); // From logged in user
+				assert(res.body[2].countryCode.valid === true);
+				assert(res.body[2].country.value === 'United States');
+				assert(res.body[2].country.valid === true);
+				assert(res.body[2].valid === true);
+
+				// Reused Email, resued@test.com, US
+				assert.isObject(res.body[3]);
+				assert.isObject(res.body[3].name);
+				assert(res.body[3].name.value === 'Reused Email');
+				assert(res.body[3].name.valid === true);
+				assert(res.body[3].email.value === 'reused@test.com');
+				assert(res.body[3].email.valid === true);
+				assert(res.body[3].countryCode.value === 'US');
+				assert(res.body[3].countryCode.valid === true);
+				assert(res.body[3].country.value === 'United States');
+				assert(res.body[3].country.valid === true);
+				assert(res.body[3].valid === true);
+
+				// Reused Email 2, resued@test.com, US
+				assert.isObject(res.body[4]);
+				assert.isObject(res.body[4].name);
+				assert(res.body[4].name.value === 'Reused Email 2');
+				assert(res.body[4].name.valid === true);
+				assert(res.body[4].email.value === 'reused@test.com');
+				assert(res.body[4].email.valid === false);
+				assert(res.body[4].countryCode.value === 'US');
+				assert(res.body[4].countryCode.valid === true);
+				assert(res.body[4].country.value === 'United States');
+				assert(res.body[4].country.valid === true);
+				assert(res.body[4].valid === false);
+
+				// Bad Country, bad@country.com, BLAH
+				assert.isObject(res.body[5]);
+				assert.isObject(res.body[5].name);
+				assert(res.body[5].name.value === 'Bad Country');
+				assert(res.body[5].name.valid === true);
+				assert(res.body[5].email.value === 'bad@country.com');
+				assert(res.body[5].email.valid === true);
+				assert(res.body[5].countryCode.value === 'BLAH');
+				assert(res.body[5].countryCode.valid === false);
+				assert(res.body[5].country.value === '');
+				assert(res.body[5].country.valid === false);
+				assert(res.body[5].valid === false);
+
+				// Not Email, blah, US
+				assert.isObject(res.body[6]);
+				assert.isObject(res.body[6].name);
+				assert(res.body[6].name.value === 'Not Email');
+				assert(res.body[6].name.valid === true);
+				assert(res.body[6].email.value === 'blah');
+				assert(res.body[6].email.valid === false);
+				assert(res.body[6].countryCode.value === 'US');
+				assert(res.body[6].countryCode.valid === true);
+				assert(res.body[6].country.value === 'United States');
+				assert(res.body[6].country.valid === true);
+				assert(res.body[6].valid === false);
+
+				done();
+			});
+	});
 });
 
-describe('POST /api/requests/:requestId/delete', function () {
+describe('DELETE /api/requests/:requestId', function () {
+	it('deletes a given request', function (done) {
+		var rs = requestsWithName(requests, 'Ishaan Parikh', 'volunteer');
+		assert(rs.length > 0);
+		var request = rs[0];
+		agents.volunteer.request
+			.delete('/api/requests/' + request._id)
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
 
+				agents.volunteer.request
+					.get('/api/requests/' + request._id)
+					.expect(200, null)
+					.end(done);
+			});
+	});
+
+	it('non-requestee volunteers can not delete', function (done) {
+		var rs = requestsWithName(requests, 'Jeff Hilnbrand', 'volunteer');
+		assert(rs.length > 0);
+		var request = rs[0];
+		agents.volunteer.request
+			.delete('/api/requests/' + request._id)
+			.expect(401)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.admin.request
+					.get('/api/requests/' + request._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						assert.equal(res.body.volunteer.name, 'Jeff Hilnbrand');
+						done();
+					});
+			});
+	});
 });
 
-describe('POST /api/users', function () {
+describe('DELETE /api/users/:userId', function () {
+	it('deletes a given user', function (done) {
+		var user = userWithName(users, 'John Doe');
+		agents.admin.request
+			.delete('/api/users/' + user._id)
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
 
+				agents.admin.request
+					.get('/api/users/' + user._id)
+					.expect(200, null)
+					.end(done);
+			});
+	});
+
+	it('volunteers cannot delete other volunteers', function (done) {
+		var user = userWithName(users, 'Jeff Hilnbrand');
+		agents.volunteer.request
+			.delete('/api/users/' + user._id)
+			.expect(401)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.admin.request
+					.get('/api/users/' + user._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						assert.equal(res.body.name, 'Jeff Hilnbrand');
+						done();
+					});
+			});
+	});
 });
 
 after(function (done) {

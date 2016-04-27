@@ -56,6 +56,7 @@ module.exports = function (passport) {
 				function (err, token) {
 					if (err) {
 						console.log(err);
+						return done(err);
 					}
 
 					// invalid token

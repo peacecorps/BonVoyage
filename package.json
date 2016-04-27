@@ -6,6 +6,7 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
+    "async": "^2.0.0-rc.3",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "~1.15.0",
     "chai": "^3.5.0",
@@ -18,9 +19,11 @@
     "csvtojson": "^0.5.3",
     "dateonly": "^1.1.0",
     "debug": "^2.2.0",
+    "email-validator": "^1.0.4",
     "express": "~4.13.4",
     "express-passport-logout": "^0.1.0",
     "express-session": "^1.13.0",
+    "google-libphonenumber": "^1.0.18",
     "google-spreadsheet": "^2.0.1",
     "gulp": "^3.9.1",
     "gulp-coverage": "^0.3.38",

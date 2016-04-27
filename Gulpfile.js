@@ -66,25 +66,33 @@
 
 	gulp.task('mocha', ['set-test-env', 'scrape'], function () {
 		return gulp
-			.src('tests/**/*.js', { read: false })
-			.pipe(mocha({ reporter: 'dot' }));
+			.src('tests/*.js', { read: false })
+			.pipe(mocha());
 	});
 
 	gulp.task('mocha-nyan', ['set-test-env', 'scrape'], function () {
 		return gulp
-			.src('tests/**/*.js', { read: false })
+			.src('tests/*.js', { read: false })
 			.pipe(mocha({ reporter: 'nyan' }));
 	});
 
-	gulp.task('pre-coveralls', function () {
-		return gulp.src('routes/**/*.js')
+	gulp.task('pre-coveralls', ['set-test-env'], function () {
+		return gulp.src([
+				'routes/**/*.js',
+				'app.js',
+				'scrapers/**/*.js',
+				'models/**/*.js',
+				'config/passport.js',
+				'config/access.js',
+				'config/countries.js',
+			])
 			.pipe(istanbul())
 			.pipe(istanbul.hookRequire());
 	});
 
 	gulp.task('coverage', ['pre-coveralls'], function () {
 		return gulp
-			.src('tests/**/*.js', { read: false })
+			.src('tests/*.js', { read: false })
 			.pipe(mocha({ reporter: 'spec' }))
 			.pipe(istanbul.writeReports());
 	});

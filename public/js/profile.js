@@ -170,12 +170,9 @@ $(function() {
         if(hasProfileDataChanged(changedData)) {
             $.ajax({
                 method: 'POST',
-                url: '/profile/' + $('input#userId').val(),
+                url: '/api/profile/' + $('input#userId').val(),
                 contentType: "application/x-www-form-urlencoded",
-                data: {
-                    old: userToShow,
-                    new: changedProfileData(),
-                },
+                data: changedProfileData(),
                 dataType: 'json',
                 success: function(response) {
                     if (response && response.redirect) {

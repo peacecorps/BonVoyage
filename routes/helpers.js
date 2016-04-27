@@ -342,3 +342,16 @@ module.exports.fetchWarnings = function (callback) {
 		}
 	});
 };
+
+module.exports.sendJSON = function (res, json) {
+	res.setHeader('content-type', 'application/json');
+	res.end(JSON.stringify(json));
+};
+
+module.exports.sendUnauthorized = function (res) {
+	res.status(401).send('Unauthorized');
+};
+
+module.exports.sendError = function (res, err) {
+	res.status(500).send({ error: err });
+};

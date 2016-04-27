@@ -161,6 +161,8 @@ app.get('/api/requests',
 		needsAccess(Access.VOLUNTEER), api.getRequests);
 app.get('/api/users',
 	needsAccess(Access.VOLUNTEER), api.getUsers);
+app.get('/api/users/:userId',
+	needsAccess(Access.VOLUNTEER), api.handleUserId, api.getUsers);
 app.get('/api/warnings',
 	needsAccess(Access.VOLUNTEER), api.getWarnings);
 
@@ -170,8 +172,6 @@ app.post('/api/requests/:requestId/deny',
 	needsAccess(Access.STAFF), api.handleRequestId, api.postDeny);
 app.post('/api/requests/:requestId/comments',
 	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.postComments);
-app.post('/profile/:userId?',
-	needsAccess(Access.VOLUNTEER), api.modifyProfile);
 
 app.post('/api/register', passport.authenticate('local-signup', {
 	successRedirect: '/profile',
@@ -184,24 +184,24 @@ app.post('/api/login', passport.authenticate('local-login', {
 	failureFlash: true,
 }));
 app.post('/api/logout',
-	needsAccess(Access.VOLUNTEER), api.logout);
+	needsAccess(Access.VOLUNTEER), api.postLogout);
 app.post('/api/reset', api.reset);
 app.post('/api/reset/:token', api.resetValidator);
 app.post('/api/requests',
 	needsAccess(Access.VOLUNTEER), api.postRequest);
 app.post('/api/requests/:requestId',
 	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.postUpdatedRequest);
-app.post('/api/access',
-	needsAccess(Access.STAFF), api.modifyAccess);
 app.post('/api/users',
 	needsAccess(Access.STAFF), api.postUsers);
 app.post('/api/users/validate',
 	needsAccess(Access.STAFF), upload.single('users'), api.validateUsers);
+app.post('/api/users/:userId',
+	needsAccess(Access.VOLUNTEER), api.handleUserId, api.postUpdatedUser);
 
-app.delete('/api/requests/:requestId/delete',
+app.delete('/api/requests/:requestId',
 	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.deleteRequest);
-app.delete('/api/users',
-	needsAccess(Access.VOLUNTEER), api.deleteUser);
+app.delete('/api/users/:userId',
+	needsAccess(Access.VOLUNTEER), api.handleUserId, api.deleteUser);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
