@@ -345,7 +345,7 @@ module.exports.fetchWarnings = function (callback) {
 
 module.exports.sendJSON = function (res, json) {
 	res.setHeader('content-type', 'application/json');
-	res.end(JSON.stringify(json));
+	res.send(JSON.stringify(json));
 };
 
 module.exports.sendUnauthorized = function (res) {

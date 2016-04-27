@@ -78,7 +78,16 @@ $(function() {
         var data = {};
         if(ifChanged($('input#name'))) { data.name = ifChanged($('input#name')); }
         if(ifChanged($('input#email'))) { data.email = ifChanged($('input#email')); }
-        if(ifPhonesChanged()) { data.phones = getPhoneNumbers(); }
+        if(ifPhonesChanged()) {
+          var numbers = getPhoneNumbers();
+          // yuck, we may want to return to JSON
+          // see: https://bugs.jquery.com/ticket/6481
+          if(numbers.length === 0) {
+            data.phones = "empty";
+          } else {
+            data.phones = numbers;
+          }
+        }
         if(ifChanged($('select#country'))) { data.countryCode = ifSelectizeChanged($('select#country')); }
         return data;
     }
@@ -165,25 +174,26 @@ $(function() {
     $select.selectize.on('change', toggleDisabledSubmissionButton);
 
     // Event for when the form is submitted
-    $('form#profile').on('submit', function() {
-        var changedData = changedProfileData();
-        if(hasProfileDataChanged(changedData)) {
-            $.ajax({
-                method: 'POST',
-                url: '/api/profile/' + $('input#userId').val(),
-                contentType: "application/x-www-form-urlencoded",
-                data: changedProfileData(),
-                dataType: 'json',
-                success: function(response) {
-                    if (response && response.redirect) {
-                        window.location.href = response.redirect;
-                    }
-                }
-            });
+    $('form#profile').on('submit', function(e) {
+      e.preventDefault();
+      var changedData = changedProfileData();
+      if(hasProfileDataChanged(changedData)) {
+          $.ajax({
+              method: 'POST',
+              url: '/api/users/' + $('input#userId').val(),
+              contentType: "application/x-www-form-urlencoded",
+              data: changedData,
+              success: function(response) {
+                  if (response && response.redirect) {
+                      window.location.href = response.redirect;
+                  }
+              }
+          });
         }
     });
 
-    $('#deleteAccount').on('click', function() {
+    $('#deleteAccount').on('click', function(e) {
+      e.preventDefault();
       var id = $('#userId').val();
       var loggedInUserId = $('#loggedInUserId').val();
       var name = $('#headerName').text();
@@ -197,11 +207,7 @@ $(function() {
   			$.ajax({
   				method: 'DELETE',
           contentType: "application/x-www-form-urlencoded",
-  				data: {
-            userId: id,
-          },
-  				url: '/api/users',
-  				dataType: 'json',
+  				url: '/api/users/' + id,
   				success: function(response) {
   					if (response && response.redirect) {
               window.location.href = response.redirect;

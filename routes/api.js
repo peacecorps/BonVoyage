@@ -990,7 +990,8 @@ router.postUpdatedUser = function (req, res) {
 			value: ifDefined(req.body.access, req.paramUser.access),
 		},
 		phones: {
-			value: ifDefined(req.body.phones, req.paramUser.phones),
+			value: req.body.phones === 'empty' ? [] :
+				ifDefined(req.body.phones, req.paramUser.phones),
 		},
 	};
 

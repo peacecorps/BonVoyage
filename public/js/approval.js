@@ -30,7 +30,7 @@ $(function() {
             data: {content: data},
             success: function(response, textStatus, jqXHR) {
                 if (response) {
-                	window.location.href = JSON.parse(response).redirect;
+                	window.location.href = response.redirect;
                 }
             }
         });
@@ -43,8 +43,8 @@ $(function() {
             contentType: "application/x-www-form-urlencoded",
             url: url,
             success: function(response, textStatus, jqXHR) {
-                if (response) {
-                	window.location.href = JSON.parse(response).redirect;
+                if (response && response.redirect) {
+                	window.location.href = response.redirect;
                 }
             }
         });
@@ -56,23 +56,23 @@ $(function() {
             method: "POST",
             contentType: "application/x-www-form-urlencoded",
             url: url,
-            success: function(response, textStatus, jqXHR) {
-                if (response) {
-                    window.location.href = JSON.parse(response).redirect;
+            success: function(response) {
+                if (response && response.redirect) {
+                    window.location.href = response.redirect;
                 }
             }
         });
     });
 
     $('#request-delete-btn').click(function() {
-    	var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/delete'
+    	var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/'));
         $.ajax({
             method: "DELETE",
             contentType: "application/x-www-form-urlencoded",
             url: url,
-            success: function(response, textStatus, jqXHR) {
-                if (response) {
-                    window.location.href = JSON.parse(response).redirect;
+            success: function(response) {
+                if (response && response.redirect) {
+                    window.location.href = response.redirect;
                 }
             }
         });
