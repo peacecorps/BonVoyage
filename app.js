@@ -219,6 +219,7 @@ if (app.get('env') === 'development') {
 			error: err,
 			hideLogout: true,
 			returnButton: process.env.BONVOYAGE_DOMAIN,
+			stackTrace: true,
 		});
 	});
 }
@@ -233,6 +234,7 @@ app.use(function (err, req, res, next) {
 		error: {},
 		hideLogout: true,
 		returnButton: process.env.BONVOYAGE_DOMAIN,
+		stackTrace: false,
 	});
 });
 
