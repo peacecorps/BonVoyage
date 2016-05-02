@@ -1,7 +1,10 @@
 extends layout
 
 block content
-  h1= message
-  h2 An error has occurred.
-  h2 Code: #{(error.status ? error.status : "None")}
-  pre #{error.stack}
+  .row
+    div.errorContainer(style="max-width: 640px; margin: 0 auto; padding: 20px;")
+      h1(style="text-align: center;") Oops. Something is wrong.
+      h2 #{message}: #{(error.status ? error.status : "None")}
+      a.btn.btn-lg.btn-default.btn-block(href=returnButton, style="margin: 30px 0 20px 0") Return to BonVoyage
+    .col-xs-12.col-md-offset-1.col-md-10
+      pre #{error.stack}
