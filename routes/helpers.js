@@ -217,7 +217,7 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 	}
 };
 
-module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
+var sendTemplateEmail = function (sendFrom, sendTo, subject,
 	template, map, callback) {
 
 	var html = jade.renderFile(path.join(__dirname, '../email',
@@ -275,33 +275,9 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 	}
 };
 
-module.exports.postComment = function (
-	requestId, name, userId, commentMessage, cb) {
-	Request.findByIdAndUpdate(requestId, {
-		$push: {
-			comments: {
-				$each:[
-					{
-						name: name,
-						user: userId,
-						content: commentMessage,
-					},
-				],
-			},
-		},
-	}, function (err) {
-		cb(err);
-	});
-};
+module.exports.sendTemplateEmail = sendTemplateEmail;
 
-module.exports.formatDateOnly = function (date) {
-	var dateonly = new DateOnly(parseInt(date + ''));
-	var formatteddate = moment(dateonly.toDate()).format('MMM DD, YYYY');
-	console.log(formatteddate);
-	return formatteddate;
-};
-
-module.exports.sendSMS = function (sendTo, body, callback) {
+var sendSMS = function (sendTo, body, callback) {
 	var data = {
 		to: sendTo,
 		from: process.env.BONVOYAGE_NUMBER,
@@ -331,6 +307,75 @@ module.exports.sendSMS = function (sendTo, body, callback) {
 			}
 		});
 	}
+};
+
+module.exports.sendSMS = sendSMS;
+
+module.exports.postComment = function (
+	requestId, name, userId, commentMessage, cb) {
+	Request.findByIdAndUpdate(requestId, {
+		$push: {
+			comments: {
+				$each:[
+					{
+						name: name,
+						user: userId,
+						content: commentMessage,
+					},
+				],
+			},
+		},
+	}, function (err) {
+		cb(err);
+	});
+
+	// send notifications after comments are posted
+	Request.findById(requestId, function (err, updatedRequest) {
+		var staffId = updatedRequest.staff;
+		var volunteerId = updatedRequest.volunteer;
+
+		User.findById(volunteerId, function (err, volunteer) {
+			if (err) {
+				console.log(err);
+				cb(err);
+			}
+
+			// notify the volunteer
+			if (volunteer.phones) {
+				for (var i = 0; i < volunteer.phones.length; i++) {
+					sendSMS(volunteer.phones[i], 'Your BonVoyage ' +
+						'leave request has been modified. Please review the' +
+						' details at ' + process.env.BONVOYAGE_DOMAIN +
+						'/requests/' + requestId);
+				}
+			}
+
+			// notify the staff
+			User.findById(staffId, function (err, staff) {
+				if (err) {
+					console.log(err);
+					cb(err);
+				}
+
+				if (staff.phones) {
+					for (var i = 0; i < staff.phones.length; i++) {
+						sendSMS(staff.phones[i], 'A BonVoyage ' +
+							'leave request for ' + volunteer.name +
+							' has been updated. Please review the ' +
+							'details at ' + process.env.BONVOYAGE_DOMAIN +
+							'/requests/' + requestId);
+					}
+				}
+			});
+		});
+	});
+};
+
+module.exports.formatDateOnly = function (date) {
+	var dateonly = new DateOnly(parseInt(date + ''));
+	var formatteddate = moment(dateonly.toDate()).format('MMM DD, YYYY');
+	console.log(formatteddate);
+	return formatteddate;
 };
 
 module.exports.fetchWarnings = function (callback) {
