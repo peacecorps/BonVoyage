@@ -97,5 +97,7 @@ block content
         //-         +useritem(user)
 
 block scripts
-    script(src='/js/datatables.js')
-    script(src='/js/users.js')
+  script.
+    var currentUser = !{JSON.stringify(user)};
+  script(src='/js/datatables.js')
+  script(src='/js/users.js')

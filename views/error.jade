@@ -8,6 +8,8 @@ block content
     div.errorContainer
       h1 Oops. Something has gone wrong.
       h3 #{message}
+      script.
+        console.warn(!{JSON.stringify(message)});
       a.btn.btn-lg.btn-default.btn-block(href='/') Return to BonVoyage
     if error && error.stack
       .col-xs-12.col-md-offset-1.col-md-10
