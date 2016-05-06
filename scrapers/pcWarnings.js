@@ -3,13 +3,8 @@
 
 require(__dirname + '/../setup');
 
-var fs = require('fs');
 var storeWarnings = require(__dirname + '/storeWarnings');
-
-var countryFilePath = __dirname + '/../public/data/countryList.json';
-var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
-var countriesDictionary = JSON.parse(countryListFile);
-var allCountryCodes = Object.keys(countriesDictionary);
+var countries = require(__dirname + '/../config/countries');
 
 var GoogleSpreadsheet = require('google-spreadsheet');
 var sheet = new GoogleSpreadsheet(process.env.PC_SPREADSHEET_KEY);
@@ -22,7 +17,7 @@ function isValid(row) {
 	return	isDef(row.country) &&
 					isDef(row.type) &&
 					isDef(row.message) &&
-					allCountryCodes.indexOf(row.country.toUpperCase()) > -1 &&
+					countries.codeList.indexOf(row.country.toUpperCase()) > -1 &&
 					['Notice', 'Travel Plan', 'Restricted'].indexOf(row.type) > -1;
 }
 

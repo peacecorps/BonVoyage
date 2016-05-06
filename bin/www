@@ -7,6 +7,8 @@
 
 require(__dirname + '/../setup');
 
+var mongoConnection = require(__dirname + '/../config/mongoConnection');
+
 /**
  * Module dependencies.
  */
@@ -40,7 +42,8 @@ function normalizePort(val) {
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3000');
+var port = normalizePort(process.env.PORT ||
+	mongoConnection.getEnvironmentPort());
 app.set('port', port);
 
 /**
@@ -48,7 +51,6 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
-
 /**
  * Event listener for HTTP server "error" event.
  */
@@ -94,3 +96,6 @@ function onListening() {
 server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+
+// Export the app and server for testing purposes
+module.exports = { app: app, server: server };

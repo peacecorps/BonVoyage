@@ -1,3 +1,5 @@
+/* jshint node: true */
+
 (function () {
 	'use strict';
 
@@ -6,6 +8,10 @@
 	var jshint = require('gulp-jshint');
 	var jscs = require('gulp-jscs');
 	var shell = require('gulp-shell');
+	var mocha = require('gulp-mocha');
+	var istanbul = require('gulp-istanbul');
+	var coveralls = require('gulp-coveralls');
+	var env = require('gulp-env');
 
 	gulp.task('lint', function () {
 		return gulp.src([
@@ -46,7 +52,58 @@
 		'node scrapers/usWarnings.js',
 	]));
 
+	gulp.task('build_db', shell.task([
+		'node build_scripts/build.js',
+	]));
+
+	gulp.task('set-test-env', function () {
+		env({
+			vars: {
+				NODE_ENV: 'test',
+			},
+		});
+	});
+
+	gulp.task('mocha', ['set-test-env', 'scrape'], function () {
+		return gulp
+			.src('tests/*.js', { read: false })
+			.pipe(mocha());
+	});
+
+	gulp.task('mocha-nyan', ['set-test-env', 'scrape'], function () {
+		return gulp
+			.src('tests/*.js', { read: false })
+			.pipe(mocha({ reporter: 'nyan' }));
+	});
+
+	gulp.task('pre-coveralls', ['set-test-env'], function () {
+		return gulp.src([
+				'routes/**/*.js',
+				'app.js',
+				'scrapers/**/*.js',
+				'models/**/*.js',
+				'config/passport.js',
+				'config/access.js',
+				'config/countries.js',
+			])
+			.pipe(istanbul())
+			.pipe(istanbul.hookRequire());
+	});
+
+	gulp.task('coverage', ['pre-coveralls'], function () {
+		return gulp
+			.src('tests/*.js', { read: false })
+			.pipe(mocha({ reporter: 'spec' }))
+			.pipe(istanbul.writeReports());
+	});
+
+	gulp.task('coveralls', ['coverage'], function () {
+		return gulp
+			.src(__dirname + '/coverage/lcov.info')
+			.pipe(coveralls());
+	});
+
 	gulp.task('default', ['lint', 'scss', 'scss:watch']);
-	gulp.task('test', ['lint', 'scss']);
+	gulp.task('ci', ['lint', 'scss', 'mocha']);
 	gulp.task('deploy', ['lint', 'scss', 'scrape']);
 })();

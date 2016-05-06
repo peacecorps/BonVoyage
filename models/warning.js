@@ -3,21 +3,16 @@
 
 var mongoose = require('mongoose');
 var DateOnly = require('mongoose-dateonly')(mongoose);
-var fs = require('fs');
 
 // var path = require('path');
 var validate = require('mongoose-validator');
-
-var countryFilePath = __dirname + '/../public/data/countryList.json';
-var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
-var countriesDictionary = JSON.parse(countryListFile);
-var allCountryCodes = Object.keys(countriesDictionary);
+var countries = require(__dirname + '/../config/countries');
 
 var warningSchema = mongoose.Schema({
 	countryCode: {
 		type: String,
 		required: true,
-		enum: allCountryCodes,
+		enum: countries.codeList,
 	},
 	type: {
 		type: String,

@@ -1,0 +1,13 @@
+{
+  "verbose": true,
+	"watch": [
+		"app.js",
+		"routes",
+		"config",
+		"bin",
+		"models"
+	],
+  "env": {
+    "NODE_ENV": "development"
+  }
+}

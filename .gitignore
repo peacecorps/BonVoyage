@@ -56,3 +56,11 @@ config/environment.js
 
 # User Data Uploads
 uploads
+
+# Coveralls
+.coverrun
+.coverdata
+tests/debug/**/*
+tests/reports/**/*
+.coveralls.yml
+tests/**/*.log

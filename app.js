@@ -3,10 +3,13 @@
 
 var express = require('express');
 var path = require('path');
+var fs = require('fs');
+var morganLog = fs.createWriteStream(__dirname + '/tests/tests.log');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var mongoConnection = require(__dirname + '/config/mongoConnection');
 var views = require(__dirname + '/routes/views');
 var api = require(__dirname + '/routes/api');
 var app = express();
@@ -36,8 +39,14 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
+
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
+if (process.env.NODE_ENV == 'test') {
+	app.use(logger('dev', { stream: morganLog }));
+} else {
+	app.use(logger('dev'));
+}
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
 	extended: true,
@@ -46,11 +55,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(flash());
 
-mongoose.connect(process.env.MONGO_CONNECTION_STRING);
+mongoose.connect(mongoConnection.getConnectionString());
 mongoose.connection.on('error', function (err) {
-	if (err) {
-		console.log(err);
-	}
+	console.log(err);
 });
 
 var MongoStore = require('connect-mongo')(session);
@@ -95,16 +102,6 @@ app.use(function (req, res, next) {
 // pass passport for configuration
 require(__dirname + '/config/passport.js')(passport);
 
-// middleware to ensure the user is authenticated.
-// If not, redirect to login page.
-function isLoggedIn(req, res, next) {
-	if (req.isAuthenticated()) {
-		return next();
-	} else {
-		res.redirect('/login');
-	}
-}
-
 // middleware to redirect the user to the dashboard if they already logged in
 function isNotLoggedIn(req, res, next) {
 	if (req.isAuthenticated()) {
@@ -112,41 +109,46 @@ function isNotLoggedIn(req, res, next) {
 	} else {
 		return next();
 	}
+
 }
 
 // middleware to check if the user is at least that access level
-function needsAccess(access) {
+function needsAccess(access, doRedirect) {
+	doRedirect = doRedirect || false;
 	return function (req, res, next) {
 		if (req.user && req.user.access >= access) {
 			next();
 		} else {
-			res.status(401).send('Unauthorized');
+			if (doRedirect) {
+				req.flash('dashboardFlash', {
+					text: 'You do not have access to this page.',
+					class: 'danger',
+				});
+				res.redirect('/dashboard');
+			} else {
+				res.status(401).send('Unauthorized');
+			}
 		}
 	};
 }
-
-// Route Parameters
-app.param('requestId', api.handleRequestId);
 
 // Render Views
 app.get('/', views.index);
 app.get('/login', isNotLoggedIn, views.renderLogin);
 app.get('/register/:email/:token', isNotLoggedIn, views.renderRegister);
 app.get('/reset', isNotLoggedIn, views.renderReset);
-app.get('/reset/:token', views.renderValidReset);
-app.get('/dashboard', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderDashboard);
-app.get('/dashboard/submit', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderSubform);
+app.get('/reset/:token', isNotLoggedIn, views.renderValidReset);
+app.get('/dashboard', ensureLoggedIn('/login'), views.renderDashboard);
+app.get('/dashboard/submit', ensureLoggedIn('/login'), views.renderSubform);
 app.get('/requests/:requestId', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderApproval);
+	api.handleRequestId, views.renderApproval);
 app.get('/requests/:requestId/edit', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderEditRequest);
-app.get('/users', ensureLoggedIn('/login'), views.renderUsers);
+	api.handleRequestId, views.renderEditRequest);
+app.get('/users', ensureLoggedIn('/login'),
+	needsAccess(Access.STAFF, true), views.renderUsers);
 app.get('/users/add', ensureLoggedIn('/login'),
-	needsAccess(Access.STAFF), views.renderAddUsers);
-app.get('/profile/:userId?', ensureLoggedIn('/login'),
-	needsAccess(Access.VOLUNTEER), views.renderProfile);
+	needsAccess(Access.STAFF, true), views.renderAddUsers);
+app.get('/profile/:userId?', ensureLoggedIn('/login'), views.renderProfile);
 
 app.get('/.well-known/acme-challenge/' +
 	'AC86a1oSUu_K8DzELD-hynBDBOtms4LDqHPFXK-bQo0', function (req, res) {
@@ -155,21 +157,22 @@ app.get('/.well-known/acme-challenge/' +
 });
 
 // API
-app.get('/api/requests', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.getRequests);
-app.get('/api/users', isLoggedIn,
+app.get('/api/requests/:requestId',
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.getRequests);
+app.get('/api/requests',
+		needsAccess(Access.VOLUNTEER), api.getRequests);
+app.get('/api/users',
 	needsAccess(Access.VOLUNTEER), api.getUsers);
-app.get('/api/warnings', isLoggedIn,
+app.get('/api/users/:userId',
+	needsAccess(Access.VOLUNTEER), api.handleUserId, api.getUsers);
+app.get('/api/warnings',
 	needsAccess(Access.VOLUNTEER), api.getWarnings);
-
-app.post('/api/requests/:requestId/approve', isLoggedIn,
-	needsAccess(Access.STAFF), api.postApprove);
-app.post('/api/requests/:requestId/deny', isLoggedIn,
-	needsAccess(Access.STAFF), api.postDeny);
-app.post('/api/requests/:requestId/comments', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.postComments);
-app.post('/profile/:userId?', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.modifyProfile);
+app.post('/api/requests/:requestId/approve',
+	needsAccess(Access.STAFF), api.handleRequestId, api.postApprove);
+app.post('/api/requests/:requestId/deny',
+	needsAccess(Access.STAFF), api.handleRequestId, api.postDeny);
+app.post('/api/requests/:requestId/comments',
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.postComments);
 
 app.post('/api/register', passport.authenticate('local-signup', {
 	successRedirect: '/profile',
@@ -181,23 +184,25 @@ app.post('/api/login', passport.authenticate('local-login', {
 	failureRedirect: '/login',
 	failureFlash: true,
 }));
-app.post('/api/logout', api.logout);
+app.post('/api/logout',
+	needsAccess(Access.VOLUNTEER), api.postLogout);
 app.post('/api/reset', api.reset);
 app.post('/api/reset/:token', api.resetValidator);
-app.post('/api/requests', isLoggedIn,
+app.post('/api/requests',
 	needsAccess(Access.VOLUNTEER), api.postRequest);
-app.post('/api/requests/:requestId', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.postUpdatedRequest);
-app.post('/api/access', isLoggedIn,
-	needsAccess(Access.STAFF), api.modifyAccess);
-app.post('/api/users', isLoggedIn,
+app.post('/api/requests/:requestId',
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.postUpdatedRequest);
+app.post('/api/users',
 	needsAccess(Access.STAFF), api.postUsers);
-app.post('/api/users/validate', isLoggedIn,
+app.post('/api/users/validate',
 	needsAccess(Access.STAFF), upload.single('users'), api.validateUsers);
+app.post('/api/users/:userId',
+	needsAccess(Access.VOLUNTEER), api.handleUserId, api.postUpdatedUser);
 
-app.delete('/api/requests/:requestId/delete', isLoggedIn,
-	needsAccess(Access.VOLUNTEER), api.deleteRequest);
-app.delete('/api/users', isLoggedIn, api.deleteUser);
+app.delete('/api/requests/:requestId',
+	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.deleteRequest);
+app.delete('/api/users/:userId',
+	needsAccess(Access.VOLUNTEER), api.handleUserId, api.deleteUser);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
@@ -227,6 +232,7 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function (err, req, res, next) {
+
 	//jshint unused: false
 	res.status(err.status || 500);
 	res.render('error', {

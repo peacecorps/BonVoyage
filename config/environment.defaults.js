@@ -9,9 +9,19 @@
  */
 
 module.exports = {
-	NODE_ENV: 'development',
 	SESSION_SECRET: 'drtwxroGWs9f93AQWbALN8Q7cvgNe4',
-	MONGO_CONNECTION_STRING: 'mongodb://localhost:27017/bonvoyage',
+
+	// For development
+	MONGO_DEV_CONNECTION_STRING: 'mongodb://localhost:27017/bonvoyage',
+	DEV_PORT: '3000',
+
+	// For production
+	MONGO_PROD_CONNECTION_STRING: '',
+	PROD_PORT: '3000',
+
+	// For testing
+	MONGO_TEST_CONNECTION_STRING: 'mongodb://localhost:27017/bonvoyage_tests',
+	TEST_PORT: '3001',
 
 	// The Google Spreadsheet key where the Peace Corps Leave Requests can be found
 	PC_SPREADSHEET_KEY: '',

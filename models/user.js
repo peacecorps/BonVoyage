@@ -3,14 +3,9 @@
 
 var mongoose = require('mongoose');
 var bcrypt = require('bcrypt-nodejs');
-var fs = require('fs');
 
 var Access = require(__dirname + '/../config/access');
-
-var countryFilePath = __dirname + '/../public/data/countryList.json';
-var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
-var countriesDictionary = JSON.parse(countryListFile);
-var allCountryCodes = Object.keys(countriesDictionary);
+var countries = require(__dirname + '/../config/countries');
 
 var userSchema = mongoose.Schema({
 	name: {
@@ -36,13 +31,12 @@ var userSchema = mongoose.Schema({
 	countryCode: {
 		type: String,
 		required: true,
-		enum: allCountryCodes,
+		enum: countries.codeList,
 	},
 });
 
 var presave = function (callback) {
 	var _this = this;
-	console.log('presave');
 	bcrypt.genSalt(10, function (err, salt) {
 		// new passwords are set to the hash and then overwritten below
 		var plainTextPassword = _this.hash;

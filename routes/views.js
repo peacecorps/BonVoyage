@@ -7,7 +7,11 @@ var Access = require(__dirname + '/../config/access');
 var helpers = require(__dirname + '/helpers');
 
 router.index = function (req, res) {
-	res.redirect('/login');
+	if (req.isAuthenticated()) {
+		res.redirect('/dashboard');
+	} else {
+		res.redirect('/login');
+	}
 };
 
 router.renderLogin = function (req, res) {
@@ -271,9 +275,6 @@ router.renderUsers = function (req, res) {
 				volunteers: volunteers,
 			});
 		});
-	} else {
-		req.flash({ text: 'You do not have access to this page.', class: 'danger' });
-		res.redirect('/dashboard');
 	}
 };
 
