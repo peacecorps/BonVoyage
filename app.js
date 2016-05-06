@@ -213,6 +213,14 @@ app.use(function (req, res, next) {
 
 /* error handlers */
 
+function getErrorMessage(err) {
+	if (err.status === 404) {
+		return 'The page that you requested could not be found.';
+	} else {
+		return err.message;
+	}
+}
+
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
@@ -220,11 +228,9 @@ if (app.get('env') === 'development') {
 		// jshint unused: false
 		res.status(err.status || 500);
 		res.render('error', {
-			message: err.message,
+			message: getErrorMessage(err),
 			error: err,
 			hideLogout: true,
-			returnButton: process.env.BONVOYAGE_DOMAIN,
-			stackTrace: true,
 		});
 	});
 }
@@ -232,15 +238,11 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function (err, req, res, next) {
-
 	//jshint unused: false
 	res.status(err.status || 500);
 	res.render('error', {
-		message: err.message,
-		error: {},
+		message: getErrorMessage(err),
 		hideLogout: true,
-		returnButton: process.env.BONVOYAGE_DOMAIN,
-		stackTrace: false,
 	});
 });
 
