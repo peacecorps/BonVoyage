@@ -120,7 +120,7 @@ $(function() {
 
     function addPhoneInput(phoneNumber) {
       // input.form-control#phone(type='tel', value=(userToShow.phone ? userToShow.phone : ''), data-default=(userToShow.phone ? userToShow.phone : ''), placeholder='(123) 456 7890')
-      $('#phoneNumbers').append('<div class="phoneNumberWrapper"><div class="col-xs-9 phoneDiv"><input class="form-control phoneNumber" type="tel" placeholder="(123) 456 7890"></div><div class="col-xs-3 deletePhoneDiv"><button class="btn-override btn btn-danger removePhone" type="button">Delete</button></div></div>');
+      $('#phoneNumbers').append('<div class="phoneNumberWrapper"><div class="col-xs-9 phoneDiv"><input class="form-control phoneNumber" type="tel" placeholder="(123) 456 7890" ' + ($('#disableProfile').val() === 'true' ? 'disabled' : '') + '></div><div class="col-xs-3 deletePhoneDiv"><button class="btn-override btn btn-danger removePhone" type="button">Delete</button></div></div>');
       var newPhoneInput = $('#phoneNumbers').find('.phoneNumber').last();
       newPhoneInput.intlTelInput({
           utilsScript: '/js/utils.js',

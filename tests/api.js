@@ -36,7 +36,7 @@ var endpoints = {
 		{ url: '/requests/:requestId', access: Access.VOLUNTEER },
 		{ url: '/requests/:requestId/edit', access: Access.VOLUNTEER },
 		{ url: '/users', access: Access.STAFF },
-		{ url: '/users/add', access: Access.STAFF },
+		{ url: '/users/add', access: Access.ADMIN },
 		{ url: '/profile', access: Access.VOLUNTEER },
 		{ url: '/profile/:userId', access: Access.VOLUNTEER },
 	],
@@ -53,8 +53,8 @@ var endpoints = {
 			{ url: '/api/users/:userId', access: Access.VOLUNTEER },
 			{ url: '/api/requests', access: Access.VOLUNTEER },
 			{ url: '/api/requests/:requestId', access: Access.VOLUNTEER },
-			{ url: '/api/users', access: Access.STAFF },
-			{ url: '/api/users/validate', access: Access.STAFF },
+			{ url: '/api/users', access: Access.ADMIN },
+			{ url: '/api/users/validate', access: Access.ADMIN },
 		],
 		DELETE: [
 			{ url: '/api/requests/:requestId', access: Access.VOLUNTEER },
@@ -431,7 +431,7 @@ describe('GET /api/requests/:requestId', function () {
 });
 
 describe('GET /api/users', function () {
-	var verifyReturnedUserAccess = function (query, permittedAccess, done) {
+	var verifyReturnedUserAccess = function (query, permittedAccess, country, done) {
 		agents.admin.request
 			.get(query)
 			.expect(200)
@@ -470,6 +470,12 @@ describe('GET /api/users', function () {
 					assert(userList.filter(function (u) {
 						return u.access === Access.ADMIN;
 					}).length === 0);
+				}
+
+				if (country !== undefined) {
+					assert(userList.filter(function (u) {
+						return u.countryCode === country;
+					}).length === userList.length);
 				}
 
 				done();
@@ -563,52 +569,72 @@ describe('GET /api/users', function () {
 
 	it('minAccess filters to just admins', function (done) {
 		verifyReturnedUserAccess('/api/users?minAccess=2',
-			[Access.ADMIN], done);
+			[Access.ADMIN], undefined, done);
 	});
 
 	it('minAccess filters to just admins and staff', function (done) {
 		verifyReturnedUserAccess('/api/users?minAccess=1',
-			[Access.STAFF, Access.ADMIN], done);
+			[Access.STAFF, Access.ADMIN], undefined, done);
 	});
 
 	it('minAccess does not filter when zero', function (done) {
 		verifyReturnedUserAccess('/api/users?minAccess=0',
-			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], done);
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], undefined, done);
 	});
 
 	it('minAccess does not filter when < zero', function (done) {
 		verifyReturnedUserAccess('/api/users?minAccess=-1',
-			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], done);
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], undefined, done);
 	});
 
 	it('minAccess returns nothing when > admin', function (done) {
 		verifyReturnedUserAccess('/api/users?minAccess=3',
-			[], done);
+			[], undefined, done);
 	});
 
 	it('maxAccess filters to just volunteers', function (done) {
 		verifyReturnedUserAccess('/api/users?maxAccess=0',
-			[Access.VOLUNTEER], done);
+			[Access.VOLUNTEER], undefined, done);
 	});
 
 	it('maxAccess filters to just volunteers and staff', function (done) {
 		verifyReturnedUserAccess('/api/users?maxAccess=1',
-			[Access.STAFF, Access.VOLUNTEER], done);
+			[Access.STAFF, Access.VOLUNTEER], undefined, done);
 	});
 
 	it('maxAccess does not filter when = admin', function (done) {
 		verifyReturnedUserAccess('/api/users?maxAccess=2',
-			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], done);
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], undefined, done);
 	});
 
 	it('maxAccess does not filter when > admin', function (done) {
 		verifyReturnedUserAccess('/api/users?maxAccess=3',
-			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], done);
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], undefined, done);
 	});
 
 	it('maxAccess returns nothing when < zero', function (done) {
 		verifyReturnedUserAccess('/api/users?maxAccess=-1',
-			[], done);
+			[], undefined, done);
+	});
+
+	it('country returns all when invalid', function (done) {
+		verifyReturnedUserAccess('/api/users?country=HelloWorld',
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], undefined, done);
+	});
+
+	it('country returns properly when set to country code', function (done) {
+		verifyReturnedUserAccess('/api/users?country=US',
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], 'US', done);
+	});
+
+	it('country returns properly when set to country', function (done) {
+		verifyReturnedUserAccess('/api/users?country=United%20States',
+			[Access.VOLUNTEER, Access.STAFF, Access.ADMIN], 'US', done);
+	});
+
+	it('country and maxAccess returns properly when set to a country', function (done) {
+		verifyReturnedUserAccess('/api/users?country=US&maxAccess=1',
+			[Access.VOLUNTEER, Access.STAFF], 'US', done);
 	});
 });
 
@@ -830,6 +856,33 @@ describe('POST /api/users/:userId', function () {
 				}
 
 				agents.volunteer.request
+					.get('/api/users/' + user._id)
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							return done(err);
+						}
+
+						// Assert that no changes occurred
+						assert.equal(res.body.name, 'Test User');
+						done();
+					});
+			});
+	});
+
+	it('doesn\'t allow staff to edit other profiles', function (done) {
+		agents.staff.request
+			.post('/api/users/' + user._id)
+			.send({
+				name: 'A New Name',
+			})
+			.expect(401)
+			.end(function (err) {
+				if (err) {
+					return done(err);
+				}
+
+				agents.staff.request
 					.get('/api/users/' + user._id)
 					.expect(200)
 					.end(function (err, res) {

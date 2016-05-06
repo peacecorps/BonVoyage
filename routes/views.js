@@ -86,6 +86,9 @@ router.renderSubform = function (req, res) {
 	];
 	if (req.user.access >= Access.STAFF) {
 		links.push({ text: 'Users', href: '/users' });
+	}
+
+	if (req.user.access == Access.ADMIN) {
 		links.push({ text: 'Add Users', href: '/users/add' });
 	}
 
@@ -141,6 +144,9 @@ router.renderEditRequest = function (req, res) {
 	];
 	if (req.user.access >= Access.STAFF) {
 		links.push({ text: 'Users', href: '/users' });
+	}
+
+	if (req.user.access == Access.ADMIN) {
 		links.push({ text: 'Add Users', href: '/users/add' });
 	}
 
@@ -194,6 +200,9 @@ router.renderApproval = function (req, res) {
 			];
 			if (req.user.access >= Access.STAFF) {
 				links.push({ text: 'Users', href: '/users' });
+			}
+
+			if (req.user.access == Access.ADMIN) {
 				links.push({ text: 'Add Users', href: '/users/add' });
 			}
 
@@ -221,6 +230,9 @@ router.renderDashboard = function (req, res) {
 		];
 		if (req.user.access >= Access.STAFF) {
 			links.push({ text: 'Users', href: '/users' });
+		}
+
+		if (req.user.access == Access.ADMIN) {
 			links.push({ text: 'Add Users', href: '/users/add' });
 		}
 
@@ -261,14 +273,19 @@ router.renderUsers = function (req, res) {
 				}
 			}
 
+			var links = [
+				{ text: 'Dashboard', href: '/dashboard' },
+				{ text: 'Submit a Request', href: '/dashboard/submit' },
+				{ text: 'Users', href: '/users', active: true },
+			];
+
+			if (req.user.access == Access.ADMIN) {
+				links.push({ text: 'Add Users', href: '/users/add' });
+			}
+
 			res.render('users.jade', {
 				title: 'Users',
-				links: [
-					{ text: 'Dashboard', href: '/dashboard' },
-					{ text: 'Submit a Request', href: '/dashboard/submit' },
-					{ text: 'Users', href: '/users', active: true },
-					{ text: 'Add Users', href: '/users/add' },
-				],
+				links: links,
 				messages: req.flash('usersFlash'),
 				admins: admins,
 				staff: staff,
@@ -295,18 +312,21 @@ router.renderProfile = function (req, res) {
 			} else {
 				if (users.length > 0) {
 					var user = users[0];
-					var navLinks = [
+					var links = [
 						{ text: 'Dashboard', href: '/dashboard' },
 						{ text: 'Submit a Request', href: '/dashboard/submit' },
 					];
-					if (req.user.access > Access.VOLUNTEER) {
-						navLinks.push({ text: 'Users', href: '/users' });
-						navLinks.push({ text: 'Add Users', href: '/users/add' });
+					if (req.user.access >= Access.STAFF) {
+						links.push({ text: 'Users', href: '/users' });
+					}
+
+					if (req.user.access == Access.ADMIN) {
+						links.push({ text: 'Add Users', href: '/users/add' });
 					}
 
 					res.render('profile.jade', {
 						title: 'Profile',
-						links: navLinks,
+						links: links,
 						messages: req.flash('profileFlash'),
 						userToShow: user,
 					});

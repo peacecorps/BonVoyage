@@ -111,11 +111,13 @@ router.getUsers = function (req, res) {
 		minAccess = Access.VOLUNTEER;
 	}
 
+	var countryCode = countries.validateCountry(req.query.country);
+
 	helpers.getUsers({
 		maxAccess: maxAccess,
 		minAccess: minAccess,
 		countryCode:
-			(req.user.access == Access.VOLUNTEER ? req.user.countryCode : undefined),
+			(req.user.access == Access.VOLUNTEER ? req.user.countryCode : countryCode),
 	}, function (err, users) {
 		if (err) {
 			console.error(err);
@@ -971,7 +973,7 @@ router.postUpdatedUser = function (req, res) {
 	var userId = req.params.userId;
 
 	// Verify that this user can edit this user
-	if (userId != req.user._id && req.user.access == Access.VOLUNTEER) {
+	if (userId != req.user._id && req.user.access !== Access.ADMIN) {
 		return helpers.sendUnauthorized(res);
 	}
 

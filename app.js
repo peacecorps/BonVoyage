@@ -147,7 +147,7 @@ app.get('/requests/:requestId/edit', ensureLoggedIn('/login'),
 app.get('/users', ensureLoggedIn('/login'),
 	needsAccess(Access.STAFF, true), views.renderUsers);
 app.get('/users/add', ensureLoggedIn('/login'),
-	needsAccess(Access.STAFF, true), views.renderAddUsers);
+	needsAccess(Access.ADMIN, true), views.renderAddUsers);
 app.get('/profile/:userId?', ensureLoggedIn('/login'), views.renderProfile);
 
 app.get('/.well-known/acme-challenge/' +
@@ -193,9 +193,9 @@ app.post('/api/requests',
 app.post('/api/requests/:requestId',
 	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.postUpdatedRequest);
 app.post('/api/users',
-	needsAccess(Access.STAFF), api.postUsers);
+	needsAccess(Access.ADMIN), api.postUsers);
 app.post('/api/users/validate',
-	needsAccess(Access.STAFF), upload.single('users'), api.validateUsers);
+	needsAccess(Access.ADMIN), upload.single('users'), api.validateUsers);
 app.post('/api/users/:userId',
 	needsAccess(Access.VOLUNTEER), api.handleUserId, api.postUpdatedUser);
 
