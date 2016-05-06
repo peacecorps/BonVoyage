@@ -1,6 +1,5 @@
 /* jshint node: true */
 'use strict';
-
 var User = require(__dirname + '/../models/user');
 var Request = require(__dirname + '/../models/request');
 var Warning = require(__dirname + '/../models/warning');
@@ -19,8 +18,15 @@ var mongoose = require('mongoose');
 var dropEmail = true;
 var dropSMS = true;
 
-if (process.env.MAILGUN_KEY !== 'undefined' &&
-	process.env.BONVOYAGE_DOMAIN !== 'undefined') {
+function envVarExists(envVar) {
+	return	envVar !== null &&
+					envVar !== undefined &&
+					envVar !== 'undefined' &&
+					typeof envVar !== 'undefined';
+}
+
+if (envVarExists(process.env.MAILGUN_KEY) &&
+	envVarExists(process.env.BONVOYAGE_DOMAIN)) {
 	var mailgun = mailgun({
 		apiKey: process.env.MAILGUN_KEY,
 		domain: 'projectdelta.io', // this is temporary
@@ -28,8 +34,8 @@ if (process.env.MAILGUN_KEY !== 'undefined' &&
 	dropEmail = false;
 }
 
-if (process.env.TWILIO_SID !== 'undefined' &&
-	process.env.TWILIO_AUTH !== 'undefined') {
+if (envVarExists(process.env.TWILIO_SID) &&
+	envVarExists(process.env.TWILIO_AUTH)) {
 	var twilioClient = new twilio.RestClient(process.env.TWILIO_SID,
 		process.env.TWILIO_AUTH);
 	dropSMS = false;
@@ -267,7 +273,7 @@ module.exports.formatDateOnly = function (date) {
 	return formatteddate;
 };
 
-module.exports.module.exports.sendSMS = function (sendTo, body, callback) {
+module.exports.sendSMS = function (sendTo, body, callback) {
 	var data = {
 		to: sendTo,
 		from: process.env.BONVOYAGE_NUMBER,
@@ -361,7 +367,6 @@ module.exports.postComment = function (
 module.exports.formatDateOnly = function (date) {
 	var dateonly = new DateOnly(parseInt(date + ''));
 	var formatteddate = moment(dateonly.toDate()).format('MMM DD, YYYY');
-	console.log(formatteddate);
 	return formatteddate;
 };
 

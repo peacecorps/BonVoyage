@@ -16,3 +16,6 @@ branches:
 
 services:
   - mongodb
+
+after_failure:
+  "cat tests/tests.log"

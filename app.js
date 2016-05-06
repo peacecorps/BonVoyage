@@ -39,6 +39,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
 // uncomment after placing your favicon in /public
+
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 if (process.env.NODE_ENV == 'test') {
 	app.use(logger('dev', { stream: morganLog }));
@@ -108,6 +109,7 @@ function isNotLoggedIn(req, res, next) {
 	} else {
 		return next();
 	}
+
 }
 
 // middleware to check if the user is at least that access level
@@ -165,7 +167,6 @@ app.get('/api/users/:userId',
 	needsAccess(Access.VOLUNTEER), api.handleUserId, api.getUsers);
 app.get('/api/warnings',
 	needsAccess(Access.VOLUNTEER), api.getWarnings);
-
 app.post('/api/requests/:requestId/approve',
 	needsAccess(Access.STAFF), api.handleRequestId, api.postApprove);
 app.post('/api/requests/:requestId/deny',
@@ -231,6 +232,7 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function (err, req, res, next) {
+
 	//jshint unused: false
 	res.status(err.status || 500);
 	res.render('error', {

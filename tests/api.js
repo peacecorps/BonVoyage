@@ -4,7 +4,6 @@
 /* globals after */
 /* jshint node: true */
 'use strict';
-
 require(__dirname + '/../setup');
 
 var assert = require('chai').assert;
