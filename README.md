@@ -3,14 +3,14 @@
 [![Build Status](https://travis-ci.org/peacecorps/BonVoyage.svg?branch=master)](https://travis-ci.org/peacecorps/BonVoyage)
 [![Coverage Status](https://coveralls.io/repos/github/peacecorps/BonVoyage/badge.svg?branch=colin%2Fmocha)](https://coveralls.io/github/peacecorps/BonVoyage?branch=colin%2Fmocha)
 
-BonVoyage is a web application built to provide a simplified and automated web-based method for Peace Corps volunteers to request leave. 
+BonVoyage is a web application built to provide a simplified and automated web-based method for Peace Corps volunteers to request leave.
 
-![Demo Image](https://raw.githubusercontent.com/peacecorps/BonVoyage/master/demos/submission_page.jpg)
+![Demo Image](https://raw.githubusercontent.com/peacecorps/BonVoyage/master/.github/submission_form.png)
 
 
 This project is currently in development under Patrick Choquette and Project Delta.
 
-Peace Corps: [peacecorps.gov](https://www.peacecorps.gov/) 
+Peace Corps: [peacecorps.gov](https://www.peacecorps.gov/)
 
 Project Delta: [projectdelta.io](https://projectdelta.io/)
 
@@ -85,11 +85,11 @@ cd BonVoyage
 ```bash
 npm install
 ```
-<!-- 10) Before we can run the server, you need to forward port 3000 (the port where the node server runs from) to your host. Exit the shell and edit the Vagrantfile in a text editor (which is created when you ran 'vagrant init'). 
+<!-- 10) Before we can run the server, you need to forward port 3000 (the port where the node server runs from) to your host. Exit the shell and edit the Vagrantfile in a text editor (which is created when you ran 'vagrant init').
 ```bash
 exit
 # Edit the Vagrantfile with vim, or a normal text editor
-vim Vagrantfile 
+vim Vagrantfile
 ```
 Find the line that says:
 ```bash
