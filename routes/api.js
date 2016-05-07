@@ -8,19 +8,24 @@ var User = require(__dirname + '/../models/user');
 var Request = require(__dirname + '/../models/request');
 var Token = require(__dirname + '/../models/token');
 var Access = require(__dirname + '/../config/access');
-var fs = require('fs');
+var countries = require(__dirname + '/../config/countries');
 var randtoken = require('rand-token');
-var countryFilePath = __dirname + '/../public/data/countryList.json';
-var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
-var countriesDictionary = JSON.parse(countryListFile);
 var helpers = require('./helpers');
 var DateOnly = require('dateonly');
 var Converter = require('csvtojson').Converter;
+var validator = require('email-validator');
+var phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance();
+
+// For setting default arguments
+function ifDefined(a, b) {
+	return (a === undefined ? b : a);
+}
 
 /*
  * Handle Parameters
  */
-router.handleRequestId = function (req, res, next, requestId) {
+router.handleRequestId = function (req, res, next) {
+	var requestId = req.params.requestId;
 	helpers.getRequests(req, res, { _id: requestId },
 		function (err, requests) {
 		if (err) {
@@ -28,10 +33,28 @@ router.handleRequestId = function (req, res, next, requestId) {
 		} else {
 			if (requests.length > 0) {
 				req.request = requests[0];
-				return next();
 			} else {
-				return next(new Error('Request not found.'));
+				req.request = null;
 			}
+
+			return next();
+		}
+	});
+};
+
+router.handleUserId = function (req, res, next) {
+	var userId = req.params.userId;
+	helpers.getUsers({ user: { _id: userId } }, function (err, users) {
+		if (err) {
+			return next(err);
+		} else {
+			if (users.length > 0) {
+				req.paramUser = users[0];
+			} else {
+				req.paramUser = null;
+			}
+
+			return next();
 		}
 	});
 };
@@ -40,12 +63,16 @@ router.handleRequestId = function (req, res, next, requestId) {
  * GET Requests
  */
 router.getRequests = function (req, res) {
+	if (req.request !== undefined) {
+		return helpers.sendJSON(res, req.request);
+	}
+
 	helpers.getRequests(req, res, undefined, function (err, requests) {
 		if (err) {
 			console.error(err);
 		}
 
-		res.send(requests);
+		return helpers.sendJSON(res, requests);
 	});
 };
 
@@ -55,7 +82,7 @@ router.getPendingRequests = function (req, res) {
 			console.error(err);
 		}
 
-		res.send(requests);
+		return helpers.sendJSON(res, requests);
 	});
 };
 
@@ -65,11 +92,15 @@ router.getPastRequests = function (req, res) {
 			console.error(err);
 		}
 
-		res.send(requests);
+		return helpers.sendJSON(res, requests);
 	});
 };
 
 router.getUsers = function (req, res) {
+	if (req.params.userId !== undefined) {
+		return helpers.sendJSON(res, req.paramUser);
+	}
+
 	var maxAccess = parseInt(req.query.maxAccess);
 	if (isNaN(maxAccess)) {
 		maxAccess = Access.ADMIN;
@@ -80,17 +111,19 @@ router.getUsers = function (req, res) {
 		minAccess = Access.VOLUNTEER;
 	}
 
+	var countryCode = countries.validateCountry(req.query.country);
+
 	helpers.getUsers({
 		maxAccess: maxAccess,
 		minAccess: minAccess,
 		countryCode:
-			(req.user.access == Access.VOLUNTEER ? req.user.countryCode : undefined),
+			(req.user.access == Access.VOLUNTEER ? req.user.countryCode : countryCode),
 	}, function (err, users) {
 		if (err) {
 			console.error(err);
 		}
 
-		res.send(users);
+		return helpers.sendJSON(res, users);
 	});
 };
 
@@ -100,7 +133,7 @@ router.getWarnings = function (req, res) {
 			console.error(err);
 		}
 
-		res.send(requests);
+		return helpers.sendJSON(res, requests);
 	});
 };
 
@@ -122,7 +155,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 				text: 'You must select a volunteer to submit this request for.',
 				class: 'danger',
 			});
-			res.end(JSON.stringify({ redirect: failureRedirect }));
+			helpers.sendJSON(res, { redirect: failureRedirect });
 			return cb(null);
 		}
 	}
@@ -135,7 +168,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 			text: 'You must select a staff member to assign this leave request to.',
 			class: 'danger',
 		});
-		res.end(JSON.stringify({ redirect: failureRedirect }));
+		helpers.sendJSON(res, { redirect: failureRedirect });
 		return cb(null);
 	}
 
@@ -153,7 +186,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 					'Please try again later.',
 				class: 'danger',
 			});
-			res.end(JSON.stringify({ redirect: failureRedirect }));
+			helpers.sendJSON(res, { redirect: failureRedirect });
 		} else if (volunteers.length > 0) {
 			// Verify that the volunteer exists
 			helpers.getUsers({
@@ -169,10 +202,10 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 							'Please try again later.',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({ redirect: failureRedirect }));
+					helpers.sendJSON(res, { redirect: failureRedirect });
 				} else if (staff.length > 0) {
 					var legs = [];
-					var countries = [];
+					var visitedCountries = [];
 					for (var i = 0; i < req.body.legs.length; i++) {
 						var leg = req.body.legs[i];
 						var start = new DateOnly(leg.startDate);
@@ -185,16 +218,16 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 									(i + 1) + ' comes after the end date.',
 								class: 'danger',
 							});
-							res.end(JSON.stringify({ redirect: failureRedirect }));
+							helpers.sendJSON(res, { redirect: failureRedirect });
 							return cb(null);
-						} else if (Object.keys(countriesDictionary).indexOf(leg.country) == -1) {
+						} else if (countries.codeList.indexOf(leg.country) == -1) {
 							req.session.submission = req.body;
 							req.flash('submissionFlash', {
 								text: 'The country that you have selected for leg #' +
 									(i + 1) + ' is not a valid country.',
 								class: 'danger',
 							});
-							res.end(JSON.stringify({ redirect: failureRedirect }));
+							helpers.sendJSON(res, { redirect: failureRedirect });
 							return cb(null);
 						} else if (leg.city === '') {
 							req.session.submission = req.body;
@@ -203,14 +236,14 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 									(i + 1) + ' is invalid',
 								class: 'danger',
 							});
-							res.end(JSON.stringify({ redirect: failureRedirect }));
+							helpers.sendJSON(res, { redirect: failureRedirect });
 							return cb(null);
 						} else {
 							legs.push({
 								startDate: start,
 								endDate: end,
 								city: leg.city,
-								country: countriesDictionary[leg.country],
+								country: countries.countries[leg.country],
 								countryCode: leg.country,
 								hotel: leg.hotel,
 								contact: leg.contact,
@@ -219,8 +252,8 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 								addedLegCount: leg.addedLegCount,
 							});
 
-							if (countries.indexOf(leg.country) == -1) {
-								countries.push(leg.country);
+							if (visitedCountries.indexOf(leg.country) == -1) {
+								visitedCountries.push(leg.country);
 							}
 						}
 					}
@@ -232,7 +265,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 							'to submit this leave request.',
 							class: 'danger',
 						});
-						res.end(JSON.stringify({ redirect: failureRedirect }));
+						helpers.sendJSON(res, { redirect: failureRedirect });
 						return cb(null);
 					} else if (legs.length > 0) {
 						cb({
@@ -257,7 +290,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 								'this request. Please try again.',
 							class: 'danger',
 						});
-						res.end(JSON.stringify({ redirect: failureRedirect }));
+						helpers.sendJSON(res, { redirect: failureRedirect });
 						return cb(null);
 					}
 				} else {
@@ -266,7 +299,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 						text: 'The staff that you selected could not be found.',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({ redirect: failureRedirect }));
+					helpers.sendJSON(res, { redirect: failureRedirect });
 					return cb(null);
 				}
 			});
@@ -276,7 +309,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 				text: 'The volunteer that you selected could not be found.',
 				class: 'danger',
 			});
-			res.end(JSON.stringify({ redirect: failureRedirect }));
+			helpers.sendJSON(res, { redirect: failureRedirect });
 			return cb(null);
 		}
 	});
@@ -410,7 +443,6 @@ router.postUpdatedRequest = function (req, res) {
 			}
 
 			if (changesMade) {
-				console.log(comment);
 
 				// Submit a comment with these changes
 				helpers.postComment(req.request._id, 'Administrator', null, comment,
@@ -424,7 +456,7 @@ router.postUpdatedRequest = function (req, res) {
 								'update this request. Please try again.',
 							class: 'danger',
 						});
-						res.end(JSON.stringify({ redirect: failureRedirect }));
+						helpers.sendJSON(res, { redirect: failureRedirect });
 					} else {
 						// Update the database with the edited request
 						Request.update({ _id: req.request._id }, data.requestData,
@@ -436,7 +468,7 @@ router.postUpdatedRequest = function (req, res) {
 										'update this request. Please try again.',
 									class: 'danger',
 								});
-								res.end(JSON.stringify({ redirect: failureRedirect, }));
+								helpers.sendJSON(res, { redirect: failureRedirect });
 							}
 						});
 
@@ -444,7 +476,7 @@ router.postUpdatedRequest = function (req, res) {
 							text: 'This leave request has successfully been updated.',
 							class: 'success',
 						});
-						res.end(JSON.stringify({ redirect: successRedirect }));
+						helpers.sendJSON(res, { redirect: successRedirect });
 					}
 				});
 			} else {
@@ -455,7 +487,7 @@ router.postUpdatedRequest = function (req, res) {
 				// 	text: 'This leave request has successfully been updated.',
 				// 	class: 'success',
 				// });
-				res.end(JSON.stringify({ redirect: successRedirect }));
+				helpers.sendJSON(res, { redirect: successRedirect });
 			}
 		}
 	});
@@ -474,9 +506,7 @@ router.postRequest = function (req, res) {
 							'save this request. Please try again.',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({
-						redirect: '/dashboard/submit',
-					}));
+					helpers.sendJSON(res, { redirect: '/dashboard/submit' });
 				} else {
 					// asynchronous
 					// send SMS notification to a staff
@@ -518,7 +548,7 @@ router.postRequest = function (req, res) {
 							text: 'View Request.',
 						},
 					});
-					res.end(JSON.stringify({ redirect: '/dashboard' }));
+					helpers.sendJSON(res, { redirect: '/dashboard' });
 				}
 			});
 		}
@@ -534,7 +564,7 @@ router.postApprove = function (req, res) {
 		},
 	}, function (err, doc) {
 		if (err) {
-			return res.send(500, { error: err });
+			return helpers.sendError(res, err);
 		}
 
 		User.findOne({ _id: doc.volunteer }, function (err, user) {
@@ -608,7 +638,7 @@ router.postApprove = function (req, res) {
 					text: 'View Request.',
 				},
 			});
-			res.end(JSON.stringify({ redirect: '/dashboard' }));
+			helpers.sendJSON(res, { redirect: '/dashboard' });
 		});
 	});
 };
@@ -622,7 +652,7 @@ router.postDeny = function (req, res) {
 		},
 	}, function (err, doc) {
 		if (err) {
-			return res.send(500, { error: err });
+			return helpers.sendError(res, err);
 		}
 
 		User.findOne({ _id: doc.volunteer }, function (err, user) {
@@ -656,24 +686,26 @@ router.postDeny = function (req, res) {
 					text: 'View Request.',
 				},
 			});
-			res.end(JSON.stringify({ redirect: '/dashboard' }));
+			helpers.sendJSON(res, { redirect: '/dashboard' });
 		});
 	});
 };
 
 router.postComments = function (req, res) {
 	var id = req.params.requestId;
-	helpers.postComment(id, req.user.name, req.user._id, req.param('content'),
+	helpers.postComment(id, req.user.name, req.user._id, req.body.content,
 	function (err) {
 		if (err) {
-			return res.send(500, { error: err });
+			console.log('err on api');
+			console.log(err);
+			return helpers.sendError(res, err);
 		}
 
 		req.flash('approvalFlash', {
 			text: 'Your comment has been added.',
 			class: 'success',
 		});
-		res.end(JSON.stringify({ redirect: '/requests/' + id }));
+		helpers.sendJSON(res, { redirect: '/requests/' + id });
 	});
 };
 
@@ -689,7 +721,7 @@ router.reset = function (req, res) {
 				class: 'danger',
 			});
 
-			res.end(JSON.stringify({ redirect: '/login' }));
+			helpers.sendJSON(res, { redirect: '/login' });
 		}
 
 		if (user) {
@@ -707,7 +739,7 @@ router.reset = function (req, res) {
 							text: 'Failed to generate an email reset token.',
 							class: 'danger',
 						});
-						res.end(JSON.stringify({ redirect: '/login' }));
+						helpers.sendJSON(res, { redirect: '/login' });
 					}
 
 					var sendFrom = 'Peace Corps <team@projectdelta.io>';
@@ -733,7 +765,7 @@ router.reset = function (req, res) {
 			'sent to your email address.',
 		class: 'success',
 	});
-	res.end(JSON.stringify({ redirect: '/login' }));
+	helpers.sendJSON(res, { redirect: '/login' });
 };
 
 router.resetValidator = function (req, res) {
@@ -751,7 +783,7 @@ router.resetValidator = function (req, res) {
 						'your password again.',
 					class: 'danger',
 				});
-				res.end(JSON.stringify({ redirect: '/login' }));
+				helpers.sendJSON(res, { redirect: '/login' });
 			} else {
 				// token has been found
 				if (validToken) {
@@ -764,7 +796,7 @@ router.resetValidator = function (req, res) {
 									'records anymore.',
 								class: 'danger',
 							});
-							res.end(JSON.stringify({ redirect: '/login' }));
+							helpers.sendJSON(res, { redirect: '/login' });
 						} else {
 							account.hash = newPassword;
 
@@ -777,7 +809,7 @@ router.resetValidator = function (req, res) {
 											'Please retry.',
 										class: 'danger',
 									});
-									res.end(JSON.stringify({ redirect: '/login' }));
+									helpers.sendJSON(res, { redirect: '/login' });
 								}
 
 								req.flash('loginFlash', {
@@ -785,7 +817,7 @@ router.resetValidator = function (req, res) {
 										'successfully updated.',
 									class: 'success',
 								});
-								res.end(JSON.stringify({ redirect: '/login' }));
+								helpers.sendJSON(res, { redirect: '/login' });
 							});
 						}
 					});
@@ -795,7 +827,7 @@ router.resetValidator = function (req, res) {
 							'password again.',
 						class: 'danger',
 					});
-					res.end(JSON.stringify({ redirect: '/login' }));
+					helpers.sendJSON(res, { redirect: '/login' });
 				}
 			}
 		});
@@ -805,20 +837,20 @@ router.resetValidator = function (req, res) {
 				'Please retry.',
 			class: 'danger',
 		});
-		res.end(JSON.stringify({ redirect: '/login' }));
+		helpers.sendJSON(res, { redirect: '/login' });
 	}
 };
 
-router.logout = function (req, res) {
+router.postLogout = function (req, res) {
 	req.logout();
 	req.flash('loginFlash', {
 		text: 'You have been logged out.',
 		class: 'success',
 	});
-	res.end(JSON.stringify({ redirect: '/login' }));
+	helpers.sendJSON(res, { redirect: '/login' });
 };
 
-router.modifyAccess = function (req, res) {
+router.postAccess = function (req, res) {
 	var userId = req.body.userId;
 	var access = req.body.access;
 	if (access >= Access.VOLUNTEER &&
@@ -841,107 +873,178 @@ router.modifyAccess = function (req, res) {
 				});
 			}
 
-			res.end(JSON.stringify({ redirect: '/users' }));
+			helpers.sendJSON(res, { redirect: '/users' });
 		});
 	} else {
-		res.end(JSON.stringify({ redirect: '/users' }));
+		helpers.sendJSON(res, { redirect: '/users' });
 	}
 };
 
-router.modifyProfile = function (req, res) {
-	// Update the user object
-	var userId = req.params.userId;
-	if (userId === undefined) {
-		userId = req.user._id;
-	}
-
-	console.log(userId);
-	console.log(req.body);
-
-	User.update({ _id: userId }, req.body.new, function (err) {
-		if (err) {
-			req.flash('profileFlash', {
-				text: 'An occurred while attempting to update ' +
-					(req.user._id == userId ? 'your' :
-						req.body.new.name + '\'s') +
-					' profile.',
-			});
-			console.error(err);
-		} else {
-			req.flash('profileFlash', {
-				text: (req.user._id == userId ?
-					'Your profile has been updated.' :
-					(req.body.new.name || req.body.old.name) +
-					'\'s profile has been updated.'),
-				class: 'success',
-			});
-		}
-
-		res.redirect('/profile');
-	});
-};
-
-function validateUsers(users, loggedInUser, cb) {
+function validateUsers(users, req, options, cb) {
+	var isNewUser = ifDefined(options.newUser, true);
 	User.find({}, 'email', function (err, results) {
 		if (err) {
 			cb(err);
 		} else {
 			var emails = results.map(function (elem) {return elem.email;});
 
-			var newUsers = [];
+			var validatedUsers = [];
 			for (var i = 0; i < users.length; i++) {
 				var user = users[i];
-				var isNameValid = user.name.value && user.name.value !== '';
-				var isEmailValid = user.email.value && user.email.value !== '' &&
-					emails.indexOf(user.email.value) == -1;
-				var countryValue = (user.countryCode.value &&
-					user.countryCode.value !== '' ? user.countryCode.value :
-					loggedInUser.country);
-				var isCountryValid = countryValue && countryValue !== '' &&
-					countriesDictionary[countryValue] !== undefined;
-				var accessValue = (user.access.value && user.access.value !== '' ?
-					user.access.value : Access.VOLUNTEER);
+				var isNameValid = user.name !== undefined &&
+					user.name.value !== undefined &&
+					user.name.value.length > 0;
+				var isEmailValid = user.email !== undefined &&
+					user.email.value !== undefined &&
+					user.email.value.length > 0 &&
+					validator.validate(user.email.value) &&
+					(!isNewUser || emails.indexOf(user.email.value) == -1);
+				var countryCodeValue = (user.countryCode !== undefined &&
+					user.countryCode.value !== undefined ? user.countryCode.value :
+					req.user.countryCode);
+				var isCountryValid = countryCodeValue !== undefined &&
+					countryCodeValue.length === 2 &&
+					countries.countries[countryCodeValue] !== undefined;
+				var accessValue = (user.access !== undefined &&
+					user.access.value !== undefined &&
+					user.access.value !== '' ? user.access.value : Access.VOLUNTEER);
 				var isAccessValid = (accessValue >= Access.VOLUNTEER &&
-					accessValue <= Access.ADMIN && (accessValue < loggedInUser.access ||
-					loggedInUser.access === Access.ADMIN));
-				newUsers.push({
+					accessValue <= Access.ADMIN && (accessValue < req.user.access ||
+					req.user.access === Access.ADMIN));
+				var phonesValue = user.phones === undefined && isNewUser ?
+					[] : user.phones.value;
+				var arePhonesValid = phonesValue !== undefined &&
+					phonesValue instanceof Array;
+
+				// Because lib-phonenumber throws errors instead of following
+				// JS conventions
+				var index = 0;
+				while (arePhonesValid && index < phonesValue.length) {
+					try {
+						var phoneString = phonesValue[index];
+						var phoneNumber = phoneUtil.parseAndKeepRawInput(phoneString);
+						arePhonesValid = phoneUtil.isPossibleNumber(phoneNumber);
+					} catch (e) {
+						arePhonesValid = false;
+					}
+
+					index++;
+				}
+
+				validatedUsers.push({
 					name: {
-						value: user.name.value,
+						value: user.name === undefined ? '' : user.name.value,
 						valid: isNameValid,
 					},
 					email: {
-						value: user.email.value,
+						value: user.email === undefined ? '' : user.email.value,
 						valid: isEmailValid,
 					},
 					country: {
-						value: (isCountryValid ? countriesDictionary[countryValue] : ''),
+						value: (isCountryValid ? countries.countries[countryCodeValue] : ''),
 						valid: isCountryValid,
 					},
 					countryCode: {
-						value: countryValue,
+						value: countryCodeValue,
 						valid: isCountryValid,
 					},
 					access: {
 						value: accessValue,
 						valid: isAccessValid,
 					},
-					valid: isNameValid && isEmailValid && isCountryValid && isAccessValid,
+					phones: {
+						value: phonesValue,
+						valid: arePhonesValid,
+					},
+					valid: isNameValid && isEmailValid && isCountryValid &&
+						isAccessValid && arePhonesValid,
 				});
-				emails.push(user.email.value);
+				if (isNewUser && user.email !== undefined) {
+					emails.push(user.email.value);
+				}
 			}
 
-			cb(null, newUsers);
+			cb(null, validatedUsers);
 		}
 	});
 }
 
+<<<<<<< HEAD
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
+=======
+router.postUpdatedUser = function (req, res) {
+	var userId = req.params.userId;
+
+	// Verify that this user can edit this user
+	if (userId != req.user._id && req.user.access !== Access.ADMIN) {
+		return helpers.sendUnauthorized(res);
+	}
+
+	// Validate the new user object
+	var updatedUser = {
+		name: {
+			value: ifDefined(req.body.name, req.paramUser.name),
+		},
+		email: {
+			value: ifDefined(req.body.email, req.paramUser.email),
+		},
+		countryCode: {
+			value: ifDefined(req.body.countryCode, req.paramUser.countryCode),
+		},
+		access: {
+			value: ifDefined(req.body.access, req.paramUser.access),
+		},
+		phones: {
+			value: req.body.phones === 'empty' ? [] :
+				ifDefined(req.body.phones, req.paramUser.phones),
+		},
+	};
+
+	validateUsers([updatedUser], req, { newUser: false }, function (err, users) {
+		if (err) { throw err; }
+
+		var validatedUser = users[0];
+		var updatesToMake = {
+			name: (validatedUser.name.valid ?
+				validatedUser.name.value : req.paramUser.name),
+			email: (validatedUser.email.valid ?
+				validatedUser.email.value : req.paramUser.email),
+			countryCode: (validatedUser.countryCode.valid ?
+				validatedUser.countryCode.value : req.paramUser.countryCode),
+			access: (validatedUser.access.valid ?
+				validatedUser.access.value : req.paramUser.access),
+			phones: (validatedUser.phones.valid ?
+				validatedUser.phones.value : req.paramUser.phones),
+		};
+
+		User.findByIdAndUpdate(userId, updatesToMake, function (err, old) {
+			if (err) {
+				req.flash('profileFlash', {
+					text: 'An occurred while attempting to update ' +
+						(req.user._id == userId ? 'your' :
+							old.name + '\'s') + ' profile.',
+				});
+				console.error(err);
+			} else {
+				req.flash('profileFlash', {
+					text: (req.user._id == userId ?
+						'Your profile has been updated.' :
+						updatesToMake.name + '\'s profile has been updated.'),
+					class: 'success',
+				});
+			}
+
+			helpers.sendJSON(res, { redirect: '/profile' });
+		});
+	});
+};
+>>>>>>> d185b5cc9977afc86da1012c074dc97bfc225eba
 
 router.postUsers = function (req, res) {
 	// Now that we have converted the CSV to JSON, we need to validate it
-	validateUsers(req.body, req.user, function (err, validatedUsers) {
+	validateUsers(req.body, req, {}, function (err, validatedUsers) {
 		if (err) { throw err; }
 
 		var allValid = validatedUsers.every(function (user) {
@@ -966,7 +1069,7 @@ router.postUsers = function (req, res) {
 								'Please fix the issues in the table below before creating any users.',
 							class: 'danger',
 						});
-						res.end(JSON.stringify({ redirect: '/users/add' }));
+						helpers.sendJSON(res, { redirect: '/users/add' });
 					}
 
 					var sendFrom = 'Peace Corps <team@projectdelta.io>';
@@ -991,14 +1094,15 @@ router.postUsers = function (req, res) {
 				validatedUsers.length + ' user(s).',
 				class: 'success',
 			});
-			res.end(JSON.stringify({ redirect: '/users' }));
+			helpers.sendJSON(res, { redirect: '/users' });
 		} else {
 			req.flash('addUsersFlash', {
 				text: 'Some of the uploaded users are invalid. ' +
 					'Please fix the issues in the table below before creating any users.',
 				class: 'danger',
 			});
-			res.end(JSON.stringify({ redirect: '/users/add' }));
+
+			helpers.sendJSON(res, { redirect: '/users/add' });
 		}
 	});
 };
@@ -1006,7 +1110,6 @@ router.postUsers = function (req, res) {
 router.validateUsers = function (req, res) {
 	var file = req.file;
 	if (file !== undefined && file.path) {
-		console.log(file);
 		var converter = new Converter({
 			noheader: true,
 		});
@@ -1014,27 +1117,28 @@ router.validateUsers = function (req, res) {
 			if (err) {
 				throw err;
 			} else {
-				console.log(json);
 				var formattedJSON = [];
 				for (var i = 0; i < json.length; i++) {
-					formattedJSON.push({
-						name: { value: json[i].field1 },
-						email: { value: json[i].field2 },
-						countryCode: { value: json[i].field3 },
-						access: { value: json[i].field4 },
-					});
+					if (json[i].field1 || json[i].field2 || json[i].field3 || json[i].field4) {
+						formattedJSON.push({
+							name: { value: json[i].field1 },
+							email: { value: json[i].field2 },
+							countryCode: { value: json[i].field3 },
+							access: { value: json[i].field4 },
+						});
+					}
 				}
 
 				// Now that we have converted the CSV to JSON, we need to validate it
-				validateUsers(formattedJSON, req.user, function (err, newUsers) {
+				validateUsers(formattedJSON, req, {}, function (err, newUsers) {
 					if (err) { throw err; }
 
-					res.end(JSON.stringify(newUsers));
+					helpers.sendJSON(res, newUsers);
 				});
 			}
 		});
 	} else {
-		res.end(JSON.stringify(null));
+		helpers.sendJSON(res, null);
 	}
 };
 
@@ -1042,7 +1146,7 @@ router.validateUsers = function (req, res) {
  * DELETE Requests
  */
 router.deleteUser = function (req, res) {
-	var userId = req.body.userId;
+	var userId = req.params.userId;
 	if (userId == req.user._id || req.user.access == Access.ADMIN) {
 		Request.find({ volunteer: userId }).remove(function (err) {
 			if (err) {
@@ -1051,7 +1155,7 @@ router.deleteUser = function (req, res) {
 					text: 'An error has occurred while attempting to delete the user.',
 					class: 'danger',
 				});
-				res.end(JSON.stringify({ redirect: '/users' }));
+				helpers.sendJSON(res, { redirect: '/users' });
 			} else {
 				User.find({ _id: userId }).remove(function (err) {
 					if (err) {
@@ -1067,32 +1171,39 @@ router.deleteUser = function (req, res) {
 						});
 					}
 
-					res.end(JSON.stringify({ redirect: '/users' }));
+					helpers.sendJSON(res, { redirect: '/users' });
 				});
 			}
 		});
 	} else {
-		res.status(401).send('Unauthorized');
+		helpers.sendUnauthorized(res);
 	}
 };
 
 router.deleteRequest = function (req, res) {
 	var id = req.params.requestId;
-	var q = { _id: id };
-	if (req.user.access != Access.ADMIN) {
-		q.volunteer = req.user._id;
-	}
 
-	Request.findOneAndRemove(q, function (err) {
+	Request.findOne({ _id: id }, function (err, request) {
 		if (err) {
-			return res.send(500, { error: err });
+			return helpers.sendError(res, err);
 		}
 
-		req.flash('dashboardFlash', {
-			text: 'The request has been successfully deleted.',
-			class: 'success',
-		});
-		res.end(JSON.stringify({ redirect: '/dashboard' }));
+		if (req.user.access == Access.ADMIN ||
+				request.volunteer.equals(req.user._id)) {
+			request.remove(function (err) {
+				if (err) {
+					return helpers.sendError(res, err);
+				}
+
+				req.flash('dashboardFlash', {
+					text: 'The request has been successfully deleted.',
+					class: 'success',
+				});
+				helpers.sendJSON(res, { redirect: '/dashboard' });
+			});
+		} else {
+			return helpers.sendUnauthorized(res);
+		}
 	});
 };
 

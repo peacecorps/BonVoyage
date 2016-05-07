@@ -1,10 +1,6 @@
 /* globals window */
-/* globals confirm */
-/* global document */
 /* global window */
-/* global format_dateonly */
-/* global setTimeout */
-/* global DateOnly */
+/* global currentUser */
 
 $(function () {
 	'use strict';
@@ -13,13 +9,19 @@ $(function () {
 		return $('div#usersTable table');
 	}
 
+	var url = '/api/users';
+
+	if (currentUser.access === 1) {
+		url = '/api/users?maxAccess=1&country=' + currentUser.countryCode;
+	}
+
 	// Configure the past and present DataTables indivudally
 	var table = $table().DataTable({
 		responsive: {
         details: false,
     },
 		ajax: {
-			url: '/api/users',
+			url: url,
 			dataSrc: '',
 		},
 		order: [[0, 'asc']],

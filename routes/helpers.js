@@ -1,29 +1,32 @@
 /* jshint node: true */
 'use strict';
-
 var User = require(__dirname + '/../models/user');
 var Request = require(__dirname + '/../models/request');
 var Warning = require(__dirname + '/../models/warning');
 var Access = require(__dirname + '/../config/access');
+var countries = require(__dirname + '/../config/countries');
 var DateOnly = require('dateonly');
 var moment = require('moment');
 var jade = require('jade');
 var path = require('path');
-var fs = require('fs');
 var twilio = require('twilio');
 var mailgun = require('mailgun-js');
 var mailcomposer = require('mailcomposer');
 var mongoose = require('mongoose');
-var countryFilePath = __dirname + '/../public/data/countryList.json';
-var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
-var countriesDictionary = JSON.parse(countryListFile);
 
 // Attempt to load credentials for email and SMS
 var dropEmail = true;
 var dropSMS = true;
 
-if (process.env.MAILGUN_KEY !== undefined &&
-	process.env.BONVOYAGE_DOMAIN !== undefined) {
+function envVarExists(envVar) {
+	return	envVar !== null &&
+					envVar !== undefined &&
+					envVar !== 'undefined' &&
+					typeof envVar !== 'undefined';
+}
+
+if (envVarExists(process.env.MAILGUN_KEY) &&
+	envVarExists(process.env.BONVOYAGE_DOMAIN)) {
 	var mailgun = mailgun({
 		apiKey: process.env.MAILGUN_KEY,
 		domain: 'projectdelta.io', // this is temporary
@@ -31,8 +34,8 @@ if (process.env.MAILGUN_KEY !== undefined &&
 	dropEmail = false;
 }
 
-if (process.env.TWILIO_SID !== undefined &&
-	process.env.TWILIO_AUTH !== undefined) {
+if (envVarExists(process.env.TWILIO_SID) &&
+	envVarExists(process.env.TWILIO_AUTH)) {
 	var twilioClient = new twilio.RestClient(process.env.TWILIO_SID,
 		process.env.TWILIO_AUTH);
 	dropSMS = false;
@@ -78,7 +81,6 @@ module.exports.getRequests = function (req, res, options, cb) {
 		var matchUsers = {};
 		if (options && options._id) {
 			matchUsers._id = mongoose.Types.ObjectId(options._id);
-			console.log('Looking for request with id: ' + matchUsers._id);
 		}
 
 		if (req.user.access < Access.STAFF) {
@@ -147,8 +149,6 @@ module.exports.getUsers = function (options, cb) {
 		q.countryCode = options.countryCode;
 	}
 
-	console.log(q);
-
 	// Note: using lean() so that users is a JS obj, instead of a Mongoose obj
 	User.find(q, 'access name email phones _id countryCode').lean().exec(
 		function (err, users) {
@@ -156,7 +156,7 @@ module.exports.getUsers = function (options, cb) {
 			cb(err);
 		} else {
 			for (var i = 0; i < users.length; i++) {
-				users[i].country = countriesDictionary[users[i].countryCode];
+				users[i].country = countries.countries[users[i].countryCode];
 			}
 
 			cb(null, users);
@@ -200,16 +200,13 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 		text: text,
 	};
 
-	if (dropEmail) {
-		console.error('Email dropped. Email data:');
-		console.error(data);
+	if (dropEmail === true) {
+		// console.error('Email dropped.');
 		if (callback) {
 			callback();
 		}
 	} else {
-		mailgun.messages().send(data, function (err, body) {
-			console.log(body);
-
+		mailgun.messages().send(data, function () {
 			if (callback) {
 				callback();
 			}
@@ -217,20 +214,16 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 	}
 };
 
-var sendTemplateEmail = function (sendFrom, sendTo, subject,
+module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 	template, map, callback) {
 
 	var html = jade.renderFile(path.join(__dirname, '../email',
 		template + '.jade'), map);
 
-	var sendMimeCallback = function (sendError, body) {
+	var sendMimeCallback = function (sendError) {
 		if (sendError) {
 			console.log('was unable to send');
 			console.log(sendError);
-		}
-
-		if (body) {
-			console.log('Email data:' + body);
 		}
 
 		if (callback) {
@@ -261,9 +254,8 @@ var sendTemplateEmail = function (sendFrom, sendTo, subject,
 			html: html,
 		};
 
-		if (dropEmail) {
-			console.error('Email dropped. Email data:');
-			console.error(data);
+		if (dropEmail === true) {
+			// console.error('Template email dropped.');
 			if (callback) {
 				callback();
 			}
@@ -275,18 +267,21 @@ var sendTemplateEmail = function (sendFrom, sendTo, subject,
 	}
 };
 
-module.exports.sendTemplateEmail = sendTemplateEmail;
+module.exports.formatDateOnly = function (date) {
+	var dateonly = new DateOnly(parseInt(date + ''));
+	var formatteddate = moment(dateonly.toDate()).format('MMM DD, YYYY');
+	return formatteddate;
+};
 
-var sendSMS = function (sendTo, body, callback) {
+module.exports.sendSMS = function (sendTo, body, callback) {
 	var data = {
 		to: sendTo,
 		from: process.env.BONVOYAGE_NUMBER,
 		body: body,
 	};
 
-	if (dropSMS) {
-		console.error('SMS dropped. SMS data:');
-		console.error(data);
+	if (dropSMS === true) {
+		// console.error('SMS dropped.');
 		if (callback) {
 			callback();
 		}
@@ -308,8 +303,6 @@ var sendSMS = function (sendTo, body, callback) {
 		});
 	}
 };
-
-module.exports.sendSMS = sendSMS;
 
 module.exports.postComment = function (
 	requestId, name, userId, commentMessage, cb) {
@@ -343,7 +336,7 @@ module.exports.postComment = function (
 			// notify the volunteer
 			if (volunteer.phones) {
 				for (var i = 0; i < volunteer.phones.length; i++) {
-					sendSMS(volunteer.phones[i], 'Your BonVoyage ' +
+					module.exports.sendSMS(volunteer.phones[i], 'Your BonVoyage ' +
 						'leave request has been modified. Please review the' +
 						' details at ' + process.env.BONVOYAGE_DOMAIN +
 						'/requests/' + requestId);
@@ -359,7 +352,7 @@ module.exports.postComment = function (
 
 				if (staff.phones) {
 					for (var i = 0; i < staff.phones.length; i++) {
-						sendSMS(staff.phones[i], 'A BonVoyage ' +
+						module.exports.sendSMS(staff.phones[i], 'A BonVoyage ' +
 							'leave request for ' + volunteer.name +
 							' has been updated. Please review the ' +
 							'details at ' + process.env.BONVOYAGE_DOMAIN +
@@ -374,7 +367,6 @@ module.exports.postComment = function (
 module.exports.formatDateOnly = function (date) {
 	var dateonly = new DateOnly(parseInt(date + ''));
 	var formatteddate = moment(dateonly.toDate()).format('MMM DD, YYYY');
-	console.log(formatteddate);
 	return formatteddate;
 };
 
@@ -402,4 +394,17 @@ module.exports.fetchWarnings = function (callback) {
 			return callback(null, countryToWarnings);
 		}
 	});
+};
+
+module.exports.sendJSON = function (res, json) {
+	res.setHeader('content-type', 'application/json');
+	res.send(JSON.stringify(json));
+};
+
+module.exports.sendUnauthorized = function (res) {
+	res.status(401).send('Unauthorized');
+};
+
+module.exports.sendError = function (res, err) {
+	res.status(500).send({ error: err });
 };

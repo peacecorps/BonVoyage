@@ -4,7 +4,7 @@ node_js:
 
 before_script:
   - npm install -g gulp
-script: gulp test
+script: gulp ci
 
 cache:
   directories:
@@ -13,3 +13,9 @@ cache:
 branches:
   only:
     - master
+
+services:
+  - mongodb
+
+after_failure:
+  "cat tests/tests.log"

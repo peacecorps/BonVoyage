@@ -4,6 +4,8 @@
 var mongoose = require('mongoose');
 var DateOnly = require('mongoose-dateonly')(mongoose);
 
+var countries = require(__dirname + '/../config/countries');
+
 var requestSchema = mongoose.Schema({
 	volunteer: { type:
 		mongoose.Schema.Types.ObjectId,
@@ -26,8 +28,16 @@ var requestSchema = mongoose.Schema({
 			startDate: DateOnly,
 			endDate: DateOnly,
 			city: String,
-			country: String,
-			countryCode: String,
+			country: {
+				type: String,
+				required: true,
+				enum: countries.countryList,
+			},
+			countryCode: {
+				type: String,
+				required: true,
+				enum: countries.codeList,
+			},
 			hotel: String,
 			contact: String,
 			companions: String,

@@ -24,23 +24,24 @@ block content
 					
 					input.hidden#userId(value=userToShow._id)
 					input.hidden#loggedInUserId(value=user._id)
+					input.hidden#disableProfile(value=((user.access == 2 || user._id.toString() === userToShow._id.toString()) ? 'false' : 'true'))
 					
 					label(for='name') Name
-					input.form-control#name(value=(userToShow.name ? userToShow.name : ''), data-default=(userToShow.name ? userToShow.name : ''), placeholder='John Doe')
+					input.form-control#name(value=(userToShow.name ? userToShow.name : ''), data-default=(userToShow.name ? userToShow.name : ''), placeholder='John Doe', disabled=!(user.access == 2 || user._id.toString() === userToShow._id.toString()))
 					
 					label(for='name') Email
-					input.form-control#email(value=(userToShow.email ? userToShow.email : ''), data-default=(userToShow.email ? userToShow.email : ''), placeholder='johndoe@peacecorps.gov')
+					input.form-control#email(value=(userToShow.email ? userToShow.email : ''), data-default=(userToShow.email ? userToShow.email : ''), placeholder='johndoe@peacecorps.gov', disabled=!(user.access == 2 || user._id.toString() === userToShow._id.toString()))
 					
 					label(for='name') Phone Number(s)
 					#phoneNumbers
-					button(type='button')#addPhone.btn-override.btn.btn-info Add Extra Phone Number
+					button(type='button', disabled=!(user.access == 2 || user._id.toString() === userToShow._id.toString()))#addPhone.btn-override.btn.btn-info Add Extra Phone Number
 					
 					label(for='name') Country
-					select.form-control#country(value=userToShow.countryCode, data-default=userToShow.countryCode)
+					select.form-control#country(value=userToShow.countryCode, data-default=userToShow.countryCode, disabled=!(user.access == 2 || user._id.toString() === userToShow._id.toString()))
 					
 					button.btn.btn-success(type='submit' disabled) Update Profile
 
-					if user.access == 2 || '' + user._id == '' + userToShow._id
+					if user.access == 2 || user._id.toString() === userToShow._id.toString()
 						button#deleteAccount.btn.btn-danger Delete Account
 				
 block scripts

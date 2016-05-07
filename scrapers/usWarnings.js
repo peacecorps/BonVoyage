@@ -5,14 +5,9 @@ require(__dirname + '/../setup');
 
 var request = require('request');
 var cheerio = require('cheerio');
-var fs = require('fs');
 
 var storeWarnings = require(__dirname + '/storeWarnings');
-
-var countryFilePath = __dirname + '/../public/data/countryList.json';
-var countryListFile = fs.readFileSync(countryFilePath, 'utf8');
-var countriesDictionary = JSON.parse(countryListFile);
-var allCountryCodes = Object.keys(countriesDictionary);
+var countries = require(__dirname + '/../config/countries');
 
 var COLUMNS = Object.freeze({ TYPE: 0, DATE: 1, COUNTRY: 2 });
 
@@ -31,7 +26,7 @@ function matchCountryCodes(countryText) {
 		// since they don't match the countryList.json
 		var matches = {
 			burma: ['MM'],
-			worldwide: allCountryCodes,
+			worldwide: countries.codeList,
 			'israel, the west bank and gaza': ['IL'],
 			'democratic republic of the congo': ['CG'],
 			'republic of south sudan': ['SD'],
@@ -42,8 +37,8 @@ function matchCountryCodes(countryText) {
 			countryCodes = matches[countryText];
 		} else {
 			// Otherwise search the countries dictionary for the text to match
-			for (var countryCode in countriesDictionary) {
-				if (countriesDictionary[countryCode].toLowerCase() == countryText) {
+			for (var countryCode in countries.countries) {
+				if (countries.countries[countryCode].toLowerCase() == countryText) {
 					countryCodes.push(countryCode);
 				}
 			}

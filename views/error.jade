@@ -1,11 +1,16 @@
 extends layout
 
+block styles
+  link(rel='stylesheet', href='/css/error.css')
+
 block content
   .row
-    div.errorContainer(style="max-width: 640px; margin: 0 auto; padding: 20px;")
-      h1(style="text-align: center;") Oops. Something is wrong.
-      h2 #{message}
-      a.btn.btn-lg.btn-default.btn-block(href=returnButton, style="margin: 30px 0 20px 0") Return to BonVoyage
-    if stackTrace
+    div.errorContainer
+      h1 Oops. Something has gone wrong.
+      h3 #{message}
+      script.
+        console.warn(!{JSON.stringify(message)});
+      a.btn.btn-lg.btn-default.btn-block(href='/') Return to BonVoyage
+    if error && error.stack
       .col-xs-12.col-md-offset-1.col-md-10
         pre #{error.stack}
