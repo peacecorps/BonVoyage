@@ -44,7 +44,7 @@ module.exports = function (passport) {
 		// allows us to pass back the entire request to the callback
 		passReqToCallback: true,
 	},
-    function (req, email, password, done) {
+	function (req, email, password, done) {
 		email = email.toLowerCase();
 
 		console.log(req.body.token);

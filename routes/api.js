@@ -969,11 +969,10 @@ function validateUsers(users, req, options, cb) {
 	});
 }
 
-<<<<<<< HEAD
 function capitalizeFirstLetter(string) {
 	return string.charAt(0).toUpperCase() + string.slice(1);
 }
-=======
+
 router.postUpdatedUser = function (req, res) {
 	var userId = req.params.userId;
 
@@ -1040,7 +1039,6 @@ router.postUpdatedUser = function (req, res) {
 		});
 	});
 };
->>>>>>> d185b5cc9977afc86da1012c074dc97bfc225eba
 
 router.postUsers = function (req, res) {
 	// Now that we have converted the CSV to JSON, we need to validate it
