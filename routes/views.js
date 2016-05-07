@@ -329,6 +329,7 @@ router.renderProfile = function (req, res) {
 						links: links,
 						messages: req.flash('profileFlash'),
 						userToShow: user,
+						profileClass: ((user._id.equals(req.user._id) ? 'active' : '')),
 					});
 				} else {
 					req.flash('dashboardFlash', {

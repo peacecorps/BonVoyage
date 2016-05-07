@@ -32,7 +32,7 @@
                 
           if !hideLogout
             // This should log user out
-            li
+            li(class=(profileClass ? profileClass : ''))
               a(href='/profile')= user.name
             li
               a(href='#')#logout Logout
