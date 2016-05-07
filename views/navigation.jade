@@ -19,8 +19,18 @@
             for link in links
               li(class=(link.active ? "active" : ""))
                 a(href=link.href)=link.text
-        if !hideLogout
-          ul.nav.navbar-nav.navbar-right
+        ul.nav.navbar-nav.navbar-right
+          li.dropdown
+            a.dropdown-toggle(href='#', data-toggle="dropdown", role='button', aria-haspopup='true', aria-expanded='false')
+              | Contact
+              span.caret
+            ul.dropdown-menu
+              li
+                a(href='mailto:team+support@projectdelta.io') Support
+              li
+                a(href='mailto:team+feedback@projectdelta.io') Feedback
+                
+          if !hideLogout
             // This should log user out
             li
               a(href='/profile')= user.name
