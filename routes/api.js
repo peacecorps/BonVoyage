@@ -614,7 +614,7 @@ router.postApprove = function (req, res) {
 						helpers.sendTemplateEmail(sendFrom,
 							[staffs[staff].email], subject, 'approve', map);
 
-						var phones = staffs[staff.phones];
+						var phones = staffs[staff].phones;
 
 						if (phones) {
 							for (var phone in phones) {
@@ -969,6 +969,10 @@ function validateUsers(users, req, options, cb) {
 	});
 }
 
+function capitalizeFirstLetter(string) {
+	return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 router.postUpdatedUser = function (req, res) {
 	var userId = req.params.userId;
 
@@ -1070,7 +1074,7 @@ router.postUsers = function (req, res) {
 					var sendTo = [user.email.value.toLowerCase()];
 					var subject = 'Peace Corps BonVoyage Registration';
 					var map = {
-						name: user.name.value.split(' ')[0],
+						name: capitalizeFirstLetter(user.name.value.toLowerCase().split(' ')[0]),
 						button: process.env.BONVOYAGE_DOMAIN + '/register/' +
 						sendTo + '/' + token,
 					};
