@@ -142,9 +142,10 @@ app.get('/requests/:requestId', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderApproval);
 app.get('/requests/:requestId/edit', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderEditRequest);
-app.get('/users', ensureLoggedIn('/login'), views.renderUsers);
+app.get('/users', ensureLoggedIn('/login'),
+	needsAccess(Access.STAFF), views.renderUsers);
 app.get('/users/add', ensureLoggedIn('/login'),
-	needsAccess(Access.STAFF), views.renderAddUsers);
+	needsAccess(Access.ADMIN), views.renderAddUsers);
 app.get('/profile/:userId?', ensureLoggedIn('/login'),
 	needsAccess(Access.VOLUNTEER), views.renderProfile);
 
