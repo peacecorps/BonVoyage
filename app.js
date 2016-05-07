@@ -221,6 +221,23 @@ function getErrorMessage(err) {
 	}
 }
 
+function getErrorHeaderLinks(req) {
+	var errorHeaderLinks = [
+		{ text: 'Dashboard', href: '/dashboard' },
+		{ text: 'Submit a Request', href: '/dashboard/submit' },
+	];
+
+	if (req.user.access >= Access.STAFF) {
+		errorHeaderLinks.push({ text: 'Users', href: '/users' });
+	}
+
+	if (req.user.access == Access.ADMIN) {
+		errorHeaderLinks.push({ text: 'Add Users', href: '/users/add' });
+	}
+
+	return errorHeaderLinks;
+}
+
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
@@ -229,8 +246,9 @@ if (app.get('env') === 'development') {
 		res.status(err.status || 500);
 		res.render('error', {
 			message: getErrorMessage(err),
+			links: getErrorHeaderLinks(req),
 			error: err,
-			hideLogout: true,
+			hideLogout: !req.isAuthenticated(),
 		});
 	});
 }
@@ -242,7 +260,8 @@ app.use(function (err, req, res, next) {
 	res.status(err.status || 500);
 	res.render('error', {
 		message: getErrorMessage(err),
-		hideLogout: true,
+		links: getErrorHeaderLinks(req),
+		hideLogout: !req.isAuthenticated(),
 	});
 });
 

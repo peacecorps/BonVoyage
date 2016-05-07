@@ -1,7 +1,7 @@
 
 @import 'mixins';
 @import 'variables';
-
+@import 'navbar';
 
 #htmlwrapper {
 
@@ -104,7 +104,6 @@
 	}
 
 	.navbar {
-		background-color: $fg-color-light;
 		border-width: 0;
 		padding: 0px 5px;
 
@@ -112,32 +111,6 @@
 			padding: 10px;
 			img {
 				height:30px;
-			}
-		}
-
-		a {
-			color: $white-color;
-			&:hover:not(.nohover) {
-				color: $white-color-hover;
-			}
-		}
-		li.active {
-			a {
-				color: $fg-color-dark;
-				&:hover {
-					color: #000;
-				}
-			}
-		}
-
-		.navbar-toggle {
-			span.icon-bar {
-				background-color: #e7e7e7;
-			}
-			&:focus, &:hover {
-				span.icon-bar {
-					background-color: $fg-color-dark-hover;
-				}
 			}
 		}
 	}
