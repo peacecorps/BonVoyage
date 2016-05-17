@@ -12,7 +12,7 @@ var requestSchema = mongoose.Schema({
 		required: true,
 		ref: 'user',
 	},
-	pcmember: {
+	reviewer: {
 		type: mongoose.Schema.Types.ObjectId,
 		required: true,
 		ref: 'user',

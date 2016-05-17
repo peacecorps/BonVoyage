@@ -64,7 +64,7 @@ $(function () {
 				},
 			},
 			{
-				data: 'pcmember',
+				data: 'reviewer',
 				render: function (data) {
 					if (data) {
 						return data.name;

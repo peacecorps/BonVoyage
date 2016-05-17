@@ -160,12 +160,12 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 		}
 	}
 
-	var pcmemberId = req.body.pcmember;
+	var reviewerId = req.body.reviewer;
 
-	if (pcmemberId === undefined || pcmemberId === '') {
+	if (reviewerId === undefined || reviewerId === '') {
 		req.session.submission = req.body;
 		req.flash('submissionFlash', {
-			text: 'You must select a Peace Corps Member member to assign this leave request to.',
+			text: 'You must select a reviewer to assign this leave request to.',
 			class: 'danger',
 		});
 		helpers.sendJSON(res, { redirect: failureRedirect });
@@ -191,9 +191,9 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 			// Verify that the volunteer exists
 			helpers.getUsers({
 				user: {
-					_id: pcmemberId,
+					_id: reviewerId,
 				},
-			}, function (err, pcmembers) {
+			}, function (err, reviewers) {
 				if (err) {
 					console.error(err);
 					req.session.submission = req.body;
@@ -203,7 +203,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 						class: 'danger',
 					});
 					helpers.sendJSON(res, { redirect: failureRedirect });
-				} else if (pcmembers.length > 0) {
+				} else if (reviewers.length > 0) {
 					var legs = [];
 					var visitedCountries = [];
 					for (var i = 0; i < req.body.legs.length; i++) {
@@ -271,7 +271,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 						cb({
 							requestData: {
 								volunteer: userId,
-								pcmember: pcmemberId,
+								reviewer: reviewerId,
 								status: {
 									isPending: true,
 									isApproved: false,
@@ -281,7 +281,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 							},
 							countries: countries,
 							users: volunteers,
-							pcmembers: pcmembers,
+							reviewers: reviewers,
 						});
 					} else {
 						req.session.submission = req.body;
@@ -296,7 +296,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 				} else {
 					req.session.submission = req.body;
 					req.flash('submissionFlash', {
-						text: 'The Peace Corps Member that you assigned could not be found.',
+						text: 'The reviewer that you assigned could not be found.',
 						class: 'danger',
 					});
 					helpers.sendJSON(res, { redirect: failureRedirect });
@@ -435,10 +435,10 @@ router.postUpdatedRequest = function (req, res) {
 			}
 
 			// Detect if the staff assigned has changed
-			if (data.pcmembers.length > 0 &&
-				!data.pcmembers[0]._id.equals(req.request.pcmember._id)) {
-				comment += '- Changed assigned Peace Corps member from ' +
-					req.request.pcmember.name + ' to ' + data.pcmembers[0].name + '\n';
+			if (data.reviewers.length > 0 &&
+				!data.reviewers[0]._id.equals(req.request.reviewer._id)) {
+				comment += '- Changed assigned reviewer from ' +
+					req.request.reviewer.name + ' to ' + data.reviewers[0].name + '\n';
 				changesMade = true;
 			}
 

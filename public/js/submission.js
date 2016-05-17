@@ -5,6 +5,7 @@
 /* globals window */
 /* globals getWarnings */
 /* globals submissionData */
+/* globals signedInUser */
 /* globals PICKADATE_DISPLAY_FORMAT */
 
 $(function() {
@@ -169,7 +170,7 @@ $(function() {
   }
   $('.select-country').selectize();
 
-  var $selectPCMember = $('#selectPCMember').selectize({
+  var $selectReviewer = $('#selectReviewer').selectize({
       valueField: '_id',
       labelField: 'name',
       searchField: ['name'],
@@ -180,11 +181,11 @@ $(function() {
     if (volunteer) {
       $('#submissionName').text(' (' + volunteer.name + ') ');
       if (selectedUser) {
-        $selectPCMember[0].selectize.updateOption(selectedUser._id, volunteer);
+        $selectReviewer[0].selectize.updateOption(selectedUser._id, volunteer);
       } else {
-        $selectPCMember[0].selectize.addOption(volunteer);
+        $selectReviewer[0].selectize.addOption(volunteer);
       }
-      $selectPCMember[0].selectize.refreshOptions(false);
+      $selectReviewer[0].selectize.refreshOptions(false);
     }
   }
 
@@ -229,12 +230,12 @@ $(function() {
         if (selectedUser) {
           json.push(selectedUser);
         }
-        $selectPCMember[0].selectize.addOption(json);
-        $selectPCMember[0].selectize.refreshOptions(false);
+        $selectReviewer[0].selectize.addOption(json);
+        $selectReviewer[0].selectize.refreshOptions(false);
         if(submissionDataExists()) {
             // A failure just occurred during submission: we need to replace the previously submitted data
-            if (submissionData.pcmember !== undefined) {
-                $selectPCMember[0].selectize.setValue(submissionData.pcmember);
+            if (submissionData.reviewer !== undefined) {
+                $selectReviewer[0].selectize.setValue(submissionData.reviewer);
             }
         }
       }
@@ -295,7 +296,7 @@ $(function() {
       if (isSubmitAsOtherUserShowing()) {
           volunteer = $selectRequestee[0].selectize.getValue();
       }
-      var pcmember = $selectPCMember[0].selectize.getValue();
+      var reviewer = $selectReviewer[0].selectize.getValue();
       var counterpartApproved = $('#approvalCheckbox').is(':checked');
 
       var url = '/api/requests';
@@ -311,7 +312,7 @@ $(function() {
           contentType: "application/x-www-form-urlencoded",
           data: {
               volunteer: volunteer,
-              pcmember: pcmember,
+              reviewer: reviewer,
               legs: legs,
               counterpartApproved: counterpartApproved,
           },

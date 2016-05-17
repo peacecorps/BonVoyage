@@ -132,7 +132,7 @@ router.renderEditRequest = function (req, res) {
 
 		sub = {
 			volunteer: req.request.volunteer._id,
-			pcmember: req.request.pcmember._id,
+			reviewer: req.request.reviewer._id,
 			legs: req.request.legs,
 			counterpartApproved: '' + req.request.counterpartApproved,
 		};
