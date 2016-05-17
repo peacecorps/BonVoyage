@@ -160,12 +160,12 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 		}
 	}
 
-	var staffId = req.body.staff;
+	var pcmemberId = req.body.pcmember;
 
-	if (staffId === undefined || staffId === '') {
+	if (pcmemberId === undefined || pcmemberId === '') {
 		req.session.submission = req.body;
 		req.flash('submissionFlash', {
-			text: 'You must select a staff member to assign this leave request to.',
+			text: 'You must select a Peace Corps Member member to assign this leave request to.',
 			class: 'danger',
 		});
 		helpers.sendJSON(res, { redirect: failureRedirect });
@@ -191,9 +191,9 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 			// Verify that the volunteer exists
 			helpers.getUsers({
 				user: {
-					_id: staffId,
+					_id: pcmemberId,
 				},
-			}, function (err, staff) {
+			}, function (err, pcmembers) {
 				if (err) {
 					console.error(err);
 					req.session.submission = req.body;
@@ -203,7 +203,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 						class: 'danger',
 					});
 					helpers.sendJSON(res, { redirect: failureRedirect });
-				} else if (staff.length > 0) {
+				} else if (pcmembers.length > 0) {
 					var legs = [];
 					var visitedCountries = [];
 					for (var i = 0; i < req.body.legs.length; i++) {
@@ -271,7 +271,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 						cb({
 							requestData: {
 								volunteer: userId,
-								staff: staffId,
+								pcmember: pcmemberId,
 								status: {
 									isPending: true,
 									isApproved: false,
@@ -281,7 +281,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 							},
 							countries: countries,
 							users: volunteers,
-							staff: staff,
+							pcmembers: pcmembers,
 						});
 					} else {
 						req.session.submission = req.body;
@@ -296,7 +296,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 				} else {
 					req.session.submission = req.body;
 					req.flash('submissionFlash', {
-						text: 'The staff that you selected could not be found.',
+						text: 'The Peace Corps Member that you assigned could not be found.',
 						class: 'danger',
 					});
 					helpers.sendJSON(res, { redirect: failureRedirect });
@@ -435,10 +435,10 @@ router.postUpdatedRequest = function (req, res) {
 			}
 
 			// Detect if the staff assigned has changed
-			if (data.staff.length > 0 &&
-				!data.staff[0]._id.equals(req.request.staff._id)) {
-				comment += '- Changed assigned Peace Corps staff from ' +
-					req.request.staff.name + ' to ' + data.staff[0].name + '\n';
+			if (data.pcmembers.length > 0 &&
+				!data.pcmembers[0]._id.equals(req.request.pcmember._id)) {
+				comment += '- Changed assigned Peace Corps member from ' +
+					req.request.pcmember.name + ' to ' + data.pcmembers[0].name + '\n';
 				changesMade = true;
 			}
 

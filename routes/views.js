@@ -132,7 +132,7 @@ router.renderEditRequest = function (req, res) {
 
 		sub = {
 			volunteer: req.request.volunteer._id,
-			staff: req.request.staff._id,
+			pcmember: req.request.pcmember._id,
 			legs: req.request.legs,
 			counterpartApproved: '' + req.request.counterpartApproved,
 		};
@@ -240,7 +240,6 @@ router.renderDashboard = function (req, res) {
 			title: 'Dashboard',
 			links: links,
 			messages: req.flash('dashboardFlash'),
-			staff: req.user.access >= Access.STAFF,
 		});
 	}
 };

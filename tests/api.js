@@ -364,7 +364,7 @@ describe('GET /api/requests', function () {
 				assert.isString(testRequest.comments[0]._id);
 				assert.isString(testRequest.comments[0].timestamp);
 				assert(testRequest.counterpartApproved === true);
-				assert(testRequest.staff.name === 'Patrick Choquette');
+				assert(testRequest.pcmember.name === 'Patrick Choquette');
 				assert(testRequest.volunteer.name === 'Ishaan Parikh');
 				assert.isString(testRequest._id);
 				done();
@@ -422,7 +422,7 @@ describe('GET /api/requests/:requestId', function () {
 				}
 
 				assert.isObject(res.body);
-				assert(res.body.staff.name === 'Patrick Choquette');
+				assert(res.body.pcmember.name === 'Patrick Choquette');
 				assert(res.body.volunteer.name === 'Ishaan Parikh');
 				assert.equal(res.body._id, request._id);
 				done();
@@ -1161,7 +1161,7 @@ describe('POST /api/requests', function () {
 			.post('/api/requests')
 			.send({
 				volunteer: volunteer._id,
-				staff: agents.admin.user._id,
+				pcmember: agents.admin.user._id,
 				legs: [
 					{
 						startDate: 20160319,
@@ -1190,7 +1190,7 @@ describe('POST /api/requests', function () {
 
 						assert(res.body.filter(function (request) {
 							return request.volunteer._id == volunteer._id &&
-								request.staff._id == agents.admin.user._id;
+								request.pcmember._id == agents.admin.user._id;
 						}).length === 0);
 						done();
 					});
@@ -1203,7 +1203,7 @@ describe('POST /api/requests', function () {
 			.post('/api/requests')
 			.send({
 				volunteer: volunteer._id,
-				staff: agents.admin.user._id,
+				pcmember: agents.admin.user._id,
 				legs: [
 					{
 						startDate: 20160309,
@@ -1232,7 +1232,7 @@ describe('POST /api/requests', function () {
 
 						assert(res.body.filter(function (request) {
 							return request.volunteer._id == volunteer._id &&
-								request.staff._id == agents.admin.user._id;
+								request.pcmember._id == agents.admin.user._id;
 						}).length > 0);
 						done();
 					});
@@ -1290,7 +1290,7 @@ describe('POST /api/requests/:requestId', function () {
 			.post('/api/requests/' + request._id)
 			.send({
 				volunteer: userWithName(users, 'Ishaan Parikh'),
-				staff: agents.admin.user._id,
+				pcmember: agents.admin.user._id,
 				legs: [
 					{
 						startDate: 20160309,

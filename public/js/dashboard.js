@@ -64,7 +64,7 @@ $(function () {
 				},
 			},
 			{
-				data: 'staff',
+				data: 'pcmember',
 				render: function (data) {
 					if (data) {
 						return data.name;

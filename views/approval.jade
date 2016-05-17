@@ -26,20 +26,20 @@ block content
 							span 
 								b Phone(s): 
 							span.phones= (request.volunteer.phones && request.volunteer.phones.length > 0 ? request.volunteer.phones.join(', ') : "No phone on file.")
-					h2 Assigned Staff 
+					h2 Assigned Peace Corps Member 
 					.shadow-box
 						p
 							span 
 								b Name: 
-							span= request.staff.name
+							span= request.pcmember.name
 						p
 							span 
 								b Email: 
-							span= (request.staff.email ? request.staff.email : "No email on file.")
+							span= (request.pcmember.email ? request.pcmember.email : "No email on file.")
 						p
 							span 
 								b Phone(s): 
-							span.phones= (request.staff.phones && request.staff.phones.length > 0 ? request.staff.phones.join(', ') : "No phone on file.")
+							span.phones= (request.pcmember.phones && request.pcmember.phones.length > 0 ? request.pcmember.phones.join(', ') : "No phone on file.")
 					h2 Trip Itinerary
 					.shadow-box
 						each leg in request.legs

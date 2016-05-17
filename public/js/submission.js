@@ -116,9 +116,9 @@ $(function() {
       "<div class='leg shadow-box'> \
           <h2> Trip Leg #" + count + " </h2> \
           <input class='addedLegCount hidden' value='" + addedLegCount + "'> \
-          <label class='info'>Date leaving <span class='required'>*<span></label> \
+          <label class='info'>Date leaving site <span class='required'>*<span></label> \
           <input class='form-control datepicker date-leaving' type='text' placeholder='Jan 1, 2000', value='" + (leg && leg.startDate ? leg.startDate : defaultStart.toString()) + "'> \
-          <label class='info'>Date returning <span class='required'>*<span></label> \
+          <label class='info'>Date returning to site <span class='required'>*<span></label> \
           <input class='form-control datepicker date-returning' type='text' placeholder='Dec 31, 2000', value='" + (leg && leg.endDate ? leg.endDate : defaultEnd.toString()) + "'> \
           <label class='info'>City <span class='required'>*<span></label> \
           <input class='form-control city' type='text' placeholder='Chicago' value='" + (leg && leg.city ? leg.city : '') + "'></input> \
@@ -189,7 +189,7 @@ $(function() {
         updateVolunteerName(value);
       }
   });
-  var $selectStaff = $('#selectStaff').selectize({
+  var $selectPCMember = $('#selectPCMember').selectize({
       valueField: '_id',
       labelField: 'name',
       searchField: ['name'],
@@ -222,12 +222,12 @@ $(function() {
       url: "/api/users?minAccess=1&maxAccess=1",
       dataType: "json",
       success: function(json) {
-        $selectStaff[0].selectize.addOption(json);
-        $selectStaff[0].selectize.refreshOptions(false);
+        $selectPCMember[0].selectize.addOption(json);
+        $selectPCMember[0].selectize.refreshOptions(false);
         if(submissionDataExists()) {
             // A failure just occurred during submission: we need to replace the previously submitted data
-            if (submissionData.staff !== undefined) {
-                $selectStaff[0].selectize.setValue(submissionData.staff);
+            if (submissionData.pcmember !== undefined) {
+                $selectPCMember[0].selectize.setValue(submissionData.pcmember);
             }
         }
       }
@@ -289,7 +289,7 @@ $(function() {
       if (isSubmitAsOtherUserShowing()) {
           volunteer = $selectRequestee[0].selectize.getValue();
       }
-      var staff = $selectStaff[0].selectize.getValue();
+      var pcmember = $selectPCMember[0].selectize.getValue();
       var counterpartApproved = $('#approvalCheckbox').is(':checked');
 
       var url = '/api/requests';
@@ -305,7 +305,7 @@ $(function() {
           contentType: "application/x-www-form-urlencoded",
           data: {
               volunteer: volunteer,
-              staff: staff,
+              pcmember: pcmember,
               legs: legs,
               counterpartApproved: counterpartApproved,
           },
