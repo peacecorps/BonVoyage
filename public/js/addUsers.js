@@ -80,6 +80,13 @@ $(function () {
 		}
 	});
 
+	function resetUploader() {
+		$('#uploader #title').text('Upload a file.');
+		$('#uploader #subtitle').text('.csv files only, <1MB');
+		$('#icon span').addClass('hidden');
+		$('#icon span#upload').removeClass('hidden');
+	}
+
 	function startLoading() {
 		$('#icon span').addClass('hidden');
 		$('#icon span#loading').removeClass('hidden');
@@ -180,6 +187,7 @@ $(function () {
 		if(!$(this).hasClass('disabled')) {
 			$(this).addClass('disabled');
 			table.clear().draw();
+			resetUploader();
 		}
 
 		event.preventDefault();
