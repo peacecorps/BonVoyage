@@ -22,8 +22,8 @@ block content
           label.info(for='selectRequestee') Select the Volunteer
           select.form-control#selectRequestee(placeholder='John Doe')
         
-        label.info(for='selectStaff') Assign a Staff Member
-        select.form-control#selectStaff(placeholder='Patrick Choquette')
+        label.info(for='selectReviewer') Assign a Reviewer
+        select.form-control#selectReviewer(placeholder='Patrick Choquette')
 
         #request-submit
 
@@ -44,6 +44,7 @@ block content
 
 block scripts
   script.
+    var signedInUser = !{JSON.stringify(user)};
     var submissionData = !{JSON.stringify(submission)};
   script(src='/js/picker.js')
   script(src='/js/picker.date.js')

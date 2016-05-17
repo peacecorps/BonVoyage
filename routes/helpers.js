@@ -87,8 +87,8 @@ module.exports.getRequests = function (req, res, options, cb) {
 			matchUsers.volunteer = req.user._id;
 		}
 
-		if (options && options.staffId) {
-			matchUsers.staff = req.staffId;
+		if (options && options.reviewerId) {
+			matchUsers.reviewer = req.reviewerId;
 		}
 
 		if (options && options.userId) {
@@ -98,7 +98,7 @@ module.exports.getRequests = function (req, res, options, cb) {
 		Request
 			.find(matchUsers)
 			.populate({
-				path: 'staff comments.user volunteer',
+				path: 'reviewer comments.user volunteer',
 				select: '-hash',
 			})
 			.lean()
@@ -324,7 +324,7 @@ module.exports.postComment = function (
 
 	// send notifications after comments are posted
 	Request.findById(requestId, function (err, updatedRequest) {
-		var staffId = updatedRequest.staff;
+		var reviewerId = updatedRequest.reviewer;
 		var volunteerId = updatedRequest.volunteer;
 
 		User.findById(volunteerId, function (err, volunteer) {
@@ -344,15 +344,15 @@ module.exports.postComment = function (
 			}
 
 			// notify the staff
-			User.findById(staffId, function (err, staff) {
+			User.findById(reviewerId, function (err, reviewer) {
 				if (err) {
 					console.log(err);
 					cb(err);
 				}
 
-				if (staff.phones) {
-					for (var i = 0; i < staff.phones.length; i++) {
-						module.exports.sendSMS(staff.phones[i], 'A BonVoyage ' +
+				if (reviewer.phones) {
+					for (var i = 0; i < reviewer.phones.length; i++) {
+						module.exports.sendSMS(reviewer.phones[i], 'A BonVoyage ' +
 							'leave request for ' + volunteer.name +
 							' has been updated. Please review the ' +
 							'details at ' + process.env.BONVOYAGE_DOMAIN +

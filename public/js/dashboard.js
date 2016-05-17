@@ -64,7 +64,7 @@ $(function () {
 				},
 			},
 			{
-				data: 'staff',
+				data: 'reviewer',
 				render: function (data) {
 					if (data) {
 						return data.name;

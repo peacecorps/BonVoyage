@@ -1,10 +1,10 @@
 /* jshint multistr: true */
 /* globals moment */
 /* globals DateOnly */
-/* globals console */
 /* globals window */
 /* globals getWarnings */
 /* globals submissionData */
+/* globals signedInUser */
 /* globals PICKADATE_DISPLAY_FORMAT */
 
 $(function() {
@@ -13,6 +13,7 @@ $(function() {
   var addedLegCount = -1; // 0 indexed count (doesn't decrease when legs are removed)
   var arrCountries = [];
   var users = null;
+  var selectedUser = signedInUser.access === 0 ? signedInUser : null;
 
   function insertAtIndex(i, id, data) {
       if(i === 1) {
@@ -109,16 +110,13 @@ $(function() {
       var defaultStart = new DateOnly(m);
       m.add(4, 'days');
       var defaultEnd = new DateOnly(m);
-      console.log(defaultStart);
-      console.log(defaultEnd);
-      console.log(leg);
       var html =
       "<div class='leg shadow-box'> \
           <h2> Trip Leg #" + count + " </h2> \
           <input class='addedLegCount hidden' value='" + addedLegCount + "'> \
-          <label class='info'>Date leaving <span class='required'>*<span></label> \
+          <label class='info'>Date leaving site <span class='required'>*<span></label> \
           <input class='form-control datepicker date-leaving' type='text' placeholder='Jan 1, 2000', value='" + (leg && leg.startDate ? leg.startDate : defaultStart.toString()) + "'> \
-          <label class='info'>Date returning <span class='required'>*<span></label> \
+          <label class='info'>Date returning to site <span class='required'>*<span></label> \
           <input class='form-control datepicker date-returning' type='text' placeholder='Dec 31, 2000', value='" + (leg && leg.endDate ? leg.endDate : defaultEnd.toString()) + "'> \
           <label class='info'>City <span class='required'>*<span></label> \
           <input class='form-control city' type='text' placeholder='Chicago' value='" + (leg && leg.city ? leg.city : '') + "'></input> \
@@ -165,37 +163,38 @@ $(function() {
   function submissionDataExists() {
       return !$.isEmptyObject(submissionData);
   }
-
-  function updateVolunteerName(volunteer) {
-    if (users) {
-      var name = null;
-      for(var i = 0; i < users.length; i++) {
-        if (users[i]._id === volunteer) {
-          name = users[i].name;
-        }
-      }
-      if (name !== null) {
-        $('#submissionName').text(' (' + name + ') ');
-      }
-    }
-  }
   $('.select-country').selectize();
-  var $selectRequestee = $('#selectRequestee').selectize({
-      valueField: '_id',
-      labelField: 'name',
-      searchField: ['name'],
-      sortField: 'name',
-      onChange: function(value) {
-        updateVolunteerName(value);
-      }
-  });
-  var $selectStaff = $('#selectStaff').selectize({
+
+  var $selectReviewer = $('#selectReviewer').selectize({
       valueField: '_id',
       labelField: 'name',
       searchField: ['name'],
       sortField: 'name'
   });
 
+  function updateVolunteerName(volunteer) {
+    if (volunteer) {
+      $('#submissionName').text(' (' + volunteer.name + ') ');
+      if (selectedUser) {
+        $selectReviewer[0].selectize.updateOption(selectedUser._id, volunteer);
+      } else {
+        $selectReviewer[0].selectize.addOption(volunteer);
+      }
+      $selectReviewer[0].selectize.refreshOptions(false);
+    }
+  }
+
+  var $selectRequestee = $('#selectRequestee').selectize({
+      valueField: '_id',
+      labelField: 'name',
+      searchField: ['name'],
+      sortField: 'name',
+      onChange: function(value) {
+        var volunteer = $selectRequestee[0].selectize.options[value];
+        updateVolunteerName(volunteer);
+        selectedUser = volunteer;
+      }
+  });
 
   if (isSubmitAsOtherUserShowing()) {
       $.ajax({
@@ -204,30 +203,37 @@ $(function() {
           dataType: "json",
           success: function(json) {
             users = json;
-            console.log(json);
             $selectRequestee[0].selectize.addOption(json);
             $selectRequestee[0].selectize.refreshOptions(false);
             if(submissionDataExists()) {
                 // A failure just occurred during submission: we need to replace the previously submitted data
-                if (isSubmitAsOtherUserShowing() && submissionData.volunteer !== undefined) {
-                    $selectRequestee[0].selectize.setValue(submissionData.volunteer);
+                if (submissionData.volunteer !== undefined) {
+                  $selectRequestee[0].selectize.setValue(submissionData.volunteer);
+                  var volunteer = $selectRequestee[0].selectize.options[submissionData.volunteer];
+                  updateVolunteerName(volunteer);
                 }
-                updateVolunteerName(submissionData.volunteer);
             }
           }
       });
   }
+
   $.ajax({
       method: "GET",
       url: "/api/users?minAccess=1&maxAccess=1",
       dataType: "json",
       success: function(json) {
-        $selectStaff[0].selectize.addOption(json);
-        $selectStaff[0].selectize.refreshOptions(false);
+        // If a user is selected, add them as an option to be a reviewer
+        // Except don't give volunteers the option to assign themselves on the submission page
+        if (selectedUser &&
+          (signedInUser.access !== 0 || window.location.pathname !== '/dashboard/submit')) {
+          json.push(selectedUser);
+        }
+        $selectReviewer[0].selectize.addOption(json);
+        $selectReviewer[0].selectize.refreshOptions(false);
         if(submissionDataExists()) {
             // A failure just occurred during submission: we need to replace the previously submitted data
-            if (submissionData.staff !== undefined) {
-                $selectStaff[0].selectize.setValue(submissionData.staff);
+            if (submissionData.reviewer !== undefined) {
+                $selectReviewer[0].selectize.setValue(submissionData.reviewer);
             }
         }
       }
@@ -252,18 +258,15 @@ $(function() {
           if(submissionDataExists()) {
               // A failure just occurred during submission: we need to replace the previously submitted data
               for(var i = 0; i < $select.length; i++) {
-                  console.log($select[i]);
                   $select[i].selectize.setValue(submissionData.legs[i].country);
               }
           }
       }
   });
 
-
   if(submissionDataExists()) {
       // A failure just occurred during submission: we need to replace the previously submitted data
       // Create all of the legs, and fill what data can be filled without the above AJAX calls finishing (countries, submit as other user)
-      console.log(submissionData);
       for (var i = 0; i < submissionData.legs.length; i++) {
           var leg = submissionData.legs[i];
           addLeg(leg);
@@ -289,7 +292,7 @@ $(function() {
       if (isSubmitAsOtherUserShowing()) {
           volunteer = $selectRequestee[0].selectize.getValue();
       }
-      var staff = $selectStaff[0].selectize.getValue();
+      var reviewer = $selectReviewer[0].selectize.getValue();
       var counterpartApproved = $('#approvalCheckbox').is(':checked');
 
       var url = '/api/requests';
@@ -297,7 +300,6 @@ $(function() {
       var regex = curr_url.match('^.*/requests/([0-9a-f]{24})/edit$');
       if (regex !== null && regex.length > 1) {
         url = '/api/requests/' + regex[1];
-        console.log(url);
       }
 
       $.ajax({
@@ -305,7 +307,7 @@ $(function() {
           contentType: "application/x-www-form-urlencoded",
           data: {
               volunteer: volunteer,
-              staff: staff,
+              reviewer: reviewer,
               legs: legs,
               counterpartApproved: counterpartApproved,
           },

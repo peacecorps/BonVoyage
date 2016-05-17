@@ -58,7 +58,7 @@ module.exports = function (options, done) {
 		};
 	}
 
-	function generateRequest(user, staff) {
+	function generateRequest(user, reviewer) {
 		var isPending = randBool(0.3);
 		var isApproved = (isPending ? undefined : randBool(0.7));
 		var legs = [];
@@ -68,7 +68,7 @@ module.exports = function (options, done) {
 
 		return new Request({
 			volunteer: user,
-			staff: staff,
+			reviewer: reviewer,
 			status: {
 				isPending: isPending,
 				isApproved: isApproved,
@@ -137,7 +137,7 @@ module.exports = function (options, done) {
 				var getRequestForName = function (name) {
 					return new Request({
 						volunteer: userWithName(volunteers, name)._id,
-						staff: userWithName(staff, 'Patrick Choquette')._id,
+						reviewer: userWithName(staff, 'Patrick Choquette')._id,
 						status: {
 							isPending: true,
 							isApproved: false,
