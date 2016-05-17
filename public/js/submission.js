@@ -1,7 +1,6 @@
 /* jshint multistr: true */
 /* globals moment */
 /* globals DateOnly */
-/* globals console */
 /* globals window */
 /* globals getWarnings */
 /* globals submissionData */
@@ -15,7 +14,6 @@ $(function() {
   var arrCountries = [];
   var users = null;
   var selectedUser = signedInUser.access === 0 ? signedInUser : null;
-  console.log(selectedUser);
 
   function insertAtIndex(i, id, data) {
       if(i === 1) {
@@ -112,9 +110,6 @@ $(function() {
       var defaultStart = new DateOnly(m);
       m.add(4, 'days');
       var defaultEnd = new DateOnly(m);
-      console.log(defaultStart);
-      console.log(defaultEnd);
-      console.log(leg);
       var html =
       "<div class='leg shadow-box'> \
           <h2> Trip Leg #" + count + " </h2> \
@@ -227,7 +222,10 @@ $(function() {
       url: "/api/users?minAccess=1&maxAccess=1",
       dataType: "json",
       success: function(json) {
-        if (selectedUser) {
+        // If a user is selected, add them as an option to be a reviewer
+        // Except don't give volunteers the option to assign themselves on the submission page
+        if (selectedUser &&
+          (signedInUser.access !== 0 || window.location.pathname !== '/dashboard/submit')) {
           json.push(selectedUser);
         }
         $selectReviewer[0].selectize.addOption(json);
@@ -260,7 +258,6 @@ $(function() {
           if(submissionDataExists()) {
               // A failure just occurred during submission: we need to replace the previously submitted data
               for(var i = 0; i < $select.length; i++) {
-                  console.log($select[i]);
                   $select[i].selectize.setValue(submissionData.legs[i].country);
               }
           }
@@ -270,7 +267,6 @@ $(function() {
   if(submissionDataExists()) {
       // A failure just occurred during submission: we need to replace the previously submitted data
       // Create all of the legs, and fill what data can be filled without the above AJAX calls finishing (countries, submit as other user)
-      console.log(submissionData);
       for (var i = 0; i < submissionData.legs.length; i++) {
           var leg = submissionData.legs[i];
           addLeg(leg);
@@ -304,7 +300,6 @@ $(function() {
       var regex = curr_url.match('^.*/requests/([0-9a-f]{24})/edit$');
       if (regex !== null && regex.length > 1) {
         url = '/api/requests/' + regex[1];
-        console.log(url);
       }
 
       $.ajax({
