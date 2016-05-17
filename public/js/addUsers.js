@@ -80,6 +80,13 @@ $(function () {
 		}
 	});
 
+	function resetUploader() {
+		$('#uploader #title').text('Upload a file.');
+		$('#uploader #subtitle').text('.csv files only, <1MB');
+		$('#icon span').addClass('hidden');
+		$('#icon span#upload').removeClass('hidden');
+	}
+
 	function startLoading() {
 		$('#icon span').addClass('hidden');
 		$('#icon span#loading').removeClass('hidden');
@@ -96,7 +103,7 @@ $(function () {
 
 	new ss.SimpleUpload({
 		button: $('#uploader'), // file upload button
-		dropzone: $('#uploader'), // file upload button
+		dropzone: $('body'), // file upload button
 		url: '/api/users/validate', // server side handler
 		name: 'users', // upload parameter name
 		responseType: 'json',
@@ -180,6 +187,7 @@ $(function () {
 		if(!$(this).hasClass('disabled')) {
 			$(this).addClass('disabled');
 			table.clear().draw();
+			resetUploader();
 		}
 
 		event.preventDefault();
