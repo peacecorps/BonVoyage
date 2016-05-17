@@ -44,6 +44,7 @@ block content
 
 block scripts
   script.
+    var signedInUser = !{JSON.stringify(user)};
     var submissionData = !{JSON.stringify(submission)};
   script(src='/js/picker.js')
   script(src='/js/picker.date.js')

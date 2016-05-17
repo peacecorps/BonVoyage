@@ -13,6 +13,8 @@ $(function() {
   var addedLegCount = -1; // 0 indexed count (doesn't decrease when legs are removed)
   var arrCountries = [];
   var users = null;
+  var selectedUser = signedInUser.access === 0 ? signedInUser : null;
+  console.log(selectedUser);
 
   function insertAtIndex(i, id, data) {
       if(i === 1) {
@@ -165,30 +167,8 @@ $(function() {
   function submissionDataExists() {
       return !$.isEmptyObject(submissionData);
   }
-
-  function updateVolunteerName(volunteer) {
-    if (users) {
-      var name = null;
-      for(var i = 0; i < users.length; i++) {
-        if (users[i]._id === volunteer) {
-          name = users[i].name;
-        }
-      }
-      if (name !== null) {
-        $('#submissionName').text(' (' + name + ') ');
-      }
-    }
-  }
   $('.select-country').selectize();
-  var $selectRequestee = $('#selectRequestee').selectize({
-      valueField: '_id',
-      labelField: 'name',
-      searchField: ['name'],
-      sortField: 'name',
-      onChange: function(value) {
-        updateVolunteerName(value);
-      }
-  });
+
   var $selectPCMember = $('#selectPCMember').selectize({
       valueField: '_id',
       labelField: 'name',
@@ -196,6 +176,29 @@ $(function() {
       sortField: 'name'
   });
 
+  function updateVolunteerName(volunteer) {
+    if (volunteer) {
+      $('#submissionName').text(' (' + volunteer.name + ') ');
+      if (selectedUser) {
+        $selectPCMember[0].selectize.updateOption(selectedUser._id, volunteer);
+      } else {
+        $selectPCMember[0].selectize.addOption(volunteer);
+      }
+      $selectPCMember[0].selectize.refreshOptions(false);
+    }
+  }
+
+  var $selectRequestee = $('#selectRequestee').selectize({
+      valueField: '_id',
+      labelField: 'name',
+      searchField: ['name'],
+      sortField: 'name',
+      onChange: function(value) {
+        var volunteer = $selectRequestee[0].selectize.options[value];
+        updateVolunteerName(volunteer);
+        selectedUser = volunteer;
+      }
+  });
 
   if (isSubmitAsOtherUserShowing()) {
       $.ajax({
@@ -204,24 +207,28 @@ $(function() {
           dataType: "json",
           success: function(json) {
             users = json;
-            console.log(json);
             $selectRequestee[0].selectize.addOption(json);
             $selectRequestee[0].selectize.refreshOptions(false);
             if(submissionDataExists()) {
                 // A failure just occurred during submission: we need to replace the previously submitted data
-                if (isSubmitAsOtherUserShowing() && submissionData.volunteer !== undefined) {
-                    $selectRequestee[0].selectize.setValue(submissionData.volunteer);
+                if (submissionData.volunteer !== undefined) {
+                  $selectRequestee[0].selectize.setValue(submissionData.volunteer);
+                  var volunteer = $selectRequestee[0].selectize.options[submissionData.volunteer];
+                  updateVolunteerName(volunteer);
                 }
-                updateVolunteerName(submissionData.volunteer);
             }
           }
       });
   }
+
   $.ajax({
       method: "GET",
       url: "/api/users?minAccess=1&maxAccess=1",
       dataType: "json",
       success: function(json) {
+        if (selectedUser) {
+          json.push(selectedUser);
+        }
         $selectPCMember[0].selectize.addOption(json);
         $selectPCMember[0].selectize.refreshOptions(false);
         if(submissionDataExists()) {
@@ -258,7 +265,6 @@ $(function() {
           }
       }
   });
-
 
   if(submissionDataExists()) {
       // A failure just occurred during submission: we need to replace the previously submitted data
