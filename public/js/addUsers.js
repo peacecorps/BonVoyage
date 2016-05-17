@@ -103,7 +103,7 @@ $(function () {
 
 	new ss.SimpleUpload({
 		button: $('#uploader'), // file upload button
-		dropzone: $('#uploader'), // file upload button
+		dropzone: $('body'), // file upload button
 		url: '/api/users/validate', // server side handler
 		name: 'users', // upload parameter name
 		responseType: 'json',
