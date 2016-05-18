@@ -101,6 +101,10 @@ $(function() {
               }
           });
       });
+
+      $('.contact').intlTelInput({
+        utilsScript: '/js/utils.js',
+      });
   }
 
   function addLeg(leg) {
@@ -124,7 +128,7 @@ $(function() {
           <select class='form-control select-country' placeholder='United States'></select> \
           <div class='warnings'></div> \
           <label class='info'>Travel contact</label> \
-          <input class='form-control contact' type='text' placeholder='+1 123-456-7890  and/or  johndoe@peacecorps.gov' value='" + (leg && leg.contact ? leg.contact : '') + "'></input> \
+          <input class='form-control contact' type='tel' value='" + (leg && leg.contact ? leg.contact : '') + "'></input> \
           <label class='info'>Hotel/Hostel Information</label> \
           <input class='form-control hotel' type='text' placeholder='San Francisco Hotel: +1 123-456-7890' value='" + (leg && leg.hotel ? leg.hotel : '') + "'></input> \
           <label class='info'>Travel companions</label> \
@@ -148,7 +152,7 @@ $(function() {
           city: $(leg).find('.city').val(),
           country: $(leg).find('.selectized').selectize()[0].selectize.getValue(),
           hotel: $(leg).find('.hotel').val(),
-          contact: $(leg).find('.contact').val(),
+          contact: $(leg).find('.contact').intlTelInput('getNumber'),
           companions: $(leg).find('.companions').val(),
           description: $(leg).find('.description').val(),
           addedLegCount: $(leg).find('.addedLegCount').val(),

@@ -16,7 +16,6 @@
 .intl-tel-input input[type=tel] {
     position: relative;
     z-index: 0;
-    margin-bottom: 0 !important;
     padding-right: 36px;
     margin-right: 0
 }
