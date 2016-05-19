@@ -353,7 +353,7 @@ describe('GET /api/requests', function () {
 				assert(testRequest.legs[0].country === 'United States');
 				assert(testRequest.legs[0].countryCode === 'US');
 				assert(testRequest.legs[0].hotel === 'Test Hotel');
-				assert(testRequest.legs[0].contact === 'Test Contact');
+				assert(testRequest.legs[0].contact === '+14437654321');
 				assert(testRequest.legs[0].companions === 'Test Companion');
 				assert(testRequest.legs[0].description === 'Test Description');
 				assert.isArray(testRequest.comments);
