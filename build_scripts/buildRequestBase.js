@@ -52,7 +52,7 @@ module.exports = function (options, done) {
 			country: countries.countries[cc],
 			countryCode: cc,
 			hotel: ipsum(),
-			contact: ipsum(),
+			contact: '+14437654321',
 			companions: ipsum(),
 			description: ipsum({ count: randIndex(3), units: 'sentences' }),
 		};
@@ -150,7 +150,7 @@ module.exports = function (options, done) {
 								country: countries.countries.US,
 								countryCode: 'US',
 								hotel: 'Test Hotel',
-								contact: 'Test Contact',
+								contact: '+14437654321',
 								companions: 'Test Companion',
 								description: 'Test Description',
 							},
