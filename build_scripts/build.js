@@ -4,8 +4,9 @@
 require(__dirname + '/../setup');
 
 var mongoose = require('mongoose');
+var mongoConnection = require(__dirname + '/../config/mongoConnection');
 
-mongoose.connect(process.env.MONGO_DEV_CONNECTION_STRING);
+mongoose.connect(mongoConnection.getConnectionString());
 mongoose.connection.on('error', function (err) {
 	if (err) {
 		console.log(err);
