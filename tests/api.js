@@ -1495,6 +1495,58 @@ describe('POST /api/users/validate', function () {
 				done();
 			});
 	});
+
+	it('returns the validated users with access levels', function (done) {
+		agents.admin.request
+			.post('/api/users/validate')
+			.attach('users', __dirname + '/user_tests/test3.csv')
+			.expect(200)
+			.end(function (err, res) {
+				if (err) {
+					return done(err);
+				}
+
+				assert.isArray(res.body);
+				assert(res.body.length == 10);
+				res.body.forEach(function (user) {
+					assert.isObject(user);
+					assert.isObject(user.name);
+					assert.isString(user.name.value);
+					assert(user.name.valid === true);
+					assert.isObject(user.email);
+					assert.isString(user.email.value);
+					assert(user.email.valid === true);
+					assert.isObject(user.countryCode);
+					assert.isString(user.countryCode.value);
+					assert(user.countryCode.valid === true);
+					assert.isObject(user.country);
+					assert.isString(user.country.value);
+					assert(user.country.valid === true);
+					assert.isObject(user.access);
+					assert.isObject(user.phones);
+				});
+
+				res.body.slice(0, 7).forEach(function (user) {
+					assert(user.access.valid === true);
+					assert(user.valid === true);
+				});
+
+				res.body.slice(7, 10).forEach(function (user) {
+					assert(user.access.valid !== true);
+					assert(user.valid !== true);
+				});
+
+				assert(res.body[0].access.value === 0);
+				assert(res.body[1].access.value === 1);
+				assert(res.body[2].access.value === 2);
+				assert(res.body[3].access.value === 0);
+				assert(res.body[4].access.value === 1);
+				assert(res.body[5].access.value === 2);
+				assert(res.body[6].access.value === 2);
+
+				done();
+			});
+	});
 });
 
 describe('DELETE /api/requests/:requestId', function () {
