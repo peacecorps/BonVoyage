@@ -15,6 +15,7 @@ var DateOnly = require('dateonly');
 var Converter = require('csvtojson').Converter;
 var validator = require('email-validator');
 var phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance();
+var log = require(__dirname + '/../config/logger');
 
 // For setting default arguments
 function ifDefined(a, b) {
@@ -69,7 +70,7 @@ router.getRequests = function (req, res) {
 
 	helpers.getRequests(req, res, undefined, function (err, requests) {
 		if (err) {
-			console.error(err);
+			log.info({ err: err });
 		}
 
 		return helpers.sendJSON(res, requests);
@@ -79,7 +80,7 @@ router.getRequests = function (req, res) {
 router.getPendingRequests = function (req, res) {
 	helpers.getRequests(req, res, true, function (err, requests) {
 		if (err) {
-			console.error(err);
+			log.info({ err: err });
 		}
 
 		return helpers.sendJSON(res, requests);
@@ -89,7 +90,7 @@ router.getPendingRequests = function (req, res) {
 router.getPastRequests = function (req, res) {
 	helpers.getRequests(req, res, false, function (err, requests) {
 		if (err) {
-			console.error(err);
+			log.info({ err: err });
 		}
 
 		return helpers.sendJSON(res, requests);
@@ -120,7 +121,7 @@ router.getUsers = function (req, res) {
 			(req.user.access == Access.VOLUNTEER ? req.user.countryCode : countryCode),
 	}, function (err, users) {
 		if (err) {
-			console.error(err);
+			log.info({ err: err });
 		}
 
 		return helpers.sendJSON(res, users);
@@ -130,7 +131,7 @@ router.getUsers = function (req, res) {
 router.getWarnings = function (req, res) {
 	helpers.fetchWarnings(function (err, requests) {
 		if (err) {
-			console.error(err);
+			log.info({ err: err });
 		}
 
 		return helpers.sendJSON(res, requests);
@@ -179,7 +180,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 		},
 	}, function (err, volunteers) {
 		if (err) {
-			console.error(err);
+			log.info({ err: err });
 			req.session.submission = req.body;
 			req.flash('submissionFlash', {
 				text: 'An error has occrured while attempting to process your request. ' +
@@ -195,7 +196,7 @@ function validateRequestSubmission(req, res, failureRedirect, cb) {
 				},
 			}, function (err, reviewers) {
 				if (err) {
-					console.error(err);
+					log.info({ err: err });
 					req.session.submission = req.body;
 					req.flash('submissionFlash', {
 						text: 'An error has occrured while attempting to process your request. ' +
@@ -448,9 +449,7 @@ router.postUpdatedRequest = function (req, res) {
 				helpers.postComment(req.request._id, 'Administrator', null, comment,
 				function (err) {
 					if (err) {
-						console.error({
-							error: err,
-						});
+						log.info({ err: err });
 						req.flash('approvalFlash', {
 							text: 'An error has occurred while trying to ' +
 								'update this request. Please try again.',
@@ -487,6 +486,9 @@ router.postUpdatedRequest = function (req, res) {
 				// 	text: 'This leave request has successfully been updated.',
 				// 	class: 'success',
 				// });
+				log.info({
+					msg: 'testing',
+				});
 				helpers.sendJSON(res, { redirect: successRedirect });
 			}
 		}
@@ -518,7 +520,7 @@ router.postRequest = function (req, res) {
 							},
 							function (err, docs) {
 								if (err) {
-									console.error(err);
+									log.info({ err: err });
 								} else {
 									for (var j = 0; j < docs.length; j++) {
 										var msg = 'A request by ' +
@@ -531,8 +533,9 @@ router.postRequest = function (req, res) {
 												helpers.sendSMS(docs[j].phones[i], msg);
 											}
 										} else {
-											console.log(docs[j].name +
-											' does not have a phone number');
+											log.info({
+												user: docs[j],
+											}, 'No phone number found.');
 										}
 									}
 								}
@@ -696,8 +699,7 @@ router.postComments = function (req, res) {
 	helpers.postComment(id, req.user.name, req.user._id, req.body.content,
 	function (err) {
 		if (err) {
-			console.log('err on api');
-			console.log(err);
+			log.info({ err: err });
 			return helpers.sendError(res, err);
 		}
 
@@ -728,7 +730,7 @@ router.reset = function (req, res) {
 			// remove the existing password reset tokens
 			Token.find({ email: email, tokenType: false }).remove(function (err) {
 				if (err) {
-					console.log(err);
+					log.info({ err: err });
 				}
 
 				var token = randtoken.generate(64);
@@ -865,7 +867,7 @@ router.postAccess = function (req, res) {
 			},
 		}, function (err) {
 			if (err) {
-				console.error(err);
+				log.info({ err: err });
 			} else {
 				req.flash('usersFlash', {
 					text: 'The user\'s access rights have been updated.',
@@ -1048,7 +1050,7 @@ router.postUpdatedUser = function (req, res) {
 						(req.user._id == userId ? 'your' :
 							old.name + '\'s') + ' profile.',
 				});
-				console.error(err);
+				log.info({ err: err });
 			} else {
 				req.flash('profileFlash', {
 					text: (req.user._id == userId ?
@@ -1171,7 +1173,7 @@ router.deleteUser = function (req, res) {
 	if (userId == req.user._id || req.user.access == Access.ADMIN) {
 		Request.find({ volunteer: userId }).remove(function (err) {
 			if (err) {
-				console.error(err);
+				log.info({ err: err });
 				req.flash('usersFlash', {
 					text: 'An error has occurred while attempting to delete the user.',
 					class: 'danger',
@@ -1180,7 +1182,7 @@ router.deleteUser = function (req, res) {
 			} else {
 				User.find({ _id: userId }).remove(function (err) {
 					if (err) {
-						console.error(err);
+						log.info({ err: err });
 						req.flash('usersFlash', {
 							text: 'An error has occurred while attempting to delete the user.',
 							class: 'danger',

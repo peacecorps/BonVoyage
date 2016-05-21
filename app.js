@@ -19,6 +19,10 @@ var flash = require('connect-flash');
 var Access = require(__dirname + '/config/access');
 var multer = require('multer');
 var ensureLoggedIn = require('connect-ensure-login').ensureLoggedIn;
+// var bunyanLogger = require('bunyan-request-logger');
+// var bunyanLog = bunyanLogger();
+var bunyanMiddleware = require('bunyan-middleware');
+var log = require(__dirname + '/config/logger');
 var upload = multer({
 	dest: __dirname + '/uploads/users/',
 	limits: {
@@ -42,9 +46,13 @@ app.set('view engine', 'jade');
 
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 if (process.env.NODE_ENV == 'test') {
-	app.use(logger('dev', { stream: morganLog }));
+	log.info({ test: 'test' });
+
+	// app.use(bunyanLog.requestLogger());
 } else {
-	app.use(logger('dev'));
+	app.use(bunyanMiddleware({
+		logger: log,
+	}));
 }
 
 app.use(bodyParser.json());
