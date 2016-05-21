@@ -47,7 +47,7 @@ $(function() {
       $($warnings).append(
           $(
               "<div class='warning alert " + warning.colorClass + "' role='alert'> \
-                  <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>" + warning.source + " - " + warning.type + ": </b> " + warning.textOverview + " <b><a href='" + warning.link + "'>More Information</a></b></span> \
+                  <span><span class='glyphicon glyphicon-exclamation-sign' aria-hidden='true'></span><b>" + warning.source + " - " + warning.type + ": </b> " + warning.textOverview + " <b><a target='_blank' rel='noopener noreferrer' href='" + warning.link + "'>More Information</a></b></span> \
               </div>"
           )
       );
