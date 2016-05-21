@@ -122,12 +122,12 @@ $(function() {
           <input class='form-control datepicker date-leaving' type='text' placeholder='Jan 1, 2000', value='" + (leg && leg.startDate ? leg.startDate : defaultStart.toString()) + "'> \
           <label class='info'>Date returning to site <span class='required'>*<span></label> \
           <input class='form-control datepicker date-returning' type='text' placeholder='Dec 31, 2000', value='" + (leg && leg.endDate ? leg.endDate : defaultEnd.toString()) + "'> \
-          <label class='info'>City <span class='required'>*<span></label> \
+          <label class='info'>Destination City <span class='required'>*<span></label> \
           <input class='form-control city' type='text' placeholder='Chicago' value='" + (leg && leg.city ? leg.city : '') + "'></input> \
-          <label class='info'>Country <span class='required'>*<span></label> \
+          <label class='info'>Destination Country <span class='required'>*<span></label> \
           <select class='form-control select-country' placeholder='United States'></select> \
           <div class='warnings'></div> \
-          <label class='info'>Travel contact</label> \
+          <label class='info'>Best number to reach you at during travel</label> \
           <input class='form-control contact' type='tel' value='" + (leg && leg.contact ? leg.contact : '') + "'></input> \
           <label class='info'>Hotel/Hostel Information</label> \
           <input class='form-control hotel' type='text' placeholder='San Francisco Hotel: +1 123-456-7890' value='" + (leg && leg.hotel ? leg.hotel : '') + "'></input> \
