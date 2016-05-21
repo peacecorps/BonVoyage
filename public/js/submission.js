@@ -105,6 +105,19 @@ $(function() {
       $('.contact').intlTelInput({
         utilsScript: '/js/utils.js',
       });
+
+      $('.contact').on('change', function () {
+        var formVal = $('.contact').val();
+        var notValidNumber = !($('.contact').intlTelInput('isValidNumber'));
+
+        if (formVal.length > 0 && notValidNumber) {
+          // disable button
+          $('#request-submit-btn').prop('disabled', true);
+        } else {
+          // enable button
+          $('#request-submit-btn').prop('disabled', false);
+        }
+      });
   }
 
   function addLeg(leg) {
@@ -146,17 +159,21 @@ $(function() {
       var leg = $('.leg:nth-child(' + n + ')');
       var start = $(leg).find('.date-leaving').val();
       var end = $(leg).find('.date-returning').val();
+      var isValidNumber = $(leg).find('.contact').intlTelInput('isValidNumber');
       var data = {
           startDate: (start ? (new DateOnly(start).toString()) : undefined),
           endDate: (end ? (new DateOnly(end).toString()) : undefined),
           city: $(leg).find('.city').val(),
           country: $(leg).find('.selectized').selectize()[0].selectize.getValue(),
           hotel: $(leg).find('.hotel').val(),
-          contact: $(leg).find('.contact').intlTelInput('getNumber'),
+          contact: isValidNumber ? $(leg).find('.contact').intlTelInput('getNumber') : 'No contact',
           companions: $(leg).find('.companions').val(),
           description: $(leg).find('.description').val(),
           addedLegCount: $(leg).find('.addedLegCount').val(),
       };
+
+      alert(isValidNumber ? $(leg).find('.contact').intlTelInput('getNumber') : 'No contact');
+
       return data;
   }
 
