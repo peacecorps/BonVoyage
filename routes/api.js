@@ -905,9 +905,32 @@ function validateUsers(users, req, options, cb) {
 				var isCountryValid = countryCodeValue !== undefined &&
 					countryCodeValue.length === 2 &&
 					countries.countries[countryCodeValue] !== undefined;
-				var accessValue = (user.access !== undefined &&
-					user.access.value !== undefined &&
-					user.access.value !== '' ? user.access.value : Access.VOLUNTEER);
+
+				var accessValue;
+				if (user.access !== undefined && user.access.value !== undefined && user.access.value !== '') {
+					var accessValueStr = user.access.value.toString().toLowerCase();
+					if (accessValueStr == 'admin' ||
+						accessValueStr == 'administrator' ||
+						accessValueStr == 'administrators' ||
+						accessValueStr == 'a' ||
+						accessValueStr == Access.ADMIN) {
+						accessValue = Access.ADMIN;
+					} else if (accessValueStr == 'staff' ||
+						accessValueStr == 's' ||
+						accessValueStr == Access.STAFF) {
+						accessValue = Access.STAFF;
+					} else if (accessValueStr == 'volunteer' ||
+						accessValueStr == 'v' ||
+						accessValueStr == 'volunteers' ||
+						accessValueStr == Access.VOLUNTEER) {
+						accessValue = Access.VOLUNTEER;
+					} else {
+						accessValue = user.access.value;
+					}
+				} else {
+					accessValue = Access.VOLUNTEER;
+				}
+
 				var isAccessValid = (accessValue >= Access.VOLUNTEER &&
 					accessValue <= Access.ADMIN && (accessValue < req.user.access ||
 					req.user.access === Access.ADMIN));
