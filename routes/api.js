@@ -9,8 +9,10 @@ var Request = require(__dirname + '/../models/request');
 var Token = require(__dirname + '/../models/token');
 var Access = require(__dirname + '/../config/access');
 var countries = require(__dirname + '/../config/countries');
+var tokenTypes = require(__dirname + '/../config/token-types');
 var randtoken = require('rand-token');
 var helpers = require('./helpers');
+var async = require('async');
 var DateOnly = require('dateonly');
 var Converter = require('csvtojson').Converter;
 var validator = require('email-validator');
@@ -1073,49 +1075,78 @@ router.postUsers = function (req, res) {
 		});
 
 		if (allValid) {
-			// Add each of the users to the db
-			validatedUsers.map(function (user) {
+			// Form the Mongo User objects
+			var users = validatedUsers.map(function (user) {
+				return new User({
+					name: user.name.value,
+					email: user.email.value,
+					phones: [],
+					hash: '',
+					access: user.access.value,
+					countryCode: user.countryCode.value,
+					pending: true,
+				});
+			});
 
-				// create registration token for each user, then send email
+			User.insertMany(users, function (err, insertedUsers) {
+				if (err) {
+					req.flash('addUsersFlash', {
+						text: 'An error occurred while attempting to send out registration emails.',
+						class: 'danger',
+					});
+					return helpers.sendJSON(res, { redirect: '/users/add' });
+				}
 
-				var token = randtoken.generate(64);
+				var tokens = insertedUsers.map(function (user) {
+					// Form the Mongo Token objects
+					return new Token({
+						token: randtoken.generate(64),
+						user: user._id,
+						tokenType: tokenTypes.REGISTER,
+					});
+				});
 
-				Token.create({ token: token, name: user.name.value,
-					email: user.email.value.toLowerCase(),
-					country: user.countryCode.value,
-					tokenType: true, }, function (err) {
+				// Add a token for each new user
+				Token.insertMany(tokens, function (err) {
 					if (err) {
 						req.flash('addUsersFlash', {
 							text: 'Some of the uploaded users are invalid. ' +
 								'Please fix the issues in the table below before creating any users.',
 							class: 'danger',
 						});
-						helpers.sendJSON(res, { redirect: '/users/add' });
+						return helpers.sendJSON(res, { redirect: '/users/add' });
 					}
 
 					var sendFrom = 'Peace Corps <team@projectdelta.io>';
-					var sendTo = [user.email.value.toLowerCase()];
 					var subject = 'Peace Corps BonVoyage Registration';
-					var map = {
-						name: capitalizeFirstLetter(user.name.value.toLowerCase().split(' ')[0]),
-						button: process.env.BONVOYAGE_DOMAIN + '/register/' +
-						sendTo + '/' + token,
-					};
 
-					// asynchronous
-					process.nextTick(function () {
-						helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-						'register', map);
+					// Send template emails in parallel
+					async.forEachOfLimit(users, 5, function (user, i, callback) {
+						var token = tokens[i];
+						var sendTo = [user.email.toLowerCase()];
+						var map = {
+							name: capitalizeFirstLetter(user.name.toLowerCase().split(' ')[0]),
+							button: process.env.BONVOYAGE_DOMAIN + '/register/' + sendTo + '/' + token.token,
+						};
+						helpers.sendTemplateEmail(sendFrom, sendTo, subject, 'register', map, callback);
+					}, function (err) {
+
+						if (err) {
+							req.flash('addUsersFlash', {
+								text: 'An error occurred while attempting to send out registration emails.',
+								class: 'danger',
+							});
+							return helpers.sendJSON(res, { redirect: '/users/add' });
+						}
+
+						req.flash('usersFlash', {
+							text: 'Registration invitation(s) have been sent to ' + validatedUsers.length + ' user(s).',
+							class: 'success',
+						});
+						helpers.sendJSON(res, { redirect: '/users' });
 					});
 				});
 			});
-
-			req.flash('usersFlash', {
-				text: 'Registration invitation(s) have been sent to ' +
-				validatedUsers.length + ' user(s).',
-				class: 'success',
-			});
-			helpers.sendJSON(res, { redirect: '/users' });
 		} else {
 			req.flash('addUsersFlash', {
 				text: 'Some of the uploaded users are invalid. ' +

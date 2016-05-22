@@ -214,11 +214,9 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 	}
 };
 
-module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
-	template, map, callback) {
-
-	var html = jade.renderFile(path.join(__dirname, '../email',
-		template + '.jade'), map);
+module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject, template, map, callback) {
+	console.log('sending email to: ' + sendTo);
+	var html = jade.renderFile(path.join(__dirname, '../email', template + '.jade'), map);
 
 	var sendMimeCallback = function (sendError) {
 		if (sendError) {
@@ -226,6 +224,7 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject,
 			console.log(sendError);
 		}
 
+		console.log('sent email successfully');
 		if (callback) {
 			callback();
 		}
