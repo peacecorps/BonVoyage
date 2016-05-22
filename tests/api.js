@@ -251,13 +251,23 @@ describe('Other endpoints redirect when logged in', function () {
 	});
 });
 
-describe('/errors', function () {
-	it.skip('Redirects to the error page', function (done) {
+describe('error page renders', function () {
+	it('Redirects to the error page', function (done) {
 		request(app)
 			.get('/some/nonexistant/page')
-			.expect(302)
+			.expect(404)
 			.expect(function (res) {
-				assert.equal(res.header.location, '/errors/404');
+				assert(res.text.indexOf('errorContainer') > -1);
+			})
+			.end(done);
+	});
+
+	it('Redirects to the error page when logged in', function (done) {
+		agents.volunteer.request
+			.get('/some/nonexistant/page')
+			.expect(404)
+			.expect(function (res) {
+				assert(res.text.indexOf('errorContainer') > -1);
 			})
 			.end(done);
 	});
@@ -560,12 +570,14 @@ describe('GET /api/users', function () {
 				assert(userList.filter(function (u) {
 					return u.access === Access.ADMIN;
 				}).length > 0, 'At least one admin is returned');
+
+				assert(userList.filter(function (u) {
+					return u.countryCode === agents.volunteer.user.countryCode;
+				}).length === userList.length, 'All returned users are from the volunteer\'s country');
+
 				done();
 			});
 	});
-
-	// Waiting on issue #58 for spec of this endpoint
-	it('limits to same country for volunteers');
 
 	it('minAccess filters to just admins', function (done) {
 		verifyReturnedUserAccess('/api/users?minAccess=2',
@@ -1096,6 +1108,14 @@ describe('POST /api/login', function () {
 			.end(loginFailed(done));
 	});
 
+	it('fails with pending users', function (done) {
+		agent
+			.post('/api/login')
+			.send({ email: 'jake@test.com', password: 'jake' })
+			.expect(302)
+			.end(loginFailed(done));
+	});
+
 	it('fails with missing email', function (done) {
 		agent
 			.post('/api/login')
@@ -1329,7 +1349,7 @@ describe('POST /api/requests/:requestId', function () {
 	});
 });
 
-describe('POST /api/users', function () {
+describe.only('POST /api/users', function () {
 	// Formatted valid/value JSON
 	it('validates the supplied users', function (done) {
 		agents.admin.request
@@ -1346,8 +1366,40 @@ describe('POST /api/users', function () {
 			.end(done);
 	});
 
-	// Waiting on issue #93
-	it('inserts the new users into the database as pending');
+	it('inserts the new users into the database as pending', function (done) {
+		agents.admin.request
+			.post('/api/users')
+			.send([
+				{
+					name: { value: 'Test Account' },
+					email: { value: 'tester2@test.com' },
+					access: { value: '0' },
+					countryCode: { value: 'US' },
+				},
+			])
+			.expect(200)
+			.end(function (err) {
+				if (err) {
+					done(err);
+				}
+
+				agents.admin.request
+					.get('/api/users')
+					.expect(200)
+					.end(function (err, res) {
+						if (err) {
+							done(err);
+						}
+
+						var testUser = res.body.filter(function (u) {
+							return u.name === 'Test Account';
+						})[0];
+
+						assert(testUser.pending === true);
+						done();
+					});
+			});
+	});
 });
 
 describe('POST /api/users/validate', function () {

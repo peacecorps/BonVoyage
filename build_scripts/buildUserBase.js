@@ -68,6 +68,14 @@ module.exports = function (done) {
 			countryCode: 'US',
 			pending: false,
 		},
+		{
+			name: 'Jake West',
+			email: 'jake@test.com',
+			hash: 'jake',
+			access: 0,
+			countryCode: 'US',
+			pending: true,
+		},
 	];
 	var users = [];
 	var finished = 0;
