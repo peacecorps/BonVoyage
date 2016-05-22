@@ -1349,7 +1349,7 @@ describe('POST /api/requests/:requestId', function () {
 	});
 });
 
-describe.only('POST /api/users', function () {
+describe('POST /api/users', function () {
 	// Formatted valid/value JSON
 	it('validates the supplied users', function (done) {
 		agents.admin.request
