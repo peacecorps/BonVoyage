@@ -18,8 +18,3 @@
 
 #htmlwrapper td:nth-child(5) {
   text-align: center; }
-
-#htmlwrapper .pendingLabel {
-  font-size: 12px;
-  padding-top: 4px;
-  padding-bottom: 4px; }

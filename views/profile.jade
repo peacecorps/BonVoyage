@@ -15,7 +15,13 @@ block content
 				img#countryFlag(src='/image/flags/' + userToShow.countryCode.toLowerCase() + '.svg')
 				
 				//- Header name
-				h2#headerName= userToShow.name
+				#headerName
+					h2= userToShow.name
+					.pendingLabelBox
+						if userToShow.pending
+							span.pendingLabel.label.label-warning Pending Email Verification
+						else
+							span.pendingLabel.label.label-success Email Verified
 				
 				//- Form Fields
 				form#profile
