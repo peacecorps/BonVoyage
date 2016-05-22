@@ -9,7 +9,6 @@ var User = require(__dirname + '/../models/user');
 var Token = require(__dirname + '/../models/token');
 
 var tokenTypes = require(__dirname + '/token-types');
-var Access = require(__dirname + '/access');
 
 module.exports = function (passport) {
 
@@ -55,7 +54,7 @@ module.exports = function (passport) {
 					path: 'user',
 				})
 				.exec(function (err, token) {
-					// invalid token
+					// check for an invalid token
 					if (!err && token) {
 						if (password != password2) {
 							console.log('Passwords do not match');
@@ -77,9 +76,6 @@ module.exports = function (passport) {
 									}));
 								}
 
-								console.log('updated user');
-								console.log(updatedUser);
-
 								var sendFrom = 'Peace Corps <team@projectdelta.io>';
 								var sendTo = [token.user.email];
 								var subject = 'Peace Corps BonVoyage Registration Confirmation';
@@ -91,7 +87,6 @@ module.exports = function (passport) {
 								// send the email async
 								process.nextTick(function () {
 									helpers.sendTemplateEmail(sendFrom, sendTo, subject, 'welcome', map);
-									console.log('email sent!');
 								});
 
 								done(null, updatedUser);

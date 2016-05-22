@@ -150,7 +150,7 @@ module.exports.getUsers = function (options, cb) {
 	}
 
 	// Note: using lean() so that users is a JS obj, instead of a Mongoose obj
-	User.find(q, 'access name email phones _id countryCode').lean().exec(
+	User.find(q, '-hash').lean().exec(
 		function (err, users) {
 		if (err) {
 			cb(err);
@@ -215,7 +215,6 @@ module.exports.sendEmail = function (sendFrom, sendTo, subject, text,
 };
 
 module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject, template, map, callback) {
-	console.log('sending email to: ' + sendTo);
 	var html = jade.renderFile(path.join(__dirname, '../email', template + '.jade'), map);
 
 	var sendMimeCallback = function (sendError) {
@@ -224,7 +223,6 @@ module.exports.sendTemplateEmail = function (sendFrom, sendTo, subject, template
 			console.log(sendError);
 		}
 
-		console.log('sent email successfully');
 		if (callback) {
 			callback();
 		}

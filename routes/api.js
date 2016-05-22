@@ -1121,30 +1121,28 @@ router.postUsers = function (req, res) {
 					var subject = 'Peace Corps BonVoyage Registration';
 
 					// Send template emails in parallel
-					async.forEachOfLimit(users, 5, function (user, i, callback) {
-						var token = tokens[i];
-						var sendTo = [user.email.toLowerCase()];
-						var map = {
-							name: capitalizeFirstLetter(user.name.toLowerCase().split(' ')[0]),
-							button: process.env.BONVOYAGE_DOMAIN + '/register/' + token.token,
-						};
-						helpers.sendTemplateEmail(sendFrom, sendTo, subject, 'register', map, callback);
-					}, function (err) {
+					process.nextTick(function () {
+						async.forEachOfLimit(users, 5, function (user, i, callback) {
+							var token = tokens[i];
+							var sendTo = [user.email.toLowerCase()];
+							var map = {
+								name: capitalizeFirstLetter(user.name.toLowerCase().split(' ')[0]),
+								button: process.env.BONVOYAGE_DOMAIN + '/register/' + token.token,
+							};
+							helpers.sendTemplateEmail(sendFrom, sendTo, subject, 'register', map, callback);
+						}, function (err) {
 
-						if (err) {
-							req.flash('addUsersFlash', {
-								text: 'An error occurred while attempting to send out registration emails.',
-								class: 'danger',
-							});
-							return helpers.sendJSON(res, { redirect: '/users/add' });
-						}
-
-						req.flash('usersFlash', {
-							text: 'Registration invitation(s) have been sent to ' + validatedUsers.length + ' user(s).',
-							class: 'success',
+							if (err) {
+								console.error('An error occurred while attempting to send out registration emails.');
+							}
 						});
-						helpers.sendJSON(res, { redirect: '/users' });
 					});
+
+					req.flash('usersFlash', {
+						text: 'Registration invitation(s) have been sent to ' + validatedUsers.length + ' user(s).',
+						class: 'success',
+					});
+					helpers.sendJSON(res, { redirect: '/users' });
 				});
 			});
 		} else {

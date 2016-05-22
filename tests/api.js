@@ -64,7 +64,7 @@ var endpoints = {
 	NO_LOGIN: [
 		{ url: '/' },
 		{ url: '/login' },
-		{ url: '/register/:email/:token' },
+		{ url: '/register/:token' },
 		{ url: '/reset' },
 		{ url: '/reset/:token' },
 	],
