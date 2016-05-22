@@ -716,36 +716,31 @@ router.reset = function (req, res) {
 
 	// first check if email is registered
 	User.findOne({ email: email }, function (err, user) {
-		if (err) {
-			req.flash('loginFlash', {
-				text: 'The account you are looking for does not exist ' +
-				'on our record.',
-				class: 'danger',
-			});
-
-			helpers.sendJSON(res, { redirect: '/login' });
-		}
-
-		if (user) {
+		if (!err && user) {
 			// remove the existing password reset tokens
-			Token.find({ email: email, tokenType: false }).remove(function (err) {
+			Token.remove({ user: user._id, tokenType: tokenTypes.PASSWORD_RESET }, function (err) {
 				if (err) {
 					console.log(err);
 				}
 
 				var token = randtoken.generate(64);
 
-				Token.create({ token: token, email: email }, function (err) {
+				Token.create({
+					token: token,
+					user: user._id,
+					tokenType: tokenTypes.PASSWORD_RESET,
+				}, function (err) {
 					if (err) {
-						req.flash('loginFlash', {
+						req.flash('resetFlash', {
 							text: 'Failed to generate an email reset token.',
 							class: 'danger',
 						});
-						helpers.sendJSON(res, { redirect: '/login' });
+						req.session.submission = { email: email };
+						helpers.sendJSON(res, { redirect: '/reset' });
 					}
 
 					var sendFrom = 'Peace Corps <team@projectdelta.io>';
-					var sendTo = [email];
+					var sendTo = [user.email];
 					var subject = 'Peace Corps BonVoyage Password Reset Request';
 					var map = {
 						name: user.name.split(' ')[0],
@@ -754,20 +749,26 @@ router.reset = function (req, res) {
 
 					// asynchronous
 					process.nextTick(function () {
-						helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-						'password', map);
+						helpers.sendTemplateEmail(sendFrom, sendTo, subject, 'password', map);
 					});
+
+					req.flash('loginFlash', {
+						text: 'Instructions to reset your password have been ' +
+							'sent to your email address.',
+						class: 'success',
+					});
+					helpers.sendJSON(res, { redirect: '/login' });
 				});
 			});
+		} else {
+			req.flash('resetFlash', {
+				text: 'The account you are looking for could not be found.',
+				class: 'danger',
+			});
+			req.session.submission = { email: email };
+			helpers.sendJSON(res, { redirect: '/reset' });
 		}
 	});
-
-	req.flash('loginFlash', {
-		text: 'Instructions to reset your password have been ' +
-			'sent to your email address.',
-		class: 'success',
-	});
-	helpers.sendJSON(res, { redirect: '/login' });
 };
 
 router.resetValidator = function (req, res) {
@@ -775,52 +776,49 @@ router.resetValidator = function (req, res) {
 	var newPassword = req.body.newPassword;
 	var confirmPassword = req.body.confirmPassword;
 
-	if (newPassword == confirmPassword) {
+	if (newPassword == confirmPassword && newPassword !== '') {
 		// validate token
 		// modify the password
-		Token.findOneAndRemove({ token: token }, function (err, validToken) {
+		Token.findOneAndRemove({
+			token: token,
+			tokenType: tokenTypes.PASSWORD_RESET,
+		}, function (err, validToken) {
 			if (err) {
-				req.flash('loginFlash', {
-					text: 'Invalid token. Please request to reset ' +
-						'your password again.',
+				req.flash('resetFlash', {
+					text: 'Invalid token. Please request to reset your password again.',
 					class: 'danger',
 				});
-				helpers.sendJSON(res, { redirect: '/login' });
+				helpers.sendJSON(res, { redirect: '/reset' });
 			} else {
 				// token has been found
 				if (validToken) {
-					var email = validToken.email;
 
-					User.findOne({ email: email }, function (err, account) {
-						if (err) {
-							req.flash('loginFlash', {
-								text: 'This account does not exist in our ' +
-									'records anymore.',
-								class: 'danger',
-							});
-							helpers.sendJSON(res, { redirect: '/login' });
-						} else {
+					User.findById(validToken.user, function (err, account) {
+						if (!err && account) {
 							account.hash = newPassword;
 
 							account.save(function (err) {
 								if (err) {
 									// couldn't save the user
 									req.flash('loginFlash', {
-										text: 'There has been an error ' +
-											'resetting your password. ' +
-											'Please retry.',
+										text: 'An error occurred while resetting your password. Please retry.',
 										class: 'danger',
 									});
 									helpers.sendJSON(res, { redirect: '/login' });
 								}
 
 								req.flash('loginFlash', {
-									text: 'Your password has been ' +
-										'successfully updated.',
+									text: 'Your password has been successfully updated.',
 									class: 'success',
 								});
 								helpers.sendJSON(res, { redirect: '/login' });
 							});
+						} else {
+							req.flash('loginFlash', {
+								text: 'This account does not exist in our records anymore.',
+								class: 'danger',
+							});
+							helpers.sendJSON(res, { redirect: '/login' });
 						}
 					});
 				} else {
@@ -834,12 +832,11 @@ router.resetValidator = function (req, res) {
 			}
 		});
 	} else {
-		req.flash('loginFlash', {
-			text: 'New Password is different from Confirm Password. ' +
-				'Please retry.',
+		req.flash('validResetFlash', {
+			text: 'The passwords you entered are not the same.',
 			class: 'danger',
 		});
-		helpers.sendJSON(res, { redirect: '/login' });
+		helpers.sendJSON(res, { redirect: '/reset/' + token });
 	}
 };
 

@@ -52,6 +52,12 @@ router.renderRegister = function (req, res) {
 };
 
 router.renderReset = function (req, res) {
+	var sub = {};
+	if (req.session.submission) {
+		sub = req.session.submission;
+		req.session.submission = null;
+	}
+
 	res.render('forgot_password.jade', {
 		title: 'Forgot Password',
 		messages: req.flash('resetFlash'),
@@ -59,6 +65,7 @@ router.renderReset = function (req, res) {
 			{ text: 'Login', href: '/login' },
 		],
 		hideLogout: true,
+		submission: sub,
 	});
 };
 
@@ -66,7 +73,7 @@ router.renderReset = function (req, res) {
 router.renderValidReset = function (req, res) {
 	res.render('reset.jade', {
 		title: 'Password Reset',
-		messages: req.flash('resetFlash'),
+		messages: req.flash('validResetFlash'),
 		links: [
 			{ text: 'Login', href: '/login' },
 		],
