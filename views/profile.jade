@@ -39,6 +39,9 @@ block content
 					label(for='name') Country
 					select.form-control#country(value=userToShow.countryCode, data-default=userToShow.countryCode, disabled=!(user.access == 2 || user._id.toString() === userToShow._id.toString()))
 					
+					label(for='access') Access Level
+					select.form-control#access(value=userToShow.access, data-default=userToShow.access, disabled=!(user.access == 2))
+					
 					button.btn.btn-success(type='submit' disabled) Update Profile
 
 					if user.access == 2 || user._id.toString() === userToShow._id.toString()

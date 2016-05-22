@@ -1060,7 +1060,7 @@ router.postUpdatedUser = function (req, res) {
 				});
 			}
 
-			helpers.sendJSON(res, { redirect: '/profile' });
+			helpers.sendJSON(res, { redirect: '/profile/' + userId });
 		});
 	});
 };
