@@ -47,6 +47,7 @@ router.renderRegister = function (req, res) {
 		],
 		hideLogout: true,
 		submission: sub,
+		token: req.params.token,
 	});
 };
 

@@ -1126,7 +1126,7 @@ router.postUsers = function (req, res) {
 						var sendTo = [user.email.toLowerCase()];
 						var map = {
 							name: capitalizeFirstLetter(user.name.toLowerCase().split(' ')[0]),
-							button: process.env.BONVOYAGE_DOMAIN + '/register/' + sendTo + '/' + token.token,
+							button: process.env.BONVOYAGE_DOMAIN + '/register/' + token.token,
 						};
 						helpers.sendTemplateEmail(sendFrom, sendTo, subject, 'register', map, callback);
 					}, function (err) {
