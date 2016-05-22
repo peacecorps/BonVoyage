@@ -106,16 +106,24 @@ $(function() {
         utilsScript: '/js/utils.js',
       });
 
-      $('.contact').on('change', function () {
+      $('.contact').on('propertychange change click keyup input paste', function () {
         var formVal = $('.contact').val();
         var notValidNumber = !($('.contact').intlTelInput('isValidNumber'));
+
+        if (formVal.length == 0) {
+          $('#request-submit-btn').prop('disabled', false);
+          $('.contact').removeClass('invalid-form');
+          return;
+        }
 
         if (formVal.length > 0 && notValidNumber) {
           // disable button
           $('#request-submit-btn').prop('disabled', true);
+          $('.contact').addClass('invalid-form');
         } else {
           // enable button
           $('#request-submit-btn').prop('disabled', false);
+          $('.contact').addClass('valid-form');
         }
       });
   }
