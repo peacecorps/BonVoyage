@@ -172,8 +172,6 @@ $(function() {
           addedLegCount: $(leg).find('.addedLegCount').val(),
       };
 
-      alert(isValidNumber ? $(leg).find('.contact').intlTelInput('getNumber') : 'No contact');
-
       return data;
   }
 
