@@ -135,7 +135,7 @@ function needsAccess(access, doRedirect) {
 // Render Views
 app.get('/', views.index);
 app.get('/login', isNotLoggedIn, views.renderLogin);
-app.get('/register/:email/:token', isNotLoggedIn, views.renderRegister);
+app.get('/register/:token', isNotLoggedIn, views.renderRegister);
 app.get('/reset', isNotLoggedIn, views.renderReset);
 app.get('/reset/:token', isNotLoggedIn, views.renderValidReset);
 app.get('/dashboard', ensureLoggedIn('/login'), views.renderDashboard);
@@ -227,12 +227,14 @@ function getErrorHeaderLinks(req) {
 		{ text: 'Submit a Request', href: '/dashboard/submit' },
 	];
 
-	if (req.user.access >= Access.STAFF) {
-		errorHeaderLinks.push({ text: 'Users', href: '/users' });
-	}
+	if (req.user) {
+		if (req.user.access >= Access.STAFF) {
+			errorHeaderLinks.push({ text: 'Users', href: '/users' });
+		}
 
-	if (req.user.access == Access.ADMIN) {
-		errorHeaderLinks.push({ text: 'Add Users', href: '/users/add' });
+		if (req.user.access == Access.ADMIN) {
+			errorHeaderLinks.push({ text: 'Add Users', href: '/users/add' });
+		}
 	}
 
 	return errorHeaderLinks;

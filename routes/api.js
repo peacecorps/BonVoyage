@@ -9,8 +9,10 @@ var Request = require(__dirname + '/../models/request');
 var Token = require(__dirname + '/../models/token');
 var Access = require(__dirname + '/../config/access');
 var countries = require(__dirname + '/../config/countries');
+var tokenTypes = require(__dirname + '/../config/token-types');
 var randtoken = require('rand-token');
 var helpers = require('./helpers');
+var async = require('async');
 var DateOnly = require('dateonly');
 var Converter = require('csvtojson').Converter;
 var validator = require('email-validator');
@@ -714,36 +716,31 @@ router.reset = function (req, res) {
 
 	// first check if email is registered
 	User.findOne({ email: email }, function (err, user) {
-		if (err) {
-			req.flash('loginFlash', {
-				text: 'The account you are looking for does not exist ' +
-				'on our record.',
-				class: 'danger',
-			});
-
-			helpers.sendJSON(res, { redirect: '/login' });
-		}
-
-		if (user) {
+		if (!err && user) {
 			// remove the existing password reset tokens
-			Token.find({ email: email, tokenType: false }).remove(function (err) {
+			Token.remove({ user: user._id, tokenType: tokenTypes.PASSWORD_RESET }, function (err) {
 				if (err) {
 					console.log(err);
 				}
 
 				var token = randtoken.generate(64);
 
-				Token.create({ token: token, email: email }, function (err) {
+				Token.create({
+					token: token,
+					user: user._id,
+					tokenType: tokenTypes.PASSWORD_RESET,
+				}, function (err) {
 					if (err) {
-						req.flash('loginFlash', {
+						req.flash('resetFlash', {
 							text: 'Failed to generate an email reset token.',
 							class: 'danger',
 						});
-						helpers.sendJSON(res, { redirect: '/login' });
+						req.session.submission = { email: email };
+						helpers.sendJSON(res, { redirect: '/reset' });
 					}
 
 					var sendFrom = 'Peace Corps <team@projectdelta.io>';
-					var sendTo = [email];
+					var sendTo = [user.email];
 					var subject = 'Peace Corps BonVoyage Password Reset Request';
 					var map = {
 						name: user.name.split(' ')[0],
@@ -752,20 +749,26 @@ router.reset = function (req, res) {
 
 					// asynchronous
 					process.nextTick(function () {
-						helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-						'password', map);
+						helpers.sendTemplateEmail(sendFrom, sendTo, subject, 'password', map);
 					});
+
+					req.flash('loginFlash', {
+						text: 'Instructions to reset your password have been ' +
+							'sent to your email address.',
+						class: 'success',
+					});
+					helpers.sendJSON(res, { redirect: '/login' });
 				});
 			});
+		} else {
+			req.flash('resetFlash', {
+				text: 'The account you are looking for could not be found.',
+				class: 'danger',
+			});
+			req.session.submission = { email: email };
+			helpers.sendJSON(res, { redirect: '/reset' });
 		}
 	});
-
-	req.flash('loginFlash', {
-		text: 'Instructions to reset your password have been ' +
-			'sent to your email address.',
-		class: 'success',
-	});
-	helpers.sendJSON(res, { redirect: '/login' });
 };
 
 router.resetValidator = function (req, res) {
@@ -773,52 +776,49 @@ router.resetValidator = function (req, res) {
 	var newPassword = req.body.newPassword;
 	var confirmPassword = req.body.confirmPassword;
 
-	if (newPassword == confirmPassword) {
+	if (newPassword == confirmPassword && newPassword !== '') {
 		// validate token
 		// modify the password
-		Token.findOneAndRemove({ token: token }, function (err, validToken) {
+		Token.findOneAndRemove({
+			token: token,
+			tokenType: tokenTypes.PASSWORD_RESET,
+		}, function (err, validToken) {
 			if (err) {
-				req.flash('loginFlash', {
-					text: 'Invalid token. Please request to reset ' +
-						'your password again.',
+				req.flash('resetFlash', {
+					text: 'Invalid token. Please request to reset your password again.',
 					class: 'danger',
 				});
-				helpers.sendJSON(res, { redirect: '/login' });
+				helpers.sendJSON(res, { redirect: '/reset' });
 			} else {
 				// token has been found
 				if (validToken) {
-					var email = validToken.email;
 
-					User.findOne({ email: email }, function (err, account) {
-						if (err) {
-							req.flash('loginFlash', {
-								text: 'This account does not exist in our ' +
-									'records anymore.',
-								class: 'danger',
-							});
-							helpers.sendJSON(res, { redirect: '/login' });
-						} else {
+					User.findById(validToken.user, function (err, account) {
+						if (!err && account) {
 							account.hash = newPassword;
 
 							account.save(function (err) {
 								if (err) {
 									// couldn't save the user
 									req.flash('loginFlash', {
-										text: 'There has been an error ' +
-											'resetting your password. ' +
-											'Please retry.',
+										text: 'An error occurred while resetting your password. Please retry.',
 										class: 'danger',
 									});
 									helpers.sendJSON(res, { redirect: '/login' });
 								}
 
 								req.flash('loginFlash', {
-									text: 'Your password has been ' +
-										'successfully updated.',
+									text: 'Your password has been successfully updated.',
 									class: 'success',
 								});
 								helpers.sendJSON(res, { redirect: '/login' });
 							});
+						} else {
+							req.flash('loginFlash', {
+								text: 'This account does not exist in our records anymore.',
+								class: 'danger',
+							});
+							helpers.sendJSON(res, { redirect: '/login' });
 						}
 					});
 				} else {
@@ -832,12 +832,11 @@ router.resetValidator = function (req, res) {
 			}
 		});
 	} else {
-		req.flash('loginFlash', {
-			text: 'New Password is different from Confirm Password. ' +
-				'Please retry.',
+		req.flash('validResetFlash', {
+			text: 'The passwords you entered are not the same.',
 			class: 'danger',
 		});
-		helpers.sendJSON(res, { redirect: '/login' });
+		helpers.sendJSON(res, { redirect: '/reset/' + token });
 	}
 };
 
@@ -1058,7 +1057,7 @@ router.postUpdatedUser = function (req, res) {
 				});
 			}
 
-			helpers.sendJSON(res, { redirect: '/profile' });
+			helpers.sendJSON(res, { redirect: '/profile/' + userId });
 		});
 	});
 };
@@ -1073,49 +1072,76 @@ router.postUsers = function (req, res) {
 		});
 
 		if (allValid) {
-			// Add each of the users to the db
-			validatedUsers.map(function (user) {
+			// Form the Mongo User objects
+			var users = validatedUsers.map(function (user) {
+				return new User({
+					name: user.name.value,
+					email: user.email.value,
+					phones: [],
+					hash: '',
+					access: user.access.value,
+					countryCode: user.countryCode.value,
+					pending: true,
+				});
+			});
 
-				// create registration token for each user, then send email
+			User.insertMany(users, function (err, insertedUsers) {
+				if (err) {
+					req.flash('addUsersFlash', {
+						text: 'An error occurred while attempting to send out registration emails.',
+						class: 'danger',
+					});
+					return helpers.sendJSON(res, { redirect: '/users/add' });
+				}
 
-				var token = randtoken.generate(64);
+				var tokens = insertedUsers.map(function (user) {
+					// Form the Mongo Token objects
+					return new Token({
+						token: randtoken.generate(64),
+						user: user._id,
+						tokenType: tokenTypes.REGISTER,
+					});
+				});
 
-				Token.create({ token: token, name: user.name.value,
-					email: user.email.value.toLowerCase(),
-					country: user.countryCode.value,
-					tokenType: true, }, function (err) {
+				// Add a token for each new user
+				Token.insertMany(tokens, function (err) {
 					if (err) {
 						req.flash('addUsersFlash', {
 							text: 'Some of the uploaded users are invalid. ' +
 								'Please fix the issues in the table below before creating any users.',
 							class: 'danger',
 						});
-						helpers.sendJSON(res, { redirect: '/users/add' });
+						return helpers.sendJSON(res, { redirect: '/users/add' });
 					}
 
 					var sendFrom = 'Peace Corps <team@projectdelta.io>';
-					var sendTo = [user.email.value.toLowerCase()];
 					var subject = 'Peace Corps BonVoyage Registration';
-					var map = {
-						name: capitalizeFirstLetter(user.name.value.toLowerCase().split(' ')[0]),
-						button: process.env.BONVOYAGE_DOMAIN + '/register/' +
-						sendTo + '/' + token,
-					};
 
-					// asynchronous
+					// Send template emails in parallel
 					process.nextTick(function () {
-						helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-						'register', map);
+						async.forEachOfLimit(users, 5, function (user, i, callback) {
+							var token = tokens[i];
+							var sendTo = [user.email.toLowerCase()];
+							var map = {
+								name: capitalizeFirstLetter(user.name.toLowerCase().split(' ')[0]),
+								button: process.env.BONVOYAGE_DOMAIN + '/register/' + token.token,
+							};
+							helpers.sendTemplateEmail(sendFrom, sendTo, subject, 'register', map, callback);
+						}, function (err) {
+
+							if (err) {
+								console.error('An error occurred while attempting to send out registration emails.');
+							}
+						});
 					});
+
+					req.flash('usersFlash', {
+						text: 'Registration invitation(s) have been sent to ' + validatedUsers.length + ' user(s).',
+						class: 'success',
+					});
+					helpers.sendJSON(res, { redirect: '/users' });
 				});
 			});
-
-			req.flash('usersFlash', {
-				text: 'Registration invitation(s) have been sent to ' +
-				validatedUsers.length + ' user(s).',
-				class: 'success',
-			});
-			helpers.sendJSON(res, { redirect: '/users' });
 		} else {
 			req.flash('addUsersFlash', {
 				text: 'Some of the uploaded users are invalid. ' +
