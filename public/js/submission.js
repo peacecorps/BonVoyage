@@ -130,7 +130,7 @@ $(function() {
 
   function addLeg(leg) {
       count++; addedLegCount++;
-      var defaultStart, defaultEnd;
+      var defaultStart, defaultEnd, defaultContact = '';
       var m = new moment();
       m.add(1, 'month');
       // If this is not the first leg, use the previous leg to define the default dates
@@ -140,6 +140,10 @@ $(function() {
         var prevEnd = $(prevLeg).find('.date-returning').val();
         if (prevEnd) {
           m = new moment(new DateOnly(prevEnd).toDate());
+        }
+        var prevContactInput = $(prevLeg).find('.contact');
+        if ($(prevContactInput).intlTelInput('isValidNumber')) {
+          defaultContact = $(prevContactInput).intlTelInput('getNumber');
         }
       }
       defaultStart = new DateOnly(m);
@@ -159,7 +163,7 @@ $(function() {
           <select class='form-control select-country' placeholder='United States'></select> \
           <div class='warnings'></div> \
           <label class='info'>Best number to reach you at during travel</label> \
-          <input class='form-control contact' type='tel' value='" + (leg && leg.contact ? leg.contact : '') + "'></input> \
+          <input class='form-control contact' type='tel' value='" + (leg && leg.contact ? leg.contact : defaultContact) + "'></input> \
           <label class='info'>Hotel/Hostel Information</label> \
           <input class='form-control hotel' type='text' placeholder='San Francisco Hotel: +1 123-456-7890' value='" + (leg && leg.hotel ? leg.hotel : '') + "'></input> \
           <label class='info'>Travel companions</label> \
