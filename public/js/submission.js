@@ -110,7 +110,7 @@ $(function() {
         var formVal = $('.contact').val();
         var notValidNumber = !($('.contact').intlTelInput('isValidNumber'));
 
-        if (formVal.length == 0) {
+        if (formVal.length === 0) {
           $('#request-submit-btn').prop('disabled', false);
           $('.contact').removeClass('invalid-form');
           return;
@@ -130,11 +130,25 @@ $(function() {
 
   function addLeg(leg) {
       count++; addedLegCount++;
+      var defaultStart, defaultEnd, defaultContact = '';
       var m = new moment();
       m.add(1, 'month');
-      var defaultStart = new DateOnly(m);
+      // If this is not the first leg, use the previous leg to define the default dates
+      if (count > 1) {
+        // Get the end date from the previous request
+        var prevLeg = $('.leg:nth-child(' + (count - 1) + ')');
+        var prevEnd = $(prevLeg).find('.date-returning').val();
+        if (prevEnd) {
+          m = new moment(new DateOnly(prevEnd).toDate());
+        }
+        var prevContactInput = $(prevLeg).find('.contact');
+        if ($(prevContactInput).intlTelInput('isValidNumber')) {
+          defaultContact = $(prevContactInput).intlTelInput('getNumber');
+        }
+      }
+      defaultStart = new DateOnly(m);
       m.add(4, 'days');
-      var defaultEnd = new DateOnly(m);
+      defaultEnd = new DateOnly(m);
       var html =
       "<div class='leg shadow-box'> \
           <h2> Trip Leg #" + count + " </h2> \
@@ -149,7 +163,7 @@ $(function() {
           <select class='form-control select-country' placeholder='United States'></select> \
           <div class='warnings'></div> \
           <label class='info'>Best number to reach you at during travel</label> \
-          <input class='form-control contact' type='tel' value='" + (leg && leg.contact ? leg.contact : '') + "'></input> \
+          <input class='form-control contact' type='tel' value='" + (leg && leg.contact ? leg.contact : defaultContact) + "'></input> \
           <label class='info'>Hotel/Hostel Information</label> \
           <input class='form-control hotel' type='text' placeholder='San Francisco Hotel: +1 123-456-7890' value='" + (leg && leg.hotel ? leg.hotel : '') + "'></input> \
           <label class='info'>Travel companions</label> \
@@ -174,7 +188,7 @@ $(function() {
           city: $(leg).find('.city').val(),
           country: $(leg).find('.selectized').selectize()[0].selectize.getValue(),
           hotel: $(leg).find('.hotel').val(),
-          contact: isValidNumber ? $(leg).find('.contact').intlTelInput('getNumber') : 'No contact',
+          contact: isValidNumber ? $(leg).find('.contact').intlTelInput('getNumber') : '',
           companions: $(leg).find('.companions').val(),
           description: $(leg).find('.description').val(),
           addedLegCount: $(leg).find('.addedLegCount').val(),
