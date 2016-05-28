@@ -184,7 +184,7 @@ $(function() {
           city: $(leg).find('.city').val(),
           country: $(leg).find('.selectized').selectize()[0].selectize.getValue(),
           hotel: $(leg).find('.hotel').val(),
-          contact: isValidNumber ? $(leg).find('.contact').intlTelInput('getNumber') : 'No contact',
+          contact: isValidNumber ? $(leg).find('.contact').intlTelInput('getNumber') : '',
           companions: $(leg).find('.companions').val(),
           description: $(leg).find('.description').val(),
           addedLegCount: $(leg).find('.addedLegCount').val(),
