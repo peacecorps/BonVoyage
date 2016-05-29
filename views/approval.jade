@@ -2,6 +2,10 @@ extends layout
 
 block styles
 	link(rel='stylesheet', href='/css/approval.css')
+	link(href='/css/selectize.css', rel='stylesheet')
+	link(href='/css/selectize.bootstrap3.css', rel='stylesheet')
+	link(rel='stylesheet', href='/css/awesome-bootstrap-checkbox.css')
+	
 block content
 	.row
 		.col-xs-12.col-md-offset-1.col-md-10
@@ -84,11 +88,11 @@ block content
 							each comment in request.comments
 								.comment
 									p
-										span 
+										span
 											b Name: 
 										span= comment.name
 									p
-										span 
+										span
 											b Time: 
 										span.timestamp(data-unformatted="#{comment.timestamp}")
 									p
@@ -98,14 +102,42 @@ block content
 						
 						textarea.form-control#new-comment(rows=3, onkeyup="commentStoppedTyping()", name="content")
 						button.btn.btn-default.disabled#submit-comment Submit Comment
-
+					//- Approval Form
+					h2 Approval Form
+					#approval.shadow-box
+						//- Mark Approval
+						p
+							b Mark as...
+						.checkbox.checkbox-success
+							input(type="radio", name="approval", id="approvalCheckbox", checked)
+							label(for='approvalCheckbox', id="approvalCheckboxLabel")
+								p Approved
+						.checkbox.checkbox-danger.useiconx
+							input(type="radio", name="approval", id="denialCheckbox")
+							label(for='denialCheckbox')
+								p Denied
+						//- Re-assign
+						p
+							b Assign a New Reviewer
+						select.form-control#selectReviewer(placeholder='Loading...')
+						p.none-notice 
+							em ** 
+							| Selecting "None" will archive this request.
+						//- Add Comment
+						p
+							b Add an Explanation
+						textarea.form-control#explanation(rows=3)
+						//- Submit
+						button#request-approval-btn.btn.btn-success(type='button')
+							span.fa.fa-archive
+							|  Approve and Archive
 				// If staff or higher
-				if user && user.access > 0 
-					#request_approval.row
-						.col-xs-6
-							button(class="btn btn-success" + (request.status.isPending == false && request.status.isApproved ? " disabled" : ""), id="request-approve-btn") Approve
-						.col-xs-6
-							button(class="btn btn-danger" + (request.status.isPending == false && !request.status.isApproved ? " disabled" : ""), id="request-deny-btn") Deny
+				//- if user && user.access > 0 
+				//- 	#request_approval.row
+				//- 		.col-xs-6
+				//- 			button(class="btn btn-success" + (request.status.isPending == false && request.status.isApproved ? " disabled" : ""), id="request-approve-btn") Approve
+				//- 		.col-xs-6
+				//- 			button(class="btn btn-danger" + (request.status.isPending == false && !request.status.isApproved ? " disabled" : ""), id="request-deny-btn") Deny
 
 				if user && (user.email == request.volunteer.email || user.access >= 1)
 					.row
@@ -122,6 +154,9 @@ block content
 									|  Delete Request
 
 block scripts
+	script.
+		var volunteer = !{JSON.stringify(request.volunteer)};
 	script(src='/js/moment.js')
+	script(src='/js/selectize.min.js')
 	script(src='/js/utils.js')
 	script(src='/js/approval.js')
