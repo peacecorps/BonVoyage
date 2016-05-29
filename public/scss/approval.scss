@@ -19,4 +19,13 @@
 			}
 		}
 	}
+	span.glyphicon {
+		margin-right: 4px;
+		&.glyphicon-pencil {
+			top: 1px;
+		}
+		&.glyphicon-trash {
+			top: 2px;
+		}
+	}
 }

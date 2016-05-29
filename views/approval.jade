@@ -99,19 +99,6 @@ block content
 						textarea.form-control#new-comment(rows=3, onkeyup="commentStoppedTyping()", name="content")
 						button.btn.btn-default.disabled#submit-comment Submit Comment
 
-				// If the user is the owner of the request (or a staff)
-				if user && (user.email == request.volunteer.email || user.access >= 1)
-					#request_edit.row
-						.col-xs-12
-							a(href="/requests/#{request._id}/edit")
-								button(class="btn btn-warning", id="request-edit-btn") Edit Request
-
-				// If the user is the owner of the request (or an admin)
-				if user && (user.email == request.volunteer.email || user.access >= 2)
-					#request_delete.row
-						.col-xs-12
-							button(class="btn btn-danger", id="request-delete-btn") Delete Request
-
 				// If staff or higher
 				if user && user.access > 0 
 					#request_approval.row
@@ -119,13 +106,20 @@ block content
 							button(class="btn btn-success" + (request.status.isPending == false && request.status.isApproved ? " disabled" : ""), id="request-approve-btn") Approve
 						.col-xs-6
 							button(class="btn btn-danger" + (request.status.isPending == false && !request.status.isApproved ? " disabled" : ""), id="request-deny-btn") Deny
-				//- #request_pagination.row
-				//- 	.col-xs-6
-				//- 		a(href=(prev_request_id ? "/requests/#{prev_request_id}" : "")) 
-				//- 			button(class="btn btn-default" + (prev_request_id ? "" : " disabled")) < Prev
-				//- 	.col-xs-6
-				//- 		a(href=(next_request_id ? "/requests/#{next_request_id}" : "")) 
-				//- 			button(class="btn btn-default" + (next_request_id ? "" : " disabled")) Next >
+
+				if user && (user.email == request.volunteer.email || user.access >= 1)
+					.row
+						div#request_edit(class=((user.email == request.volunteer.email || user.access >= 2) ? 'col-xs-6' : 'col-xs-12'))
+							a(href="/requests/#{request._id}/edit")
+								button(class="btn btn-warning", type='button', id="request-edit-btn") 
+									span.glyphicon.glyphicon-pencil 
+									|  Edit Request
+						// If the user is the owner of the request (or a staff)
+						if (user.email == request.volunteer.email || user.access >= 2)
+							#request_delete.col-xs-6
+								button(class="btn btn-danger", type='button', id="request-delete-btn")
+									span.glyphicon.glyphicon-trash 
+									|  Delete Request
 
 block scripts
 	script(src='/js/moment.js')
