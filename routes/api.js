@@ -437,10 +437,11 @@ router.postUpdatedRequest = function (req, res) {
 			}
 
 			// Detect if the staff assigned has changed
-			if (data.reviewers.length > 0 &&
-				!data.reviewers[0]._id.equals(req.request.reviewer._id)) {
+			if (data.reviewers.length > 0 && (!req.request.reviewer ||
+				!data.reviewers[0]._id.equals(req.request.reviewer._id))) {
 				comment += '- Changed assigned reviewer from ' +
-					req.request.reviewer.name + ' to ' + data.reviewers[0].name + '\n';
+					(req.request.reviewer ? req.request.reviewer.name : 'un-assigned') +
+					' to ' + data.reviewers[0].name + '\n';
 				changesMade = true;
 			}
 
@@ -554,6 +555,35 @@ router.postRequest = function (req, res) {
 				}
 			});
 		}
+	});
+};
+
+router.postApproval = function (req, res) {
+	var id = req.params.requestId;
+	var approvalFormBody = req.body;
+	console.log(approvalFormBody);
+	var newReviewer = approvalFormBody.reviewer === 'none' ? null : approvalFormBody.reviewer;
+	Request.findByIdAndUpdate(id, {
+		$set: {
+			'status.isPending': newReviewer !== null,
+			'status.isApproved': approvalFormBody.approval,
+			reviewer: newReviewer,
+		},
+	}, function (err) {
+		if (err) {
+			return helpers.sendError(res, err);
+		}
+
+		req.flash('dashboardFlash', {
+			text: 'The request has been ' + (approvalFormBody.approval ? 'approved' : 'denied') +
+				' and ' + (newReviewer === null ? 'archived.' : 're-assigned.'),
+			class: 'success',
+			link: {
+				url: '/requests/' + id,
+				text: 'View Request.',
+			},
+		});
+		helpers.sendJSON(res, { redirect: '/dashboard' });
 	});
 };
 

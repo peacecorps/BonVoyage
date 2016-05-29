@@ -28,6 +28,8 @@ $(function() {
 		var time_unf = $(time).data('unformatted');
 		$(time).text(format_time(time_unf, UTC_FORMAT_TIME));
 	});
+	// Set the link to the edit page
+	$('.editLink').attr('href', document.location.href + '/edit');
 
 	var defaultOption = {
 		_id: 'none',
@@ -50,7 +52,6 @@ $(function() {
 
 	function handleApprovalFormChange() {
 		var approvalData = getApprovalFormData();
-		console.log(approvalData);
 		var approvalText, archiveText, buttonClass, icon;
 		if (approvalData.approval === true) {
 			approvalText = 'Approve';
@@ -73,41 +74,43 @@ $(function() {
 		$('#request-approval-btn').html('<span class="fa ' + icon + '"></span> ' + approvalText + ' and ' + archiveText);
 	}
 
-	$('input[type=radio]').change(handleApprovalFormChange);
+	if ($('#selectReviewer').length == 1) {
+		$('input[type=radio]').change(handleApprovalFormChange);
 
-	$selectReviewer = $('#selectReviewer').selectize({
-		valueField: '_id',
-		labelField: 'name',
-		searchField: ['name'],
-		lockOptgroupOrder: true,
-		// Let the "None" field bubble up
-		sortField: [ { field: 'isNone', direction: 'desc' }, { field: 'name' } ],
-		optgroups: [
-			{ value: 'noReviewer', label: 'No Reviewer **' },
-			{ value: 'selectReviewer', label: 'Potential Reviewers' },
-		],
-		onChange: handleApprovalFormChange,
-	})[0].selectize;
+		$selectReviewer = $('#selectReviewer').selectize({
+			valueField: '_id',
+			labelField: 'name',
+			searchField: ['name'],
+			lockOptgroupOrder: true,
+			// Let the "None" field bubble up
+			sortField: [ { field: 'isNone', direction: 'desc' }, { field: 'name' } ],
+			optgroups: [
+				{ value: 'noReviewer', label: 'No Reviewer **' },
+				{ value: 'selectReviewer', label: 'Potential Reviewers' },
+			],
+			onChange: handleApprovalFormChange,
+		})[0].selectize;
 
-	$.ajax({
-		method: "GET",
-		url: "/api/users?minAccess=1&maxAccess=1",
-		dataType: "json",
-		success: function(json) {
-			// Add the PC volunteer to the reviewer list
-			json.push(volunteer);
+		$.ajax({
+			method: "GET",
+			url: "/api/users?minAccess=1&maxAccess=1",
+			dataType: "json",
+			success: function(json) {
+				// Add the PC volunteer to the reviewer list
+				json.push(volunteer);
 
-			for (var i = 0; i < json.length; i++) {
-				json[i].isNone = false;
-				json[i].optgroup = 'selectReviewer';
+				for (var i = 0; i < json.length; i++) {
+					json[i].isNone = false;
+					json[i].optgroup = 'selectReviewer';
+				}
+				// Add the default "None" option
+				json.push(defaultOption);
+				$selectReviewer.addOption(json);
+				$selectReviewer.addItem(defaultOption._id);
+				$selectReviewer.refreshOptions(false);
 			}
-			// Add the default "None" option
-			json.push(defaultOption);
-			$selectReviewer.addOption(json);
-			$selectReviewer.addItem(defaultOption._id);
-			$selectReviewer.refreshOptions(false);
-		}
-	});
+		});
+	}
 
 	$('#submit-comment').click(function() {
 		var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/comments';
@@ -125,11 +128,12 @@ $(function() {
 		});
 	});
 
-	$('#request-approve-btn').click(function() {
-		var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/approve';
+	$('#request-approval-btn').click(function() {
+		var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/approval';
 		$.ajax({
 			method: "POST",
 			contentType: "application/x-www-form-urlencoded",
+			data: getApprovalFormData(),
 			url: url,
 			success: function(response) {
 				if (response && response.redirect) {

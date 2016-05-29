@@ -167,10 +167,8 @@ app.get('/api/users/:userId',
 	needsAccess(Access.VOLUNTEER), api.handleUserId, api.getUsers);
 app.get('/api/warnings',
 	needsAccess(Access.VOLUNTEER), api.getWarnings);
-app.post('/api/requests/:requestId/approve',
-	needsAccess(Access.STAFF), api.handleRequestId, api.postApprove);
-app.post('/api/requests/:requestId/deny',
-	needsAccess(Access.STAFF), api.handleRequestId, api.postDeny);
+app.post('/api/requests/:requestId/approval',
+	needsAccess(Access.STAFF), api.handleRequestId, api.postApproval);
 app.post('/api/requests/:requestId/comments',
 	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.postComments);
 

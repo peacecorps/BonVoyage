@@ -13,11 +13,14 @@
   #htmlwrapper .shadow-box .comment p {
     white-space: pre-wrap; }
 
-#htmlwrapper span.glyphicon {
+#htmlwrapper span.glyphicon,
+#htmlwrapper span.fa {
   margin-right: 4px; }
-  #htmlwrapper span.glyphicon.glyphicon-pencil {
+  #htmlwrapper span.glyphicon.glyphicon-pencil,
+  #htmlwrapper span.fa.glyphicon-pencil {
     top: 1px; }
-  #htmlwrapper span.glyphicon.glyphicon-trash {
+  #htmlwrapper span.glyphicon.glyphicon-trash,
+  #htmlwrapper span.fa.glyphicon-trash {
     top: 2px; }
 
 #htmlwrapper .checkbox label::before,
