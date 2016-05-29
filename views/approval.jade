@@ -105,32 +105,35 @@ block content
 					//- Approval Form
 					h2 Approval Form
 					#approval.shadow-box
-						//- Mark Approval
-						p
-							b Mark as...
-						.checkbox.checkbox-success
-							input(type="radio", name="approval", id="approvalCheckbox", checked)
-							label(for='approvalCheckbox', id="approvalCheckboxLabel")
-								p Approved
-						.checkbox.checkbox-danger.useiconx
-							input(type="radio", name="approval", id="denialCheckbox")
-							label(for='denialCheckbox')
-								p Denied
-						//- Re-assign
-						p
-							b Assign a New Reviewer
-						select.form-control#selectReviewer(placeholder='Loading...')
-						p.none-notice 
-							em ** 
-							| Selecting "None" will archive this request.
-						//- Add Comment
-						p
-							b Add an Explanation
-						textarea.form-control#explanation(rows=3)
-						//- Submit
-						button#request-approval-btn.btn.btn-success(type='button')
-							span.fa.fa-archive
-							|  Approve and Archive
+						if (user._id.equals(request.reviewer._id) && user.access >= 1)
+							//- Mark Approval
+							p
+								b Mark as...
+							.checkbox.checkbox-success
+								input(type="radio", name="approval", id="approvalCheckbox", checked)
+								label(for='approvalCheckbox', id="approvalCheckboxLabel")
+									p Approved
+							.checkbox.checkbox-danger.useiconx
+								input(type="radio", name="approval", id="denialCheckbox")
+								label(for='denialCheckbox')
+									p Denied
+							//- Re-assign
+							p
+								b Assign a New Reviewer
+							select.form-control#selectReviewer(placeholder='Loading...')
+							p.none-notice 
+								em ** 
+								| Selecting "None" will archive this request.
+							//- Add Comment
+							p
+								b Add an Explanation
+							textarea.form-control#explanation(rows=3)
+							//- Submit
+							button#request-approval-btn.btn.btn-success(type='button')
+								span.fa.fa-archive
+								|  Approve and Archive
+						else
+							p Only the assigned staff reviewer can approve this request.
 				// If staff or higher
 				//- if user && user.access > 0 
 				//- 	#request_approval.row
