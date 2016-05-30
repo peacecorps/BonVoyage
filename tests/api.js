@@ -47,8 +47,7 @@ var endpoints = {
 			{ url: '/api/warnings', access: Access.VOLUNTEER },
 		],
 		POST: [
-			{ url: '/api/requests/:requestId/approve', access: Access.STAFF },
-			{ url: '/api/requests/:requestId/deny', access: Access.STAFF },
+			{ url: '/api/requests/:requestId/approval', access: Access.STAFF },
 			{ url: '/api/requests/:requestId/comments', access: Access.VOLUNTEER },
 			{ url: '/api/users/:userId', access: Access.VOLUNTEER },
 			{ url: '/api/requests', access: Access.VOLUNTEER },
@@ -370,7 +369,7 @@ describe('GET /api/requests', function () {
 				assert(testRequest.comments.length === 1);
 				assert(testRequest.comments[0].name === 'Patrick Choquette');
 				assert(testRequest.comments[0].user.name === 'Patrick Choquette');
-				assert(testRequest.comments[0].content === 'I approve of this request.');
+				assert(testRequest.comments[0].content.length > 0);
 				assert.isString(testRequest.comments[0]._id);
 				assert.isString(testRequest.comments[0].timestamp);
 				assert(testRequest.counterpartApproved === true);
@@ -715,11 +714,12 @@ describe('GET /api/warnings', function () {
 	});
 });
 
-describe('POST /api/requests/:requestId/approve', function () {
+describe('POST /api/requests/:requestId/approval', function () {
 	it('marks request as approved', function (done) {
 		async.eachSeries(requests, function (request, cb) {
 			agents.admin.request
-			.post('/api/requests/' + request._id + '/approve')
+			.post('/api/requests/' + request._id + '/approval')
+			.send({ approval: true, comment: '', reviewer: request.reviewer })
 			.expect(200)
 				.end(function (err) {
 					if (err) {
@@ -735,19 +735,18 @@ describe('POST /api/requests/:requestId/approve', function () {
 							}
 
 							assert(res.body.status.isApproved === true);
-							assert(res.body.status.isPending === false);
+							assert(res.body.status.isPending === true);
 							cb();
 						});
 				});
 		}, done);
 	});
-});
 
-describe('POST /api/requests/:requestId/deny', function () {
 	it('marks request as denied', function (done) {
 		async.eachSeries(requests, function (request, cb) {
 			agents.admin.request
-				.post('/api/requests/' + request._id + '/deny')
+				.post('/api/requests/' + request._id + '/approval')
+				.send({ approval: false, comment: '', reviewer: request.reviewer })
 				.expect(200)
 				.end(function (err) {
 					if (err) {
@@ -763,7 +762,7 @@ describe('POST /api/requests/:requestId/deny', function () {
 							}
 
 							assert(res.body.status.isApproved === false);
-							assert(res.body.status.isPending === false);
+							assert(res.body.status.isPending === true);
 
 							cb();
 						});
@@ -791,9 +790,8 @@ describe('POST /api/requests/:requestId/comments', function () {
 								return cb(err);
 							}
 
-							// Initially there is just one example comment
-							assert(res.body.comments.length === 2);
-							var returnedComment = res.body.comments[1];
+							var returnedComment = res.body.comments[res.body.comments.length - 1];
+							assert(returnedComment.content === commentString);
 							assert(returnedComment.name === agents.admin.user.name);
 							assert(returnedComment.content === commentString);
 							assert.isString(returnedComment.timestamp);
@@ -1341,7 +1339,6 @@ describe('POST /api/requests/:requestId', function () {
 						assert(res.body.legs.length === 1);
 						assert(res.body.legs[0].startDate == 20160309);
 						assert(res.body.legs[0].city == 'Washington');
-						assert(res.body.comments.length === 3);
 						assert(res.body.comments[2].name == 'Administrator');
 						done();
 					});
