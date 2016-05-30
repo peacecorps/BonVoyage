@@ -437,10 +437,15 @@ router.postUpdatedRequest = function (req, res) {
 			}
 
 			// Detect if the staff assigned has changed
-			if (data.reviewers.length > 0 &&
-				!data.reviewers[0]._id.equals(req.request.reviewer._id)) {
-				comment += '- Changed assigned reviewer from ' +
-					req.request.reviewer.name + ' to ' + data.reviewers[0].name + '\n';
+			if (data.reviewers.length > 0 && (!req.request.reviewer ||
+				!data.reviewers[0]._id.equals(req.request.reviewer._id))) {
+				if (req.request.reviewer !== null) {
+					comment += '- Changed assigned reviewer from ' + req.request.reviewer.name +
+						' to ' + data.reviewers[0].name + '\n';
+				} else {
+					comment += '- Unarchived and assigned ' + data.reviewers[0].name + ' as the reviewer\n';
+				}
+
 				changesMade = true;
 			}
 
@@ -557,139 +562,85 @@ router.postRequest = function (req, res) {
 	});
 };
 
-router.postApprove = function (req, res) {
+router.postApproval = function (req, res) {
 	var id = req.params.requestId;
+	var approvalFormBody = req.body;
+	console.log(approvalFormBody);
+	var newReviewer = approvalFormBody.reviewer === 'none' ? null : approvalFormBody.reviewer;
 	Request.findByIdAndUpdate(id, {
 		$set: {
-			'status.isPending': false,
-			'status.isApproved': true,
+			'status.isPending': newReviewer !== null,
+			'status.isApproved': approvalFormBody.approval,
+			reviewer: newReviewer,
 		},
-	}, function (err, doc) {
+	}, {
+		new: true,
+		runValidators: true,
+	})
+	.populate('reviewer volunteer')
+	.exec(function (err, doc) {
 		if (err) {
 			return helpers.sendError(res, err);
 		}
 
-		User.findOne({ _id: doc.volunteer }, function (err, user) {
-			var sendFrom = 'Peace Corps <team@projectdelta.io>';
-			var sendTo = [user.email];
-			var subject = 'Peace Corps BonVoyage Request Approved';
-			var details = helpers.legsToString(doc.legs);
+		// Build the comment message
+		var commentMessage;
+		if (newReviewer !== null) {
+			commentMessage = req.user.name + ' has ' + (approvalFormBody.approval ? 'approved' : 'denied') +
+			' and re-assigned this request to ' + doc.reviewer.name + '.';
+		} else {
+			commentMessage = req.user.name + ' has ' + (approvalFormBody.approval ? 'approved' : 'denied') +
+			' and archived this request.';
+		}
 
-			var map = {
-				name: user.name.split(' ')[0],
-				volunteer: 'Your',
-				details: details,
-				button: process.env.BONVOYAGE_DOMAIN + '/requests/' + id,
-			};
+		// Function to redirect user after submitting optional comment
+		function end() {
+			// Submit the comment about this approval
+			helpers.postComment(doc._id, 'Administrator', null, commentMessage, function () {
+				// Send notifications
+				var sendFrom = 'Peace Corps <team@projectdelta.io>';
+				var sendTo = [doc.volunteer.email];
+				var subject = 'Peace Corps BonVoyage Request ' + (approvalFormBody.approval ? 'Approved' : 'Denied');
+				var details = helpers.legsToString(doc.legs);
 
-			// asynchronous
-			process.nextTick(function () {
-				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-				'approve', map);
+				var map = {
+					name: doc.volunteer.name.split(' ')[0],
+					volunteer: 'Your',
+					details: details,
+					button: process.env.BONVOYAGE_DOMAIN + '/requests/' + id,
+				};
 
-				if (user.phones) {
-					for (var i = 0; i < user.phones.length; i++) {
-						helpers.sendSMS(user.phones[i], 'Your BonVoyage ' +
-							'leave request is now approved!');
-					}
-				}
+				// asynchronous
+				process.nextTick(function () {
+					helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+						(approvalFormBody.approval ? 'approve' : 'deny'), map);
 
-				var countries = [];
-
-				for (var leg in doc.legs) {
-					countries.push(doc.legs[leg].countryCode);
-				}
-
-				User.find({
-					access: Access.STAFF,
-					countryCode: { $in: countries },
-				}, function (err, staffs) {
-					for (var staff in staffs) {
-						// send SMS and email to all relevant staffs
-						var map = {
-							name: staffs[staff].name.split(' ')[0],
-							volunteer: user.name + '\'s',
-							details: details,
-							button: process.env.BONVOYAGE_DOMAIN + '/requests/' + id,
-						};
-
-						helpers.sendTemplateEmail(sendFrom,
-							[staffs[staff].email], subject, 'approve', map);
-
-						var phones = staffs[staff].phones;
-
-						if (phones) {
-							for (var phone in phones) {
-								helpers.sendSMS(phones[phone],
-									'A BonVoyage leave request has been ' +
-									' approved for ' + user.name + '. ' +
-									'Please review the details at ' +
-									process.env.BONVOYAGE_DOMAIN +
-									'/requests/' + id);
-							}
+					if (doc.volunteer.phones) {
+						for (var i = 0; i < doc.volunteer.phones.length; i++) {
+							helpers.sendSMS(doc.volunteer.phones[i], 'Your BonVoyage ' +
+								'leave request received ' + (approvalFormBody.approval ? 'an approval.' : 'a denial.'));
 						}
 					}
 				});
-			});
 
-			req.flash('dashboardFlash', {
-				text: 'The request has been successfully approved.',
-				class: 'success',
-				link: {
-					url: '/requests/' + id,
-					text: 'View Request.',
-				},
+				req.flash('dashboardFlash', {
+					text: 'The request has been ' + (approvalFormBody.approval ? 'approved' : 'denied') +
+						' and ' + (newReviewer === null ? 'archived.' : 're-assigned.'),
+					class: 'success',
+					link: {
+						url: '/requests/' + id,
+						text: 'View Request.',
+					},
+				});
+				helpers.sendJSON(res, { redirect: '/dashboard' });
 			});
-			helpers.sendJSON(res, { redirect: '/dashboard' });
-		});
-	});
-};
-
-router.postDeny = function (req, res) {
-	var id = req.params.requestId;
-	Request.findByIdAndUpdate(id, {
-		$set: {
-			'status.isPending': false,
-			'status.isApproved': false,
-		},
-	}, function (err, doc) {
-		if (err) {
-			return helpers.sendError(res, err);
 		}
 
-		User.findOne({ _id: doc.volunteer }, function (err, user) {
-			var sendFrom = 'Peace Corps <team@projectdelta.io>';
-			var sendTo = [user.email];
-			var subject = 'Peace Corps BonVoyage Request Denied';
-			var map = {
-				name: req.user.name.split(' ')[0],
-				button: process.env.BONVOYAGE_DOMAIN,
-			};
-
-			process.nextTick(function () {
-				helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-				'deny', map);
-
-				if (user.phones) {
-					for (var i = 0; i < user.phones.length; i++) {
-						helpers.sendSMS(user.phones[i],
-							'Your BonVoyage leave request was denied.' +
-							'Please reach out to a Peace Corps staff member ' +
-							'if you have any questions.');
-					}
-				}
-			});
-
-			req.flash('dashboardFlash', {
-				text: 'The request has been successfully denied.',
-				class: 'success',
-				link: {
-					url: '/requests/' + id,
-					text: 'View Request.',
-				},
-			});
-			helpers.sendJSON(res, { redirect: '/dashboard' });
-		});
+		if (approvalFormBody.comment.length > 0) {
+			helpers.postComment(doc._id, req.user.name, req.user._id, approvalFormBody.comment, end);
+		} else {
+			end();
+		}
 	});
 };
 

@@ -341,22 +341,24 @@ module.exports.postComment = function (
 			}
 
 			// notify the staff
-			User.findById(reviewerId, function (err, reviewer) {
-				if (err) {
-					console.log(err);
-					cb(err);
-				}
-
-				if (reviewer.phones) {
-					for (var i = 0; i < reviewer.phones.length; i++) {
-						module.exports.sendSMS(reviewer.phones[i], 'A BonVoyage ' +
-							'leave request for ' + volunteer.name +
-							' has been updated. Please review the ' +
-							'details at ' + process.env.BONVOYAGE_DOMAIN +
-							'/requests/' + requestId);
+			if (reviewerId) {
+				User.findById(reviewerId, function (err, reviewer) {
+					if (err) {
+						console.log(err);
+						cb(err);
 					}
-				}
-			});
+
+					if (reviewer.phones) {
+						for (var i = 0; i < reviewer.phones.length; i++) {
+							module.exports.sendSMS(reviewer.phones[i], 'A BonVoyage ' +
+								'leave request for ' + volunteer.name +
+								' has been updated. Please review the ' +
+								'details at ' + process.env.BONVOYAGE_DOMAIN +
+								'/requests/' + requestId);
+						}
+					}
+				});
+			}
 		});
 	});
 };
