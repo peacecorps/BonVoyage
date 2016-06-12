@@ -3,6 +3,9 @@ extends layout
 block styles
   link(rel='stylesheet', href='/css/dashboard.css')
   link(rel='stylesheet', href='/css/datatables.css')
+  link(href="http://fonts.googleapis.com/icon?family=Material+Icons", rel="stylesheet")
+  link(rel='stylesheet', href='/css/materialize.css')
+  //- link(type="text/css", rel="stylesheet", href="/css/materialize.min.css", media="screen,projection")
 block content
   .row
     .col-xs-12.col-md-offset-1.col-md-10
@@ -60,6 +63,10 @@ block content
                   th(data-priority="4") Countries
                   th(data-priority="10") Approved
               tbody
+        .materialize
+          div.fixed-action-btn(style="bottom: 45px; right: 24px;")
+            a.btn-floating.btn-large(href='/dashboard/submit')
+              i.large.material-icons add
 
 block scripts
   script.

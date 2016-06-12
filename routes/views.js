@@ -8,7 +8,22 @@ var helpers = require(__dirname + '/helpers');
 
 router.index = function (req, res) {
 	if (req.isAuthenticated()) {
-		res.redirect('/dashboard');
+		// Redirect volunteers to the submission page, if they have no pending requests
+		if (req.user.access === Access.VOLUNTEER) {
+			helpers.getRequests(req, res, {
+				userId: req.user._id,
+				isPending: true,
+			}, function (err, requests) {
+				var hasPendingRequests = requests.length > 0;
+				if (!err && !hasPendingRequests && req.user.access === Access.VOLUNTEER) {
+					res.redirect('/dashboard/submit');
+				} else {
+					res.redirect('/dashboard');
+				}
+			});
+		} else {
+			res.redirect('/dashboard');
+		}
 	} else {
 		res.redirect('/login');
 	}

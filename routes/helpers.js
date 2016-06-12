@@ -88,11 +88,19 @@ module.exports.getRequests = function (req, res, options, cb) {
 		}
 
 		if (options && options.reviewerId) {
-			matchUsers.reviewer = req.reviewerId;
+			matchUsers.reviewer = options.reviewerId;
 		}
 
 		if (options && options.userId) {
-			matchUsers.volunteer = req.userId;
+			matchUsers.volunteer = options.userId;
+		}
+
+		if (options && options.isPending !== undefined) {
+			matchUsers['status.isPending'] = options.isPending;
+		}
+
+		if (options && options.isApproved !== undefined) {
+			matchUsers['status.isApproved'] = options.isApproved;
 		}
 
 		Request
@@ -109,7 +117,8 @@ module.exports.getRequests = function (req, res, options, cb) {
 					// Only show requests from the same country, if staff level
 					if (req.user.access == Access.STAFF) {
 						requests = requests.filter(function (request) {
-							return request.volunteer.countryCode == req.user.countryCode;
+							return request.volunteer.countryCode == req.user.countryCode ||
+								request.reviewer._id === req.user._id;
 						});
 					}
 
