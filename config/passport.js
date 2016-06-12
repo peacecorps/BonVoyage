@@ -76,7 +76,7 @@ module.exports = function (passport) {
 									}));
 								}
 
-								var sendFrom = 'Peace Corps <team@projectdelta.io>';
+								var sendFrom = process.env.BONVOYAGE_EMAIL;
 								var sendTo = [token.user.email];
 								var subject = 'Peace Corps BonVoyage Registration Confirmation';
 								var map = {
