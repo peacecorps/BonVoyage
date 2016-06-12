@@ -178,7 +178,7 @@ app.post('/api/register', passport.authenticate('local-signup', {
 	failureFlash: true,
 }));
 app.post('/api/login', passport.authenticate('local-login', {
-	successRedirect: '/dashboard',
+	successRedirect: '/',
 	failureRedirect: '/login',
 	failureFlash: true,
 }));
