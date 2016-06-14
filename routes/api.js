@@ -443,7 +443,7 @@ router.postUpdatedRequest = function (req, res) {
 					comment += '- Changed assigned reviewer from ' + req.request.reviewer.name +
 						' to ' + data.reviewers[0].name + '\n';
 				} else {
-					comment += '- Unarchived and assigned ' + data.reviewers[0].name + ' as the reviewer\n';
+					comment += '- Assigned ' + data.reviewers[0].name + ' as the reviewer\n';
 				}
 
 				changesMade = true;
@@ -569,8 +569,8 @@ router.postApproval = function (req, res) {
 	var newReviewer = approvalFormBody.reviewer === 'none' ? null : approvalFormBody.reviewer;
 	Request.findByIdAndUpdate(id, {
 		$set: {
-			'status.isPending': newReviewer !== null,
-			'status.isApproved': approvalFormBody.approval,
+			'status.isPending': approvalFormBody.approval === 'PENDING',
+			'status.isApproved': approvalFormBody.approval === 'APPROVED',
 			reviewer: newReviewer,
 		},
 	}, {
@@ -585,61 +585,83 @@ router.postApproval = function (req, res) {
 
 		// Build the comment message
 		var commentMessage;
-		if (newReviewer !== null) {
-			commentMessage = req.user.name + ' has ' + (approvalFormBody.approval ? 'approved' : 'denied') +
-			' and re-assigned this request to ' + doc.reviewer.name + '.';
+		if (newReviewer === null) {
+			commentMessage = req.user.name + ' has ' + (approvalFormBody.approval === 'APPROVED' ? 'approved' : 'denied') +
+			' this request and sent the final ' + (approvalFormBody.approval === 'APPROVED' ? 'approval' : 'denial') + ' to the PCV.';
 		} else {
-			commentMessage = req.user.name + ' has ' + (approvalFormBody.approval ? 'approved' : 'denied') +
-			' and archived this request.';
+			if (approvalFormBody.approval === 'PENDING') {
+				if (!req.user._id.equals(doc.reviewer._id)) {
+					commentMessage = req.user.name + ' has re-assigned this request to ' + doc.reviewer.name;
+				}
+			} else {
+				commentMessage = req.user.name + ' has ' + (approvalFormBody.approval === 'APPROVED' ? 'approved' : 'denied') +
+				' this request and re-assigned it to ' + doc.reviewer.name + '.';
+			}
+		}
+
+		function wrapUp() {
+			var respText = 'Your comment and/or reassignment has been successfully recorded.';
+			if (approvalFormBody.approval !== 'PENDING') {
+				respText = 'The request has been successfully ' +
+					(approvalFormBody.approval === 'APPROVED' ? 'approved' : 'denied') +
+					' and ' + (newReviewer === null ? 'the PCV has been notified.' : 'reassigned.');
+			}
+
+			req.flash('dashboardFlash', {
+				text: respText,
+				class: 'success',
+				link: {
+					url: '/requests/' + id,
+					text: 'View Request.',
+				},
+			});
+			helpers.sendJSON(res, { redirect: '/dashboard' });
 		}
 
 		// Function to redirect user after submitting optional comment
-		function end() {
+		function sendNextComment() {
 			// Submit the comment about this approval
-			helpers.postComment(doc._id, 'Administrator', null, commentMessage, function () {
-				// Send notifications
-				var sendFrom = 'Peace Corps <team@projectdelta.io>';
-				var sendTo = [doc.volunteer.email];
-				var subject = 'Peace Corps BonVoyage Request ' + (approvalFormBody.approval ? 'Approved' : 'Denied');
-				var details = helpers.legsToString(doc.legs);
+			if (commentMessage !== undefined) {
+				helpers.postComment(doc._id, 'Administrator', null, commentMessage, function () {
+					// Send notifications, if final approva/denial
+					if (approvalFormBody.approval !== 'PENDING' && newReviewer === null) {
+						var sendFrom = 'Peace Corps <team@projectdelta.io>';
+						var sendTo = [doc.volunteer.email];
+						var subject = 'Peace Corps BonVoyage Request ' + (approvalFormBody.approval === 'APPROVED' ? 'Approved' : 'Denied');
+						var details = helpers.legsToString(doc.legs);
 
-				var map = {
-					name: doc.volunteer.name.split(' ')[0],
-					volunteer: 'Your',
-					details: details,
-					button: process.env.BONVOYAGE_DOMAIN + '/requests/' + id,
-				};
+						var map = {
+							name: doc.volunteer.name.split(' ')[0],
+							volunteer: 'Your',
+							details: details,
+							button: process.env.BONVOYAGE_DOMAIN + '/requests/' + id,
+						};
 
-				// asynchronous
-				process.nextTick(function () {
-					helpers.sendTemplateEmail(sendFrom, sendTo, subject,
-						(approvalFormBody.approval ? 'approve' : 'deny'), map);
+						// asynchronous
+						process.nextTick(function () {
+							helpers.sendTemplateEmail(sendFrom, sendTo, subject,
+								(approvalFormBody.approval === 'APPROVED' ? 'approve' : 'deny'), map);
 
-					if (doc.volunteer.phones) {
-						for (var i = 0; i < doc.volunteer.phones.length; i++) {
-							helpers.sendSMS(doc.volunteer.phones[i], 'Your BonVoyage ' +
-								'leave request received ' + (approvalFormBody.approval ? 'an approval.' : 'a denial.'));
-						}
+							if (doc.volunteer.phones) {
+								for (var i = 0; i < doc.volunteer.phones.length; i++) {
+									helpers.sendSMS(doc.volunteer.phones[i], 'Your BonVoyage ' +
+										'leave request received ' + (approvalFormBody.approval === 'APPROVED' ? 'an approval.' : 'a denial.'));
+								}
+							}
+						});
 					}
-				});
 
-				req.flash('dashboardFlash', {
-					text: 'The request has been ' + (approvalFormBody.approval ? 'approved' : 'denied') +
-						' and ' + (newReviewer === null ? 'archived.' : 're-assigned.'),
-					class: 'success',
-					link: {
-						url: '/requests/' + id,
-						text: 'View Request.',
-					},
+					wrapUp();
 				});
-				helpers.sendJSON(res, { redirect: '/dashboard' });
-			});
+			} else {
+				wrapUp();
+			}
 		}
 
 		if (approvalFormBody.comment.length > 0) {
-			helpers.postComment(doc._id, req.user.name, req.user._id, approvalFormBody.comment, end);
+			helpers.postComment(doc._id, req.user.name, req.user._id, approvalFormBody.comment, sendNextComment);
 		} else {
-			end();
+			sendNextComment();
 		}
 	});
 };

@@ -55,7 +55,13 @@
 		margin-bottom: 0;
 	}
 
-	.checkbox.useiconx input[type=radio]:checked + label:after {
+	.checkbox.useiconpending input[type=radio]:checked + label:after {
+		content: "\f017";
+		font-size: 13px;
+    top: 5px;
+	}
+
+	.checkbox.useicondenied input[type=radio]:checked + label:after {
 		content: "\f00d";
 		font-size: 13px;
     top: 5px;

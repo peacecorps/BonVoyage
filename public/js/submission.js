@@ -4,7 +4,6 @@
 /* globals window */
 /* globals getWarnings */
 /* globals submissionData */
-/* globals signedInUser */
 /* globals PICKADATE_DISPLAY_FORMAT */
 
 $(function() {
@@ -13,7 +12,6 @@ $(function() {
   var addedLegCount = -1; // 0 indexed count (doesn't decrease when legs are removed)
   var arrCountries = [];
   var users = null;
-  var selectedUser = signedInUser.access === 0 ? signedInUser : null;
 
   function insertAtIndex(i, id, data) {
       if(i === 1) {
@@ -213,28 +211,11 @@ $(function() {
       sortField: 'name'
   });
 
-  function updateVolunteerName(volunteer) {
-    if (volunteer) {
-      $('#submissionName').text(' (' + volunteer.name + ') ');
-      if (selectedUser) {
-        $selectReviewer[0].selectize.updateOption(selectedUser._id, volunteer);
-      } else {
-        $selectReviewer[0].selectize.addOption(volunteer);
-      }
-      $selectReviewer[0].selectize.refreshOptions(false);
-    }
-  }
-
   var $selectRequestee = $('#selectRequestee').selectize({
       valueField: '_id',
       labelField: 'name',
       searchField: ['name'],
       sortField: 'name',
-      onChange: function(value) {
-        var volunteer = $selectRequestee[0].selectize.options[value];
-        updateVolunteerName(volunteer);
-        selectedUser = volunteer;
-      }
   });
 
   if (isSubmitAsOtherUserShowing()) {
@@ -250,8 +231,6 @@ $(function() {
                 // A failure just occurred during submission: we need to replace the previously submitted data
                 if (submissionData.volunteer !== undefined) {
                   $selectRequestee[0].selectize.setValue(submissionData.volunteer);
-                  var volunteer = $selectRequestee[0].selectize.options[submissionData.volunteer];
-                  updateVolunteerName(volunteer);
                 }
             }
           }
@@ -263,12 +242,6 @@ $(function() {
       url: "/api/users?minAccess=1&maxAccess=1",
       dataType: "json",
       success: function(json) {
-        // If a user is selected, add them as an option to be a reviewer
-        // Except don't give volunteers the option to assign themselves on the submission page
-        if (selectedUser &&
-          (signedInUser.access !== 0 || window.location.pathname !== '/dashboard/submit')) {
-          json.push(selectedUser);
-        }
         $selectReviewer[0].selectize.addOption(json);
         $selectReviewer[0].selectize.refreshOptions(false);
         if(submissionDataExists()) {

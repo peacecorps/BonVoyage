@@ -1,9 +1,9 @@
-/* global volunteer */
 /* global format_time */
 /* global format_dateonly */
 /* global UTC_FORMAT_TIME */
 /* global window */
 /* global document */
+/* global reviewer */
 /* global intlTelInputUtils */
 
 // Dynamically disable the comment button if the textarea is empty
@@ -34,44 +34,100 @@ $(function() {
 	var defaultOption = {
 		_id: 'none',
 		isNone: true,
-		name: 'None',
+		name: 'None -- this is the final approval',
 		label: 'Default',
 		optgroup: 'noReviewer',
 	};
 
 	var $selectReviewer;
+	var potentialReviewers;
+
+	var checkboxState = { PENDING: 'PENDING', APPROVED: 'APPROVED', DENIED: 'DENIED' };
+
+	// Determine if Pending, Approved or Denied is checked
+	function getCheckboxState() {
+		if ($('#pendingCheckbox').is(':checked')) {
+			return checkboxState.PENDING;
+		} else if ($('#approvalCheckbox').is(':checked')) {
+			return checkboxState.APPROVED;
+		} else {
+			return checkboxState.DENIED;
+		}
+	}
 
 	function getApprovalFormData() {
 		var data = {
-			approval: $('#approvalCheckbox').is(':checked'),
+			approval: getCheckboxState(),
 			comment: $('#explanation').val(),
 			reviewer: $selectReviewer.items[0],
 		};
 		return data;
 	}
 
+	function updateFromCheckboxState() {
+
+		// Get the currently checked state
+		var checkedState = getCheckboxState();
+		// Get the currently selected reviewer
+		var currentReviewer = $selectReviewer.items[0];
+
+		// Switch on the checkbox state
+		if (checkedState === checkboxState.DENIED) {
+			// Hide the reassign dropdown
+			$('#reviewer').addClass('hidden');
+		} else {
+			// Show the reassign dropdown
+			$('#reviewer').removeClass('hidden');
+			var newOptions = potentialReviewers;
+			var selectedReviewer = defaultOption._id;
+			if (checkedState == checkboxState.PENDING) {
+				// Don't add the "none" option
+				// if previously selected "none" then select the current user
+				selectedReviewer = reviewer._id;
+			} else if (checkedState == checkboxState.APPROVED) {
+				// Show the "none" option
+				newOptions.push(defaultOption);
+			}
+
+			if (currentReviewer && currentReviewer !== defaultOption._id) {
+				selectedReviewer = currentReviewer;
+			}
+
+			$selectReviewer.addOption(newOptions);
+			$selectReviewer.addItem(selectedReviewer);
+			$selectReviewer.refreshOptions(false);
+		}
+	}
+
 	function handleApprovalFormChange() {
+		updateFromCheckboxState();
 		var approvalData = getApprovalFormData();
-		var approvalText, archiveText, buttonClass, icon;
-		if (approvalData.approval === true) {
-			approvalText = 'Approve';
+		var approvalText, buttonClass, icon;
+
+		if (approvalData.approval === checkboxState.APPROVED) {
 			buttonClass = 'btn-success';
+			if (approvalData.reviewer === 'none') {
+				icon = 'fa-paper-plane';
+				approvalText = 'Send Final Approval to PCV';
+			} else {
+				icon = 'fa-users';
+				approvalText = 'Approve and Reassign';
+			}
 		} else {
-			approvalText = 'Deny';
-			buttonClass = 'btn-danger';
+			icon = 'fa-paper-plane';
+			if (approvalData.approval === checkboxState.DENIED) {
+				buttonClass = 'btn-danger';
+				approvalText = 'Send Final Denial to PCV';
+			} else {
+				// Pending
+				buttonClass = 'btn-warning';
+				approvalText = 'Reassign and Comment';
+			}
 		}
 
-		if (approvalData.reviewer === 'none') {
-			archiveText = 'Archive';
-			icon = 'fa-archive';
-		} else {
-			archiveText = 'Re-Assign';
-			icon = 'fa-envelope';
-		}
-
-		$('#request-approval-btn').removeClass('btn-success btn-danger');
+		$('#request-approval-btn').removeClass('btn-success btn-danger btn-warning');
 		$('#request-approval-btn').addClass(buttonClass);
-		$('#request-approval-btn').html('<span class="fa ' + icon + '"></span> ' + approvalText + ' and ' + archiveText);
+		$('#request-approval-btn').html('<span class="fa ' + icon + '"></span> ' + approvalText);
 	}
 
 	if ($('#selectReviewer').length == 1) {
@@ -85,7 +141,7 @@ $(function() {
 			// Let the "None" field bubble up
 			sortField: [ { field: 'isNone', direction: 'desc' }, { field: 'name' } ],
 			optgroups: [
-				{ value: 'noReviewer', label: 'No Reviewer **' },
+				{ value: 'noReviewer', label: 'No Reviewer' },
 				{ value: 'selectReviewer', label: 'Potential Reviewers' },
 			],
 			onChange: handleApprovalFormChange,
@@ -96,18 +152,12 @@ $(function() {
 			url: "/api/users?minAccess=1&maxAccess=1",
 			dataType: "json",
 			success: function(json) {
-				// Add the PC volunteer to the reviewer list
-				json.push(volunteer);
-
 				for (var i = 0; i < json.length; i++) {
 					json[i].isNone = false;
 					json[i].optgroup = 'selectReviewer';
 				}
-				// Add the default "None" option
-				json.push(defaultOption);
-				$selectReviewer.addOption(json);
-				$selectReviewer.addItem(defaultOption._id);
-				$selectReviewer.refreshOptions(false);
+				potentialReviewers = json;
+				updateFromCheckboxState();
 			}
 		});
 	}
@@ -143,19 +193,19 @@ $(function() {
 		});
 	});
 
-	$('#request-deny-btn').click(function() {
-		var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/deny';
-		$.ajax({
-			method: "POST",
-			contentType: "application/x-www-form-urlencoded",
-			url: url,
-			success: function(response) {
-				if (response && response.redirect) {
-					window.location.href = response.redirect;
-				}
-			}
-		});
-	});
+	// $('#request-deny-btn').click(function() {
+	// 	var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/')) + '/deny';
+	// 	$.ajax({
+	// 		method: "POST",
+	// 		contentType: "application/x-www-form-urlencoded",
+	// 		url: url,
+	// 		success: function(response) {
+	// 			if (response && response.redirect) {
+	// 				window.location.href = response.redirect;
+	// 			}
+	// 		}
+	// 	});
+	// });
 
 	$('#request-delete-btn').click(function() {
 		var url = '/api/requests' + document.location.href.substring(document.location.href.lastIndexOf('/'));
