@@ -625,7 +625,7 @@ router.postApproval = function (req, res) {
 				helpers.postComment(doc._id, 'Administrator', null, commentMessage, function () {
 					// Send notifications, if final approva/denial
 					if (approvalFormBody.approval !== 'PENDING' && newReviewer === null) {
-						var sendFrom = 'Peace Corps <team@projectdelta.io>';
+						var sendFrom = process.env.BONVOYAGE_EMAIL;
 						var sendTo = [doc.volunteer.email];
 						var subject = 'Peace Corps BonVoyage Request ' + (approvalFormBody.approval === 'APPROVED' ? 'Approved' : 'Denied');
 						var details = helpers.legsToString(doc.legs);
@@ -712,7 +712,7 @@ router.reset = function (req, res) {
 						helpers.sendJSON(res, { redirect: '/reset' });
 					}
 
-					var sendFrom = 'Peace Corps <team@projectdelta.io>';
+					var sendFrom = process.env.BONVOYAGE_EMAIL;
 					var sendTo = [user.email];
 					var subject = 'Peace Corps BonVoyage Password Reset Request';
 					var map = {
@@ -1087,7 +1087,7 @@ router.postUsers = function (req, res) {
 						return helpers.sendJSON(res, { redirect: '/users/add' });
 					}
 
-					var sendFrom = 'Peace Corps <team@projectdelta.io>';
+					var sendFrom = process.env.BONVOYAGE_EMAIL;
 					var subject = 'Peace Corps BonVoyage Registration';
 
 					// Send template emails in parallel
