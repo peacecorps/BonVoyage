@@ -569,7 +569,7 @@ router.postApproval = function (req, res) {
 	var newReviewer = approvalFormBody.reviewer === 'none' ? null : approvalFormBody.reviewer;
 	Request.findByIdAndUpdate(id, {
 		$set: {
-			'status.isPending': approvalFormBody.approval === 'PENDING',
+			'status.isPending': newReviewer !== null,
 			'status.isApproved': approvalFormBody.approval === 'APPROVED',
 			reviewer: newReviewer,
 		},

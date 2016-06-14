@@ -719,7 +719,7 @@ describe('POST /api/requests/:requestId/approval', function () {
 		async.eachSeries(requests, function (request, cb) {
 			agents.admin.request
 			.post('/api/requests/' + request._id + '/approval')
-			.send({ approval: true, comment: '', reviewer: request.reviewer })
+			.send({ approval: 'APPROVED', comment: '', reviewer: request.reviewer })
 			.expect(200)
 				.end(function (err) {
 					if (err) {
@@ -746,7 +746,7 @@ describe('POST /api/requests/:requestId/approval', function () {
 		async.eachSeries(requests, function (request, cb) {
 			agents.admin.request
 				.post('/api/requests/' + request._id + '/approval')
-				.send({ approval: false, comment: '', reviewer: request.reviewer })
+				.send({ approval: 'DENIED', comment: '', reviewer: request.reviewer })
 				.expect(200)
 				.end(function (err) {
 					if (err) {
