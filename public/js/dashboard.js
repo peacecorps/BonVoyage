@@ -26,7 +26,6 @@ $(function () {
 		},
 		limit: {
 			onLeave: false,
-			archived: false,
 			assignedMe: false,
 		},
 	};
@@ -70,7 +69,7 @@ $(function () {
 					if (data) {
 						return data.name;
 					} else {
-						return 'None (Archived)';
+						return 'None';
 					}
 				},
 			},
@@ -182,9 +181,7 @@ $(function () {
 			) {
 				var rowData = table.rows({order:'original'}).data()[dataIndex];
 				// console.log(rowData.reviewer && rowData.reviewer._id);
-				// console.log(searchOptions.limit.archived);
 				if (
-					(!searchOptions.limit.archived || rowData.reviewer === null) &&
 					(!searchOptions.limit.assignedMe || (rowData.reviewer !== null && currentUser._id == rowData.reviewer._id))
 				) {
 					if (searchOptions.limit.onLeave) {

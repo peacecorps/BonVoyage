@@ -45,7 +45,12 @@
 #htmlwrapper #submit-comment {
   margin-bottom: 0; }
 
-#htmlwrapper .checkbox.useiconx input[type=radio]:checked + label:after {
+#htmlwrapper .checkbox.useiconpending input[type=radio]:checked + label:after {
+  content: "\f017";
+  font-size: 13px;
+  top: 5px; }
+
+#htmlwrapper .checkbox.useicondenied input[type=radio]:checked + label:after {
   content: "\f00d";
   font-size: 13px;
   top: 5px; }
