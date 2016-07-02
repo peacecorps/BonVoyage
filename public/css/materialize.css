@@ -1971,7 +1971,8 @@
   .materialize .btn.disabled, .materialize .disabled.btn-large,
   .materialize .btn-floating.disabled,
   .materialize .btn-large.disabled,
-  .materialize .btn:disabled .btn-large:disabled, .materialize .btn-large:disabled .btn-large:disabled,
+  .materialize .btn:disabled
+.btn-large:disabled, .materialize .btn-large:disabled .btn-large:disabled,
   .materialize .btn-floating:disabled {
     background-color: #DFDFDF !important;
     box-shadow: none;
@@ -1980,13 +1981,15 @@
     .materialize .btn.disabled *, .materialize .disabled.btn-large *,
     .materialize .btn-floating.disabled *,
     .materialize .btn-large.disabled *,
-    .materialize .btn:disabled .btn-large:disabled *, .materialize .btn-large:disabled .btn-large:disabled *,
+    .materialize .btn:disabled
+.btn-large:disabled *, .materialize .btn-large:disabled .btn-large:disabled *,
     .materialize .btn-floating:disabled * {
       pointer-events: none; }
     .materialize .btn.disabled:hover, .materialize .disabled.btn-large:hover,
     .materialize .btn-floating.disabled:hover,
     .materialize .btn-large.disabled:hover,
-    .materialize .btn:disabled .btn-large:disabled:hover, .materialize .btn-large:disabled .btn-large:disabled:hover,
+    .materialize .btn:disabled
+.btn-large:disabled:hover, .materialize .btn-large:disabled .btn-large:disabled:hover,
     .materialize .btn-floating:disabled:hover {
       background-color: #DFDFDF !important;
       color: #9F9F9F !important; }
