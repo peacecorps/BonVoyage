@@ -150,12 +150,6 @@ app.get('/users/add', ensureLoggedIn('/login'),
 	needsAccess(Access.ADMIN, true), views.renderAddUsers);
 app.get('/profile/:userId?', ensureLoggedIn('/login'), views.renderProfile);
 
-app.get('/.well-known/acme-challenge/' +
-	'AC86a1oSUu_K8DzELD-hynBDBOtms4LDqHPFXK-bQo0', function (req, res) {
-	res.send('AC86a1oSUu_K8DzELD-hynBDBOtms4LDqHPFXK-bQo0.' +
-		'khLTvjUppQrncGgiw9YosG-gvL4-U4ZSWH23WakFSig');
-});
-
 // API
 app.get('/api/requests/:requestId',
 	needsAccess(Access.VOLUNTEER), api.handleRequestId, api.getRequests);
