@@ -59,7 +59,7 @@ $(function() {
 		var data = {
 			approval: getCheckboxState(),
 			comment: $('#explanation').val(),
-			reviewer: $selectReviewer.items[0],
+			reviewer: (getCheckboxState() !== checkboxState.DENIED ? $selectReviewer.items[0] : 'none'),
 		};
 		return data;
 	}
