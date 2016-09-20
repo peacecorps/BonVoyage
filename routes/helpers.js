@@ -287,7 +287,7 @@ module.exports.sendSMS = function (sendTo, body, callback) {
 	};
 
 	if (dropSMS === true) {
-		// console.error('SMS dropped.');
+		console.error('SMS dropped.');
 		if (callback) {
 			callback();
 		}
@@ -295,6 +295,7 @@ module.exports.sendSMS = function (sendTo, body, callback) {
 		twilioClient.messages.create(data, function (err, message) {
 			if (err) {
 				console.log('Unable to send SMS');
+				console.log(err);
 			} else {
 				console.log('Successfully sent SMS. SID is: ');
 				console.log(message.sid);
