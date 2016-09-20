@@ -518,32 +518,22 @@ router.postRequest = function (req, res) {
 					// asynchronous
 					// send SMS notification to a staff
 					process.nextTick(function () {
-						for (var i = 0; i < data.countries.length; i++) {
-							User.find({
-								access: Access.STAFF,
-								countryCode: data.countries[i],
-							},
-							function (err, docs) {
-								if (err) {
-									console.error(err);
-								} else {
-									for (var j = 0; j < docs.length; j++) {
-										var msg = 'A request by ' +
-											data.users[0].name + ' is waiting ' +
-											'for your approval on BonVoyage. ' +
-											process.env.BONVOYAGE_DOMAIN + '/login';
+						var msg = 'A request by ' +
+									data.users[0].name + ' is waiting ' +
+									'for your approval on BonVoyage. ' +
+									process.env.BONVOYAGE_DOMAIN + '/login';
 
-										if (docs[j].phones) {
-											for (var i = 0; i < docs[j].phones.length; i++) {
-												helpers.sendSMS(docs[j].phones[i], msg);
-											}
-										} else {
-											console.log(docs[j].name +
-											' does not have a phone number');
-										}
-									}
+						for (var i = 0; i < data.reviewers.length; i++) {
+							var reviewer = data.reviewers[i];
+
+							if (reviewer.phones) {
+								for (var j = 0; j < reviewer.phones.length; j++) {
+									helpers.sendSMS(reviewer.phones[i], msg);
 								}
-							});
+							} else {
+								console.log(reviewer.name +
+									' does not have a phone number');
+							}
 						}
 					});
 
